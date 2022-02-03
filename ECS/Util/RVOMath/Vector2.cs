@@ -35,6 +35,8 @@ using System.Globalization;
 using FixedMath;
 using Unity.Entities;
 
+ namespace RVO{
+
  
     /**
      * <summary>Defines a two-dimensional vector.</summary>
@@ -196,4 +198,6 @@ using Unity.Entities;
         }
  
     }
+
+ }
  

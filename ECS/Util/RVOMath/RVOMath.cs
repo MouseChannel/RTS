@@ -32,7 +32,11 @@
 
 using System;
 using FixedMath;
- 
+
+
+namespace RVO{
+
+
     /**
      * <summary>Contains functions and constants used in multiple classes.
      * </summary>
@@ -191,4 +195,6 @@ using FixedMath;
             return FixedCalculate.Sqrt(scalar);
         }
     }
+
+}
  

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using FixedMath;
+using RVO;
+using Vector2 = RVO.Vector2;
 public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
 {
     [SerializeField] BoxCollider  boxCollider;

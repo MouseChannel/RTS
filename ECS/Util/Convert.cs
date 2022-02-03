@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using FixedMath;
+using RVO;
+using Vector2 = RVO.Vector2;
 public class Convert : MonoBehaviour, IConvertGameObjectToEntity
 {
     public Entity entity;
@@ -18,12 +20,13 @@ public class Convert : MonoBehaviour, IConvertGameObjectToEntity
             radius_ = ((FixedInt)1) >>1,
             maxSpeed_ = 6,
             velocity_ = new Vector2(0,0),
-            position_ = new Vector2((FixedInt)transform.position.x, (FixedInt)transform.position.z)
+            position_ = new Vector2(Root.Instance.id, Root.Instance.id)
         });
         Root.Instance.id ++;
 
         dstManager.AddBuffer<PathPosition>(entity);
         dstManager.AddComponentData<PathFollow>(entity, new PathFollow{pathIndex = -1});
+        dstManager.AddComponent<CanBeSelected>(entity);
     }
 
     

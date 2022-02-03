@@ -11,7 +11,7 @@ using Unity.Burst;
 using Unity.Jobs;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-public class PathFind : SystemBase
+public class PathFindSystem : SystemBase
 {
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
@@ -59,6 +59,7 @@ public class PathFind : SystemBase
         }).WithoutBurst().Run();
 
         JobHandle.CompleteAll(jobHandleList);
+        
         
        
 

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using FixedMath;
+using RVO;
+using Vector2 = RVO.Vector2;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-[UpdateAfter(typeof(PathFind))]
-[UpdateBefore(typeof(RVOSystem))]
+[UpdateAfter(typeof(PathFindSystem))]
+[UpdateBefore(typeof(RVO.RVOSystem))]
 public class MoveSystem : SystemBase
 {
     public EndFixedStepSimulationEntityCommandBufferSystem endFixedStepSimulationEntityCommandBufferSystem;
@@ -16,51 +18,32 @@ public class MoveSystem : SystemBase
     }
     protected override void OnUpdate()
     {
+        Entities.ForEach((Entity entity ,   DynamicBuffer<PathPosition> pathPositionBuffer,ref Agent agent, ref PathFollow pathFollow ) =>{
+            if (pathFollow.pathIndex >= 0) {
+                // Has path to follow
+                PathPosition pathPosition = pathPositionBuffer[pathFollow.pathIndex];
+            
+                Vector2 targetPosition = new Vector2(pathPosition.position.x, pathPosition.position.y);
+                Vector2 moveDir =  targetPosition - agent.position_;
+                if(RVOMath.absSq(moveDir) != 0)
+                    moveDir = RVOMath.normalize(moveDir);
+                agent.prefVelocity_ = moveDir;
 
+    
 
-            Entities.ForEach((Entity entity , DynamicBuffer<PathPosition> pathPositionBuffer,ref Agent agent, ref PathFollow pathFollow ) =>{
-                if (pathFollow.pathIndex >= 0) {
-                    // Has path to follow
-                    PathPosition pathPosition = pathPositionBuffer[pathFollow.pathIndex];
-
-                    Vector2 targetPosition = new Vector2(pathPosition.position.x, pathPosition.position.y);
-                    Vector2 moveDir =  targetPosition - agent.position_;
-                    if(RVOMath.absSq(moveDir) != 0)
-                        moveDir = RVOMath.normalize(moveDir);
-                    agent.prefVelocity_ = moveDir;
-
-                    
-
-                 
-
-                    if (RVOMath.absSq(agent.position_ - targetPosition) >= 0 && RVOMath.abs(agent.position_ - targetPosition)< (FixedInt)0.1f ) {
-                        // Next waypoint
-                        pathFollow.pathIndex--;
-                        EntityCommandBuffer ecb =  endFixedStepSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-                        ecb.SetComponent<PathFollow>(entity, pathFollow);;
-                    }
+                if (RVOMath.absSq(agent.position_ - targetPosition) >= 0 && RVOMath.abs(agent.position_ - targetPosition)< (FixedInt)0.1f ) {
+                    // Next waypoint
+                    pathFollow.pathIndex--;
+                    EntityCommandBuffer  ecb =  endFixedStepSimulationEntityCommandBufferSystem.CreateCommandBuffer() ;
+                    ecb.SetComponent<PathFollow>( entity, pathFollow);;
                 }
-                else{
-                    agent.prefVelocity_ = new Vector2(0,0);
-                }
-                
-                
-             
-                
+            }
+            else{
+                agent.prefVelocity_ = new Vector2(0,0);
+            }
+        }).WithoutBurst().Run();
+        // endFixedStepSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
 
-            }).WithoutBurst().Run();
-
-
-
- 
-        // else{
-        //      Entities.ForEach((Entity entity ,ref Agent agent) =>{
-              
-             
-        //         agent.prefVelocity_ = new Vector2(0,0);
-
-        //     }).WithoutBurst().Run();
-        // }
     }
 
      

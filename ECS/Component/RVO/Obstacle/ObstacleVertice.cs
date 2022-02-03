@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 
-public struct ObstacleVertice : IBufferElementData
-{
-    public Vector2 vertice;
+namespace RVO{
+
+
+    public struct ObstacleVertice : IBufferElementData
+    {
+        public Vector2 vertice;
+}
 }
