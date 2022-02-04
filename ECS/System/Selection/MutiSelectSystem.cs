@@ -35,7 +35,9 @@ public class MutiSelectSystem : SystemBase
         JobHandle jobHandle = new SelectTriggerJob{
 
             ecb = ecb,
-            selectColliderEntity = selectColliderEntity
+            selectColliderEntity = selectColliderEntity,
+            canBeSelectedUnits = GetComponentDataFromEntity<CanBeSelected>()
+
 
         }.Schedule(stepPhysicsWorld.Simulation, ref buildPhysicsWorld.PhysicsWorld, Dependency);
 
@@ -60,6 +62,8 @@ public class MutiSelectSystem : SystemBase
     {
         public EntityCommandBuffer ecb;
         public Entity selectColliderEntity;
+         
+        public ComponentDataFromEntity<CanBeSelected> canBeSelectedUnits;
         public void Execute(TriggerEvent triggerEvent)
         {
             
@@ -74,7 +78,8 @@ public class MutiSelectSystem : SystemBase
                 a = b;
                 b = temp;
             }
-            ecb.AddComponent<SelectableEntityTag>(b);
+            if(canBeSelectedUnits.HasComponent(b))
+                ecb.AddComponent<SelectableEntityTag>(b);
            
             
  

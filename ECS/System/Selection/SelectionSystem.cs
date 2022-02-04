@@ -21,13 +21,13 @@ public class SelectionSystem : SystemBase
     private CollisionWorld collisionWorld;
     public bool IsDragging = false;
     public float3 mouseStartPos;
-    private BeginPresentationEntityCommandBufferSystem beginInitializationEntityCommandBufferSystem;
+
  
     protected override void OnCreate()
     {
         mainCamera  = Camera.main;
         buildPhysicsWorld = World.GetOrCreateSystem<BuildPhysicsWorld>();
-        beginInitializationEntityCommandBufferSystem = World.GetOrCreateSystem<BeginPresentationEntityCommandBufferSystem>();
+        
         
         
          
@@ -98,8 +98,8 @@ public class SelectionSystem : SystemBase
         
         var collisionFilter = new CollisionFilter
         {
-            BelongsTo = (uint) 1<<2,
-            CollidesWith = (uint) 1<<0
+            BelongsTo = (uint)PhysicsLayer.SelectionBox,
+            CollidesWith = (uint) PhysicsLayer.Unit
         };
         
         var physicsMaterial = Unity.Physics.Material.Default;
@@ -116,7 +116,7 @@ public class SelectionSystem : SystemBase
         EntityManager.SetComponentData(newSelectionEntity, new PhysicsCollider{Value = selectionCollider});
 
 
-        var ecb = beginInitializationEntityCommandBufferSystem.CreateCommandBuffer();
+         
     
        
     }
@@ -159,8 +159,8 @@ public class SelectionSystem : SystemBase
             Start = rayStart,
             End = rayEnd,
             Filter = new CollisionFilter{
-                BelongsTo = (uint)1<<2,
-                CollidesWith = (uint)1<<0,
+                BelongsTo = (uint)PhysicsLayer.SelectionBox,
+                CollidesWith = (uint) PhysicsLayer.Unit
             },
         };
         return collisionWorld.CastRay(raycastInput , out raycastHit);
