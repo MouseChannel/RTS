@@ -43,19 +43,18 @@ public class MutiSelectSystem : SystemBase
 
         jobHandle.Complete();
 
+        //delete selection collider
         if(HasComponent<NeedDestroy>(selectColliderEntity))
             ecb.DestroyEntity(selectColliderEntity);
         else    ecb.AddComponent<NeedDestroy>(selectColliderEntity, new NeedDestroy{});
 
-        
-        // ecb.DestroyEntity(selectColliderEntity);
 
 
 
 
 
 
- 
+
     }
 
     public struct SelectTriggerJob : ITriggerEventsJob

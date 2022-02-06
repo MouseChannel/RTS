@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Collections;
 using Unity.Entities;
 using FixedMath;
+using UnityEngine;
 using System;
 
 namespace RVO{
@@ -13,9 +14,11 @@ namespace RVO{
     public partial class RVOSystem  
     {
         [BurstCompile]
-        public struct ComputeNeighborsAndVelocity : IJob
+        public struct UpdateAgentJob : IJob
         {
             public NativeArray<Vector2> newVelocity;
+            public NativeList<int> rangeNeighbors;
+            public NativeArray<int> enemyUnit;
             public Entity entity;
             public Agent agent;
             [ReadOnly]
@@ -56,9 +59,19 @@ namespace RVO{
                 // ComputeNewVelocity(ref agent, orcaLines, agentNeighbors, obstacleNeighbors);
 
                 newVelocity[0] = agent.newVelocity_;
-
-                agent.velocity_ = agent.newVelocity_;
-                agent.position_ += agent.velocity_ / 5;
+                
+                if(agent.needCheckClosestEnemy_){
+                    int closestEnemyNo = -1;
+                    FixedInt distance = 9999;
+                    GetClosestEnemyNeighbor(agents,agentTree,agent.position_,ref distance,ref  closestEnemyNo, agent.faction_,0);
+                    enemyUnit[0] = closestEnemyNo;
+                }
+                if(agent.needCheckRangeNeighbor){
+                    
+                    GetClosestNeighbors(rangeNeighbors,agents,agentTree, agent.position_, agent.attackRange_, agent.faction_,0);
+                    
+                }
+                    
                 // var newAgent = agent;
                 
                 // Debug.Log(string.Format("{0}", agentNeighbors.Length));
@@ -72,6 +85,35 @@ namespace RVO{
 
 
         }
+
+
+        [BurstCompile]
+        public struct ComputeEnemyUnitJob : IJob
+        {
+            [ReadOnly]
+            public  NativeList<Agent> agents_; 
+            [ReadOnly]
+            public NativeList<AgentTreeNode> agentTree_;
+            public Entity entity;
+            public Vector2 position;
+            public int faction;
+            public FixedInt attackRange;
+            public NativeArray<int> enemyUnit;
+
+            public void Execute()
+            {
+                int agentNo = -1;
+                FixedInt distance  = 9999;
+                GetClosestEnemyNeighbor(agents_,agentTree_,position,ref distance,ref agentNo, faction,0);
+                enemyUnit[0] = agentNo;
+              
+
+            }
+        }
+
+
+
+
 
         private static void ComputeAgentNeighbor(NativeList<Agent> agents_,NativeList<AgentTreeNode> agentTree_, Agent agent, ref FixedInt rangeSq,int node ,NativeList<AgentNeighbor> agentNeighbors){
             int ii = node;
@@ -117,7 +159,102 @@ namespace RVO{
         
 
 
-        
+        private static void GetClosestEnemyNeighbor(NativeList<Agent> agents_, NativeList<AgentTreeNode> agentTree_,   Vector2 position, ref FixedInt rangeSq, ref int agentNo, int faction,int node)
+        {
+            if (agentTree_[node].end_ - agentTree_[node].begin_ <= MAX_LEAF_SIZE)
+            {
+                for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
+                {
+                    FixedInt distSq = RVOMath.absSq(position - agents_[i].position_);
+                    //Find EnemyUnit
+                    if (distSq < rangeSq && faction != agents_[i].faction_)
+                    {
+                        rangeSq = distSq;
+                        agentNo = agents_[i].id_;
+                    }
+                }
+            }
+            else
+            {
+                FixedInt distSqLeft = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0 , position.x_ - agentTree_[agentTree_[node].left_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0 , agentTree_[agentTree_[node].left_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].left_].maxY_));
+                FixedInt distSqRight = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0 , position.x_ - agentTree_[agentTree_[node].right_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0 , agentTree_[agentTree_[node].right_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].right_].maxY_));
+
+                if (distSqLeft < distSqRight)
+                {
+                    if (distSqLeft < rangeSq)
+                    {
+                        GetClosestEnemyNeighbor(agents_,agentTree_,  position, ref rangeSq, ref agentNo, faction, agentTree_[node].left_);
+
+                        if (distSqRight < rangeSq)
+                        {
+                            GetClosestEnemyNeighbor(agents_,agentTree_,  position, ref rangeSq, ref agentNo, faction,agentTree_[node].right_);
+                        }
+                    }
+                }
+                else
+                {
+                    if (distSqRight < rangeSq)
+                    {
+                        GetClosestEnemyNeighbor(agents_,agentTree_, position, ref rangeSq, ref agentNo, faction,agentTree_[node].right_);
+
+                        if (distSqLeft < rangeSq)
+                        {
+                            GetClosestEnemyNeighbor(agents_,agentTree_, position, ref rangeSq, ref agentNo, faction,agentTree_[node].left_);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        //医疗兵获得周围士兵
+        private static void GetClosestNeighbors( NativeList<int> rangeNeighbors, NativeList<Agent> agents_, NativeList<AgentTreeNode> agentTree_,  Vector2 position,  FixedInt rangeSq,  int faction,int node)
+        {
+            if (agentTree_[node].end_ - agentTree_[node].begin_ <= MAX_LEAF_SIZE)
+            {
+                for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
+                {
+                    FixedInt distSq = RVOMath.absSq(position - agents_[i].position_);
+                    //Find friend Neighbor主要是医疗兵
+                    if (distSq < rangeSq && faction == agents_[i].faction_)
+                    {
+                        rangeNeighbors.Add(i);
+ 
+                    }
+                }
+            }
+            else
+            {
+                FixedInt distSqLeft = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0 , position.x_ - agentTree_[agentTree_[node].left_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0 , agentTree_[agentTree_[node].left_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].left_].maxY_));
+                FixedInt distSqRight = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0 , position.x_ - agentTree_[agentTree_[node].right_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0 , agentTree_[agentTree_[node].right_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].right_].maxY_));
+
+                if (distSqLeft < distSqRight)
+                {
+                    if (distSqLeft < rangeSq)
+                    {
+                        GetClosestNeighbors(rangeNeighbors, agents_,agentTree_,  position,  rangeSq,  faction, agentTree_[node].left_);
+
+                        if (distSqRight < rangeSq)
+                        {
+                            GetClosestNeighbors(rangeNeighbors, agents_,agentTree_,  position,  rangeSq,  faction,agentTree_[node].right_);
+                        }
+                    }
+                }
+                else
+                {
+                    if (distSqRight < rangeSq)
+                    {
+                        GetClosestNeighbors(rangeNeighbors, agents_,agentTree_, position,  rangeSq,  faction,agentTree_[node].right_);
+
+                        if (distSqLeft < rangeSq)
+                        {
+                            GetClosestNeighbors(rangeNeighbors, agents_,agentTree_, position,   rangeSq,   faction,agentTree_[node].left_);
+                        }
+                    }
+                }
+
+            }
+        }
         private static void ComputeObstacleNeighbor(NativeList<Obstacle> obstacles, NativeList<ObstacleTreeNode> obstacleTree, ObstacleTreeNode node, Agent agent, ref FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
         {
             if(node.obstacleIndex == -1) return;
@@ -182,7 +319,6 @@ namespace RVO{
             }
 
         }
-
 
         private static void InsertAgentNeighbor(Agent agent, Agent neighbor,ref FixedInt rangeSq, NativeList<AgentNeighbor> agentNeighbors_ ){
             if(agent.id_ == neighbor.id_) return;
@@ -772,7 +908,7 @@ namespace RVO{
                             * This should in principle not happen. The result is by
                             * definition already in the feasible region of this
                             * linear program. If it fails, it is due to small
-                            * floating point error, and the current result is kept.
+                            * FixedInting point error, and the current result is kept.
                             */
                             result = tempResult;
                         }

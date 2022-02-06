@@ -8,14 +8,14 @@ using FixedMath;
 using Pb;
 
 using RVO;
-public class Move : MonoBehaviour
+public class ViewUnit : MonoBehaviour
 {
     Entity entity;
-    [SerializeField] Convert c;
+    [SerializeField] UnitConvert c;
     
     void Start()
     {
-        BattleSystem.Instance.move += SetMoveParams;
+        
         
     }
 
@@ -28,10 +28,10 @@ public class Move : MonoBehaviour
         FixedVector3 startPos = new FixedVector3(agent.position_.x_,1,agent.position_.y_);
 
         GridInit.Instance.pathfindingGrid.GetXZ(startPos,out int startx, out int starty);
-        entityManager.AddComponentData(entity,  new PathFindParams { 
-        startPosition  = new int2(agent.position_.x_.RawInt, agent.position_.y_.RawInt),
-        endPosition = new int2(end.x, end.y) 
-        } );
+        // entityManager.AddComponentData(entity,  new PathFindParams { 
+        // startPosition  = new int2(agent.position_.x_.RawInt, agent.position_.y_.RawInt),
+        // endPosition = new int2(end.x, end.y) 
+        // } );
     }
     void Update()
     {

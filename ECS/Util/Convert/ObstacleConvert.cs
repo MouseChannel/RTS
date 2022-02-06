@@ -29,44 +29,5 @@ public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
     }
 
 
-    // void   ObstacleCollect(){
 
-    //     int obstacleNo = Root.Instance.obstacleCount;  
-
-    //         for (int i = 0; i < vertices.Count; ++i)
-    //         {
-    //             Obstacle obstacle = new Obstacle();
-    //             obstacle.point_ = vertices[i];
-
-    //             if (i != 0)
-    //             {
-    //                 obstacle.previous_ = obstacles_[obstacleNo - 1];
-    //                 obstacle.previous_.next_ = obstacle;
-    //             }
-
-    //             if (i == vertices.Count - 1)
-    //             {
-    //                 obstacle.next_ = obstacles_[obstacleNo];
-    //                 obstacle.next_.previous_ = obstacle;
-    //             }
-
-    //             obstacle.direction_ = RVOMath.normalize(vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]);
-
-    //             if (vertices.Count == 2)
-    //             {
-    //                 obstacle.convex_ = true;
-    //             }
-    //             else
-    //             {
-    //                 obstacle.convex_ = (RVOMath.leftOf(vertices[(i == 0 ? vertices.Count - 1 : i - 1)], vertices[i], vertices[(i == vertices.Count - 1 ? 0 : i + 1)]) >= 0 );
-    //             }
-
-    //             obstacle.id_ = obstacles_.Count;
-    //             obstacles_.Add(obstacle);
-    //         }
-
-    //         return obstacleNo;
-
-
-    // }
 }

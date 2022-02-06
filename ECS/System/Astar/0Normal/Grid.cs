@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FixedMath;
+using Unity.Mathematics;
  
 public class Grid<T>  where T:GridNode, new()
     {
@@ -38,6 +39,12 @@ public class Grid<T>  where T:GridNode, new()
         public FixedVector3 GetWorldPosition(int x,int z){
             return new FixedVector3(x,0,z) * cellSize;
         }
+        public void GetXZ(float3 worldPosition, out int x, out int y){
+            FixedVector3 pos = new FixedVector3 (worldPosition);
+            GetXZ(pos,out  x,out  y);
+            
+        }
+
         public void GetXZ(FixedVector3 worldPosition, out int x, out int y){
             x = (worldPosition.x.round / cellSize).RawInt;
             y = (worldPosition.z.round / cellSize).RawInt;

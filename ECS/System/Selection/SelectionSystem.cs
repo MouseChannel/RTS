@@ -5,7 +5,7 @@ using UnityEngine;
 using Unity.Physics;
 using Unity.Physics.Systems;
 using UnityEngine.UI;
-using UnityEngine;
+ 
 using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Transforms;
@@ -21,6 +21,7 @@ public class SelectionSystem : SystemBase
     private CollisionWorld collisionWorld;
     public bool IsDragging = false;
     public float3 mouseStartPos;
+    public List<int> selectUnits = new List<int>();
 
  
     protected override void OnCreate()
@@ -43,6 +44,7 @@ public class SelectionSystem : SystemBase
   
         if(Input.GetMouseButtonUp(0)){
             DeSelectAll();
+            
             if(IsDragging){
                 SelectMultipleUnit();
             }
@@ -122,16 +124,16 @@ public class SelectionSystem : SystemBase
     }
 
     private void ModifyRect(Vector3 mousePosNow, Vector3 mouseStartPos, out Vector2 topLeft, out Vector2 topRight, out Vector2 botLeft, out Vector2 botRight){
-        topLeft = new  UnityEngine.Vector2(math.min(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
-        topRight = new  UnityEngine.Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
-        botLeft = new  UnityEngine.Vector2(math.min(mousePosNow.x, mouseStartPos.x), math.min(mousePosNow.y, mouseStartPos.y));
-        botRight = new  UnityEngine.Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
+        topLeft = new  Vector2(math.min(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
+        topRight = new  Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
+        botLeft = new  Vector2(math.min(mousePosNow.x, mouseStartPos.x), math.min(mousePosNow.y, mouseStartPos.y));
+        botRight = new Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
 
 
     }
  
     private void DeSelectAll(){
-        
+        selectUnits.Clear();
         EntityManager.RemoveComponent<SelectableEntityTag>(GetEntityQuery(typeof(SelectableEntityTag)));
     }
 
@@ -142,10 +144,11 @@ public class SelectionSystem : SystemBase
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
     
         var rayStart = ray.origin;
-        var rayEnd = ray.GetPoint(1000);
+        var rayEnd = ray.GetPoint(50);
        
         if(Raycast(rayStart, rayEnd, out var raycastHit)){
-      
+        
+            Debug.Log(raycastHit.Position);
             var hitEntity = buildPhysicsWorld.PhysicsWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
             if(EntityManager.HasComponent<CanBeSelected>(hitEntity)){
                 EntityManager.AddComponent<SelectableEntityTag>(hitEntity);

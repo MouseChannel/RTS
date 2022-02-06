@@ -6,6 +6,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Transforms;
+using UnityEngine;
  
 
 namespace RVO{
@@ -29,20 +30,6 @@ namespace RVO{
         {
             int q = Root.Instance.id;
             DoRVOSystem();
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
         }
 
         private void Rollback(){
@@ -81,39 +68,70 @@ namespace RVO{
             // }
 
         #endregion
+        NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
+        /// <summary>
+        /// building can auto detect enemyUnit
+        /// </summary>
+        /// <typeparam name="ComputeEnemyUnitJob"></typeparam>
+        /// <returns></returns>
+        #region  FindRangeEnemy 
+        List<ComputeEnemyUnitJob> computeEnemyUnitJobsList = new List<ComputeEnemyUnitJob>();
+            Entities.ForEach((Entity entity, ref AutoAttackBuilding autoAttackBuilding, in Building building)=>{
+                NativeList<int> enemyUnit = new NativeList<int>(Allocator.TempJob);
 
-        #region  compute Job
-            List<ComputeNeighborsAndVelocity> computeNeighborsAndVelocityList = new List<ComputeNeighborsAndVelocity>();
-            NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
-            
-            
+                ComputeEnemyUnitJob computeEnemyUnitJob = new ComputeEnemyUnitJob{
+                    agents_ = agents_,
+                    agentTree_ = agentTree_,
+                    entity = entity,
+                    position = building.position,
+                    faction = building.faction,
+                    enemyUnit  = enemyUnit,
+                    attackRange = autoAttackBuilding.attackRange
 
+                }; 
+                computeEnemyUnitJobsList.Add(computeEnemyUnitJob);
+                jobHandleList.Add(computeEnemyUnitJob.Schedule());
+                
+            }).WithoutBurst().Run();
+
+        #endregion
+
+
+        /// <summary>
+        /// Update three state
+        /// 1：update agent position
+        /// 2: (optional) update rangeNeighbor(heal stuff)
+        /// 3: (optional) update enemyUnit(auto attack)
+        /// </summary>
+        /// <typeparam name="UpdateAgentJob"></typeparam>
+        /// <returns></returns>
+        #region  updateAgentJob
+       
+            List<UpdateAgentJob> updateAgentJobList = new List<UpdateAgentJob>();
             Entities.ForEach((Entity entity,   ref Agent agent) =>{
                 NativeArray<Vector2> newVelocity = new NativeArray<Vector2>(1,Allocator.TempJob);
-                ComputeNeighborsAndVelocity computeNeighborsAndVelocity = new ComputeNeighborsAndVelocity{
-                    
+                NativeList<int> rangeNeighbors = new NativeList<int>(Allocator.TempJob);
+                NativeArray<int> enemyUnit = new NativeArray<int>(1,Allocator.TempJob);
+                UpdateAgentJob updateAgentJob = new UpdateAgentJob{                    
                     newVelocity = newVelocity,
+                    rangeNeighbors = rangeNeighbors,
+                    enemyUnit = enemyUnit,
                     entity = entity,
                     agent  =  agent ,
                     agents = agents_,
                     agentTree = agentTree_,
                     obstacles = obstacles_,
                     obstacleTree = obstacleTree_,
-                    obstacleTreeRoot = obstacleTreeRoot,
-                    
-
-
-
-    
+                    obstacleTreeRoot = obstacleTreeRoot,    
                 };
                 
 
-                computeNeighborsAndVelocityList.Add(computeNeighborsAndVelocity);
-                var jobhandle = computeNeighborsAndVelocity.Schedule();
+                updateAgentJobList.Add(updateAgentJob);
+                var jobhandle = updateAgentJob.Schedule();
                 jobHandleList.Add(jobhandle);
                 
-                
             }).WithoutBurst().Run();  
+
             JobHandle.CompleteAll(jobHandleList);
             // endFixedStepSimulationEntityCommandBufferSystem.AddJobHandleForProducer(jobhandle);
 
@@ -121,27 +139,41 @@ namespace RVO{
 
     #endregion
 
+        
+        
         #region   entityCommandBuffer
             EntityCommandBuffer  ecb = endFixedStepSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-            
-            foreach(var computeJob in computeNeighborsAndVelocityList){
-                // new SetVelocityJob{
-                //     entity = computeJob.entity,
-                //     ecb = ecb,
-                //     newVelocity = computeJob.newVelocity[0]
+          
+            foreach(var computeJob in updateAgentJobList){
 
-
-
-                // }.Schedule();
-                // Debug.Log(string.Format("{0}", computeJob.newVelocity[0]));
                 var newAgent  = computeJob.agent;
                 newAgent.velocity_ = computeJob.newVelocity[0];
-                newAgent.position_ += newAgent.velocity_  /5;
+                newAgent.position_ += newAgent.velocity_ / 5;
+                newAgent.closestEnemy_ = computeJob.enemyUnit[0];
+
+
                 ecb.SetComponent<Agent>(computeJob.entity, newAgent);
+                var buf = ecb.AddBuffer<HealObject>(computeJob.entity);
+                foreach(var i in computeJob.rangeNeighbors){
+                    if(i != computeJob.agent.id_)
+                        buf.Add(new HealObject{healObjectNo = i});
+                }
                 computeJob.newVelocity.Dispose(); 
+                computeJob.enemyUnit.Dispose();
+                computeJob.rangeNeighbors.Dispose();
                 ecb.SetComponent<Translation>(computeJob.entity,new Translation{Value = new Unity.Mathematics.float3(newAgent.position_.x_.RawFloat, 1, newAgent.position_.y_.RawFloat)});
             }
-    #endregion
+        
+        
+            foreach(var job in computeEnemyUnitJobsList){
+                var attackRange = job.attackRange;
+                var enemyUnitNo = job.enemyUnit[0];
+                ecb.SetComponent<AutoAttackBuilding>(job.entity,new AutoAttackBuilding{attackRange = attackRange, enemyUnitNo = enemyUnitNo});
+                job.enemyUnit.Dispose();
+            }
+        
+        
+        #endregion
         
         
             agents_.Dispose();

@@ -123,14 +123,16 @@ public class NetService : Singleton<NetService>
             case PbMessage.Types.CMD.Login:
                 LoginSystem.Instance.ResponseLogin(message);
                 break;
+                
             case PbMessage.Types.CMD.Match:
                 LobbySystem.Instance.ResponseMatch(message);
                 break;
+
             case PbMessage.Types.CMD.Room:
                 RoomSystem.Instance.ResponseRoom(message);
                 break;
 
-            case PbMessage.Types.CMD.Test:
+            case PbMessage.Types.CMD.Battle:
                 BattleSystem.Instance.ResponseBattle(message);
                 break;
 

@@ -31,7 +31,7 @@ public class MoveSystem : SystemBase
 
     
 
-                if (RVOMath.absSq(agent.position_ - targetPosition) >= 0 && RVOMath.abs(agent.position_ - targetPosition)< (FixedInt)0.1f ) {
+                if (RVOMath.absSq(agent.position_ - targetPosition) >= 0 && RVOMath.abs(agent.position_ - targetPosition)< FixedInt.half ) {
                     // Next waypoint
                     pathFollow.pathIndex--;
                     EntityCommandBuffer  ecb =  endFixedStepSimulationEntityCommandBufferSystem.CreateCommandBuffer() ;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FixedMath;
+using Unity.Mathematics;
 
 public class GridInit : MonoBehaviour
 {
@@ -40,11 +41,8 @@ public class GridInit : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if(Input.GetMouseButtonDown(1)){
-
-        }
+    public void ValidateGridPosition(ref int x, ref int y) {
+        x = math.clamp(x, 0, pathfindingGrid.GetWidth() - 1);
+        y = math.clamp(y, 0, pathfindingGrid.GetHeight() - 1);
     }
 }
