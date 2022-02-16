@@ -7,11 +7,8 @@ using UnityEngine.EventSystems;
 
 public class SelectWindow : WindowRoot
 {
-   [SerializeField]
-   [Header("Prefab：玩家卡片和factionIcon")]
-   private GameObject playerCard;
-    [SerializeField]
-   private GameObject factionIcon;
+  
+ 
    
    [SerializeField]
    [Header("生成prefab的位置")]
@@ -20,34 +17,34 @@ public class SelectWindow : WindowRoot
    private Transform factionPanel;
 
   
-   [SerializeField]
    private Transform readyButton, unReadyButton;
    private int currentFactionIndex;
-   [SerializeField]
+  
    private GameObject   hideIconImage;
    public Transform test;
    
-   // void Start(){
-   //    InitWindow();
-
-   // }
-   protected override void InitWindow(){
+   void FindAllElement(){
+      readyButton = transform.Find("SelectPanel/ReadyButton");
+      unReadyButton = transform.Find("SelectPanel/UnReadyButton");
+      hideIconImage = transform.Find("SelectPanel/Factions/HideIconImage").gameObject;
+   }
+   public override void InitWindow(){
       base.InitWindow();
+
+      FindAllElement();
+
       //生成玩家卡片
       for(int i=0;i<GameRoot.Instance.roomCount;i++){
-         GameObject go = Instantiate(playerCard);
-         RectTransform rect = go.GetComponent<RectTransform>();
-         rect.SetParent(playerPanel,false);
-         rect.localScale = Vector3.one;
+         Debug.Log("wefs");
+         GameObject go = ResourceService.Instance.LoadPrefab("UI/UIPrefab/SelectPlayerCard");
+         SetParent(go, playerPanel);
 
       }
 
       //生成fation选择图标
       for(int i=0;i< GameRoot.Instance.factionCount;i++){
-         GameObject go = Instantiate(factionIcon);
-         RectTransform rect = go.GetComponent<RectTransform>();
-         rect.SetParent(factionPanel,false);
-         rect.localScale = Vector3.one;
+         GameObject go = ResourceService.Instance.LoadPrefab("UI/UIPrefab/FactionIcon");
+         SetParent(go, factionPanel);
          SetSprite(GetImage(go.transform.Find("Mask/Icon")), "UI/UISprite/faction_" + i.ToString());
 
 
@@ -67,11 +64,11 @@ public class SelectWindow : WindowRoot
    /// </summary>
    /// <param name="message"></param>
    public void UpdateSelectData(PbMessage message){
-      int index = message.Index;
       string playerName = message.Name;
       int faction = message.SelectData.Faction;
       bool ready = message.SelectData.IsReady;
       string chatMes = message.SelectData.ChatMes;
+      int index = message.SelectData.Index;
       Debug.Log("Chat mes ;  "+ message.SelectData.ChatMes);
       var player = playerPanel.GetChild(index);
 
@@ -87,13 +84,13 @@ public class SelectWindow : WindowRoot
       {
          SetActive(player.Find("Right/Ready/ReadyText"));
          SetActive(player.Find("Right/Ready/UnReadyText"),false);
-         SetMaterial(GetImage(player),"UI/UIMaterial/ReadyCard");
+         // SetMaterial(GetImage(player),"UI/UIMaterial/ReadyCard");
          
       
         
       } 
       else {
-          SetActive(player.Find("Right/Ready/ReadyText"),false);
+         SetActive(player.Find("Right/Ready/ReadyText"),false);
          SetActive(player.Find("Right/Ready/UnReadyText"));
          ResetMaterial(GetImage(player));
       }
@@ -101,22 +98,7 @@ public class SelectWindow : WindowRoot
 
 
    }
-   // void SetReadyMaterial(bool ready,Transform father){
-   //    Image[] images = GetComponentsInChildren<Image>(false);
-      
-   //    foreach(var i in images){
-   //       if(TryGetComponent<Image>(out Image image)){
-   //          if(ready)  SetMaterial(image,"UI/UIMaterial/ReadyCard");
-   //          else ResetMaterial(image);
-   //       }
-   //       if(TryGetComponent<Text>(out Text text)){
-   //          if(ready)  SetMaterial(text,"UI/UIMaterial/ReadyCard");
-   //          else ResetMaterial(text);
-   //       }
-   //       // SetReadyMaterial(ready,i);
-   //    }
-   // }
-
+ 
 
  /// <summary>
  /// 更新当前选择的factionIcon
@@ -133,11 +115,12 @@ public class SelectWindow : WindowRoot
          }
          else{
             hideIconImage.SetActive(false);
-            for(int i=0;i<GameRoot.Instance.factionCount;i++){         
-                  GetButton(factionPanel.GetChild(i)).interactable = (i != currentFactionIndex);
-                  SetActive(factionPanel.GetChild(i).Find("Active"), (i == currentFactionIndex));
-                 
-             }
+            LoopChildAction(factionPanel,(Transform t, int index)=>{
+               GetButton(t).interactable = (index != currentFactionIndex);
+               SetActive(t.Find("Active"), (index == currentFactionIndex));
+
+            });
+ 
          }
       
    }
@@ -150,16 +133,16 @@ public class SelectWindow : WindowRoot
       
 
       //点击faction图标后，使之不可再 interactable
-      for(int i=0;i<GameRoot.Instance.factionCount;i++){
-         
-         GetButton(factionPanel.GetChild(i)).interactable = (i != currentFactionIndex);
-         SetActive(factionPanel.GetChild(i).Find("Active"), (i == currentFactionIndex));
-      }
+      LoopChildAction(factionPanel,(Transform t,int index )=>{
+         GetButton(t).interactable = (index != currentFactionIndex);
+         SetActive(t.Find("Active"), (index == currentFactionIndex));
+      });
+ 
       PbMessage message = new PbMessage{
          Name = NetService.Instance.Sid.ToString(),
          Cmd =  PbMessage.Types.CMD.Room,
          CmdRoom = PbMessage.Types.CmdRoom.SelectDate,
-         Index = RoomSystem.Instance.index,
+   
          SelectData = new SelectData{
             // PlayerName = _netService.Sid.ToString(),
             IsReady = false,
@@ -176,7 +159,7 @@ public class SelectWindow : WindowRoot
          PbMessage message = new PbMessage{
          Cmd =  PbMessage.Types.CMD.Room,
          CmdRoom = PbMessage.Types.CmdRoom.SelectDate,
-         Index = RoomSystem.Instance.index,
+        
          SelectData =  new SelectData{           
             IsReady = true,    
              Faction = currentFactionIndex,    
@@ -200,7 +183,7 @@ public class SelectWindow : WindowRoot
          Cmd =  PbMessage.Types.CMD.Room,
          CmdRoom = PbMessage.Types.CmdRoom.SelectDate,
 
-         Index = RoomSystem.Instance.index,
+      
          SelectData =  new SelectData{
              IsReady = false,
               Faction = currentFactionIndex,

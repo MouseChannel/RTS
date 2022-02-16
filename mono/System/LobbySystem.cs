@@ -4,18 +4,35 @@ using UnityEngine;
 using Pb;
 
 public class LobbySystem : Singleton<LobbySystem>{
-    public LobbyWindow lobbyWindow;
-    
-    public uint roomId;
+    [HideInInspector]public LobbyWindow lobbyWindow;
+    [HideInInspector]public ConfirmWindow confirmWindow;
+    [HideInInspector]public SelectWindow selectWindow;
+    [HideInInspector]public LoadWindow loadWindow;
+     
    public  void Init(){
        
 
    }
 
-   public void EnterLobby(){
+    public void EnterLobbyWindow(){
         //登录窗口
-        LoginSystem.Instance._loginWindow.SetWindowState(false);
-        lobbyWindow.SetWindowState();
+        ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/LobbyWindow",ref lobbyWindow);
+     
+        // lobbyWindow.SetWindowState();
+   }
+    public void EnterConfirmWindow(){
+       Debug.Log("EnterConfirm");
+       ResourceService.Instance.LoadSubWindow("UI/UISubWindow/ConfirmWindow",0, 0, ref confirmWindow);
+ 
+   }
+    public void EnterSelectWindow(){
+    //    LobbySystem.Instance.lobbyWindow.SetWindowState(false);
+       ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/SelectWindow",ref selectWindow);
+
+ 
+   }
+   public void EnterLoadWindow(){
+       ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/LoadWindow", ref loadWindow);
    }
    public void ResponseMatch(PbMessage message){
         switch (message.CmdMatch){
@@ -30,7 +47,7 @@ public class LobbySystem : Singleton<LobbySystem>{
                     //     break;
                 }
    }
-    private void ResponseJoinMatch(PbMessage message){
+   private void ResponseJoinMatch(PbMessage message){
         Debug.Log("    Success JOIN mATCH");
         lobbyWindow.ResponseJoinMatch();      
        
@@ -43,6 +60,64 @@ public class LobbySystem : Singleton<LobbySystem>{
        
 
     }
+    public void ResponseRoom(PbMessage message){
+        switch (message.CmdRoom){
+            case PbMessage.Types.CmdRoom.Confirm:
+                ResponseConfirm(message);
+                break;
+            case PbMessage.Types.CmdRoom.Dismissed:
+                ResponseRoomDismiss(message);
+                break;
+            case PbMessage.Types.CmdRoom.Select:
+                ResponseSelect(message);
+                break;
+            case PbMessage.Types.CmdRoom.SelectDate:
+                ResponseSelectData(message);
+                break;
+            case PbMessage.Types.CmdRoom.Load:
+                ResponseLoad(message);
+                break;
+            case PbMessage.Types.CmdRoom.LoadData:
+                ResponseLoadData(message);
+                break;
+
+                }
+    
+
+    }
+    private void ResponseConfirm(PbMessage message){
+        // confirmWindow.SetWindowState();
+        Debug.Log("Resd  condi");
+        EnterConfirmWindow();
+       
+
+    }
+    private void ResponseRoomDismiss(PbMessage message){
+      
+    }    
+    private void ResponseSelect(PbMessage message){
+        Debug.Log("RoomSelect start");
+        EnterSelectWindow();
+
+
+
+    }
+    
+    private void ResponseSelectData(PbMessage message){
+        selectWindow.UpdateSelectData(message);
+    }
+    private void ResponseLoad(PbMessage message){
+        // selectWindow.SetWindowState(false);
+        // loadWindow.SetWindowState(true);
+        EnterLoadWindow();
+        loadWindow.InitLoadPlayerData(message);
+
+    }
+    private void ResponseLoadData(PbMessage message){
+        loadWindow.UpdateLoadPercent(message);
+    }
+
+    
     // public void ResponseConfirm(PbMessage message){
     //     Debug.Log("I Need Confirm");
     //     roomId = message.RoomId;

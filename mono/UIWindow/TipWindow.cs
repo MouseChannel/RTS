@@ -9,7 +9,7 @@ public class TipWindow : WindowRoot{
     // private Image successfulIcon, failedIcon, messageIcon;
     private bool isTipsShow = false;
     private Queue<string> tipsQue = new Queue<string>();
-    protected override void InitWindow() { 
+    public override void InitWindow() { 
         base.InitWindow();
         tipsQue.Clear();
     }

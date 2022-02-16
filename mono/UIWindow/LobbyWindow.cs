@@ -8,12 +8,14 @@ public class LobbyWindow : WindowRoot
 {
    [SerializeField]
    private GameObject unMatch, match;
-   protected override void InitWindow(){
+   public override void InitWindow(){
       base.InitWindow();
+      Debug.Log("Lobby listen ");
       OnClick(match,ClickJoinMatch);
       OnClick(unMatch,ClickQuitMatch);
    }
    public void ClickJoinMatch(PointerEventData ped ,object[] args){
+      Debug.Log("join match");
       PbMessage message = new PbMessage{
          Cmd =  PbMessage.Types.CMD.Match,
          CmdMatch = PbMessage.Types.CmdMatch.JoinMatch,
@@ -34,7 +36,7 @@ public class LobbyWindow : WindowRoot
    }
 
    public void ResponseJoinMatch(){
-      Debug.Log("Setbuttomn");
+      
       unMatch.SetActive(true);
       match.SetActive(false);
    }

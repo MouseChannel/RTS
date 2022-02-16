@@ -32,6 +32,8 @@ namespace RVO{
             public NativeList<ObstacleTreeNode> obstacleTree;
             [ReadOnly]
             public ObstacleTreeNode obstacleTreeRoot;
+            public int index;
+            public EntityCommandBuffer.ParallelWriter ecb;
         
             public void Execute()
             {
@@ -59,6 +61,8 @@ namespace RVO{
                 // ComputeNewVelocity(ref agent, orcaLines, agentNeighbors, obstacleNeighbors);
 
                 newVelocity[0] = agent.newVelocity_;
+                // ecb.SetComponent<Agent>( entityInQueryIndex,entity, agent);
+                
                 
                 if(agent.needCheckClosestEnemy_){
                     int closestEnemyNo = -1;

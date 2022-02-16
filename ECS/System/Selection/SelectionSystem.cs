@@ -127,8 +127,7 @@ public class SelectionSystem : SystemBase
         topLeft = new  Vector2(math.min(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
         topRight = new  Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
         botLeft = new  Vector2(math.min(mousePosNow.x, mouseStartPos.x), math.min(mousePosNow.y, mouseStartPos.y));
-        botRight = new Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.max(mousePosNow.y, mouseStartPos.y));
-
+        botRight = new Vector2(math.max(mousePosNow.x, mouseStartPos.x), math.min(mousePosNow.y, mouseStartPos.y));
 
     }
  

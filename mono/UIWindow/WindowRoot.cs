@@ -4,13 +4,32 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using Pb;
 
+public enum MainWindow{
+    none = 0,
+    loginWindow = 1,
+    lobbyWindow = 2,
+    selectWindow = 3,
+    loadResourceWindow = 4,
+
+
+}
+public enum SubWindow{
+    tipWindow = 1,
+}
 public class WindowRoot : MonoBehaviour
 {
-    protected GameRoot root;
-    protected NetService _netService;
-    protected ResourceService _resourceService;
-    protected AudioService _audioService;
+
+ 
+ 
+
+
+
+
+
+
+ 
 
     public virtual void SetWindowState(bool isActive = true){
         if(gameObject.activeSelf != isActive){
@@ -23,23 +42,15 @@ public class WindowRoot : MonoBehaviour
             UnInitWindow();
         }
     }
-    // void Start(){
-    //     InitWindow();
-    // }
-
-    protected virtual void InitWindow(){
-        root = GameRoot.Instance;
-        _audioService = AudioService.Instance;
-        _netService = NetService.Instance;
-        _resourceService = ResourceService.Instance;
+ 
+    public virtual void InitWindow(){
+ 
     }
     protected void UnInitWindow(){
-        root = null;
-        _audioService = null;
-        _netService = null;
-        _resourceService = null;
+   
         
     }
+
 
     protected void SetActive(GameObject go, bool state = true) {
         go.SetActive(state);
@@ -58,6 +69,31 @@ public class WindowRoot : MonoBehaviour
     }
     protected void SetActive(InputField ipt, bool state = true) {
         ipt.gameObject.SetActive(state);
+    }
+    public void SetParentSelf(Transform father){
+        transform.SetParent(father,false);
+        transform.localScale = Vector3.one;
+        
+    }
+    protected void SetParent(RectTransform child, Transform father){
+        child.SetParent(father,false);
+        child.localScale = Vector3.one;
+    }
+    protected void SetParent(GameObject childGo, Transform father){
+        if(childGo.TryGetComponent<RectTransform>(out RectTransform child)){
+            SetParent(child, father);
+        };
+        
+    }
+    protected void LoopChildAction(Transform father, Action<Transform> childAction){
+        for(int i = 0;i < father.childCount;i++){
+            childAction(father.GetChild(i) );
+        }
+    }
+    protected void LoopChildAction(Transform father, Action<Transform,int> childAction){
+        for(int i = 0;i < father.childCount;i++){
+            childAction(father.GetChild(i),i);
+        }
     }
 
     protected void SetText(Transform trans, int num = 0) {
@@ -87,7 +123,7 @@ public class WindowRoot : MonoBehaviour
         text.material = ResourceService.Instance.LoadMaterial(path, true);
         
     }
-        protected void ResetMaterial(Image image) {
+    protected void ResetMaterial(Image image) {
         
         image.material = null;
        
@@ -183,10 +219,6 @@ public class WindowRoot : MonoBehaviour
             listener.args = args;
         }
     }
-
-
-
-
 
 
 }

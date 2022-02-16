@@ -13,7 +13,7 @@ public class ConfirmWindow : WindowRoot
    private Text confirmTest;
     [SerializeField]
    private GameObject confirmEffect;
-   protected override void InitWindow(){
+   public override void InitWindow(){
       base.InitWindow();
       OnClick(confirmButton,ClickConfirm);
    }
@@ -31,14 +31,5 @@ public class ConfirmWindow : WindowRoot
       GetButton(confirmButton.transform).interactable = false;
    }
 
-   public void Test(){
-             PbMessage message = new PbMessage{
-               Name = "测试还通不通",
-         // Cmd =  PbMessage.Types.CMD.Room,
-         // CmdRoom = PbMessage.Types.CmdRoom.Confirm
 
-         
-      };
-      NetService.Instance.SendMessage(message);
-   }
 }

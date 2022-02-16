@@ -9,7 +9,7 @@ using Unity.Jobs;
 public struct NeedDestroy: IComponentData{}
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-[AlwaysUpdateSystem]
+
 public class MutiSelectSystem : SystemBase
 {
     private StepPhysicsWorld stepPhysicsWorld;

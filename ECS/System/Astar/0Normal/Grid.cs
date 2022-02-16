@@ -48,6 +48,9 @@ public class Grid<T>  where T:GridNode, new()
         public void GetXZ(FixedVector3 worldPosition, out int x, out int y){
             x = (worldPosition.x.round / cellSize).RawInt;
             y = (worldPosition.z.round / cellSize).RawInt;
+            ValidateGridPosition(ref x,ref y);
+
+            
         }
 
         public int GetWidth() => width;
@@ -75,5 +78,10 @@ public class Grid<T>  where T:GridNode, new()
             SetNode(x, z, value);
 
         }
+
+        private void ValidateGridPosition(ref int x, ref int y) {
+            x = math.clamp(x, 0, width - 1);
+            y = math.clamp(y, 0, height - 1);
+    }
     }
  

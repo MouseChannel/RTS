@@ -34,10 +34,10 @@ public class GameRoot : Singleton<GameRoot>
         GetInstance();
         _netService = GetComponent<NetService>();
         _netService.Init();
-        // _resourceService = GetComponent<ResourceService>();
-        // _resourceService.Init();
-        // _audioService = GetComponent<AudioService>();
-        // _audioService.Init();
+        _resourceService = GetComponent<ResourceService>();
+        _resourceService.Init();
+        _audioService = GetComponent<AudioService>();
+        _audioService.Init();
 
         LoginSystem _loginSystem = GetComponent<LoginSystem>();
         _loginSystem.Init();    
@@ -45,15 +45,15 @@ public class GameRoot : Singleton<GameRoot>
         BattleSystem _battleSystem = GetComponent<BattleSystem>();
         _battleSystem.Init();
         
-        // LobbySystem _lobbySystem = GetComponent<LobbySystem>();
-        // _lobbySystem.Init();   
+        LobbySystem _lobbySystem = GetComponent<LobbySystem>();
+        _lobbySystem.Init();   
 
-        // //login
-        // _loginSystem.EnterLogin(); 
+        //login
+        _loginSystem.EnterLogin(); 
     }
 
     public void ShowTips(string tips) {
-        // tipWindow.AddTips(tips);
+        tipWindow.AddTips(tips);
     }
 
 

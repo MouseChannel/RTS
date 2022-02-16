@@ -10,9 +10,10 @@ public class ResourceService : Singleton<ResourceService>
 {
  
     private SelectionSystem selectionSystem;
+    [SerializeField]public Transform MainCanvas;
     
    public void Init(){
-
+       
    }
    private void Start(){
        selectionSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<SelectionSystem>();
@@ -36,6 +37,70 @@ public class ResourceService : Singleton<ResourceService>
         prgCB?.Invoke();
 
     }
+    private Dictionary<string, GameObject> goDic = new Dictionary<string, GameObject>();
+    
+    public void LoadMainWindow<T>(string path, ref T windowScript ){
+ 
+        GameObject prefab = Resources.Load<GameObject>(path);
+        GameObject go = null;
+        if(prefab != null) {
+            go = Instantiate(prefab,MainCanvas,false);
+        }
+        if(go.TryGetComponent<WindowRoot>(out WindowRoot window)){
+            window.InitWindow();
+        }
+        windowScript = go.GetComponent<T>();
+    }
+ 
+    public void LoadSubWindow<T>(string path, int x, int y, ref T windowScript){
+        GameObject prefab = Resources.Load<GameObject>(path);
+        GameObject go = null;
+        if(prefab != null) {
+            go = Instantiate(prefab,MainCanvas,false);
+            RectTransform rect = go.GetComponent<RectTransform>();
+            rect.localPosition = new Vector3(x,y ) ;
+        }
+        if(go.TryGetComponent<WindowRoot>(out WindowRoot window)){
+            window.InitWindow();
+        }
+        windowScript = go.GetComponent<T>();
+
+    }
+
+ 
+
+
+    public GameObject LoadPrefab(string path, bool cache = false){
+        GameObject prefab = null;
+        if(!goDic.TryGetValue(path, out prefab)) {
+            prefab = Resources.Load<GameObject>(path);
+            if(cache) {
+                goDic.Add(path, prefab);
+            }
+        }
+
+        GameObject go = null;
+        if(prefab != null) {
+            go = Instantiate(prefab);
+        }
+        return go;
+    }
+
+    private Dictionary<string, AudioClip> adDic = new Dictionary<string, AudioClip>();
+    public AudioClip LoadAudio(string path, bool cache = false) {
+        AudioClip au = null;
+        if(!adDic.TryGetValue(path, out au)) {
+            au = Resources.Load<AudioClip>(path);
+            if(cache) {
+                adDic.Add(path, au);
+            }
+        }
+        return au;
+    }
+
+
+
+
 
     public Sprite LoadSprite(string path, bool cache = false){
        Sprite sprite = null;
@@ -49,6 +114,10 @@ public class ResourceService : Singleton<ResourceService>
        return material;
        
     }
+
+
+
+    #region selection box 
 
     private Texture2D _whiteTexture;
 
@@ -86,4 +155,7 @@ public class ResourceService : Singleton<ResourceService>
         }
         
     }
+
+
+    #endregion
 }

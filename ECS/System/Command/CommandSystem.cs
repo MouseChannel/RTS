@@ -33,17 +33,21 @@ public class CommandSystem : SystemBase
         
             if(Raycast(rayStart, rayEnd, out var raycastHit)){  
                 var hitEntity = buildPhysicsWorld.PhysicsWorld.Bodies[raycastHit.RigidBodyIndex].Entity;  
-                         
+                var ecb = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
+                    
+                selectionSystem.selectUnits.Clear();
+                Entities.ForEach((Entity entity, in SelectableEntityTag selectableEntityTag, in Agent agent)=>{
+                        selectionSystem.selectUnits.Add(agent.id_);
+                        // ecb.RemoveComponent<SelectableEntityTag>(entity);
+                }).WithoutBurst().Run();
+    
                 if(EntityManager.HasComponent<GroungTag>(hitEntity)){
                     GridInit.Instance.pathfindingGrid.GetXZ( raycastHit.Position,out int endx, out int endy);
-                    var ecb = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-                    Entities.ForEach((Entity entity, in SelectableEntityTag selectableEntityTag, in Agent agent)=>{
-                        selectionSystem.selectUnits.Add(agent.id_);
-                        ecb.RemoveComponent<SelectableEntityTag>(entity);
-                    }).WithoutBurst().Run();
 
+                    if(selectionSystem.selectUnits.Count > 0){
+                        NetService.Instance.SendMessage(PbTool.MakeMove(new int2(endx,endy), selectionSystem.selectUnits  ));
 
-                    NetService.Instance.SendMessage(PbTool.MakeMove(new int2(endx,endy), selectionSystem.selectUnits  ));
+                    } 
                 }
                 else if(EntityManager.HasComponent<UnitTag>(hitEntity)){
                     

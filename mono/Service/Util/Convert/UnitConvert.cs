@@ -8,6 +8,7 @@ using Vector2 = RVO.Vector2;
 public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
 {
     public Entity entity;
+    private ResponseCommandSystem responseCommandSystem;
     void IConvertGameObjectToEntity.Convert(Entity entity_, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
         entity = entity_;
@@ -32,6 +33,10 @@ public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
         dstManager.AddComponent<CanBeSelected>(entity);
         dstManager.AddComponent<UnitTag>(entity);
         dstManager.SetComponentData<UnitTag>(entity, new UnitTag{id = Root.Instance.id,faction = 1});
+        responseCommandSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<ResponseCommandSystem>();
+        responseCommandSystem.needMovedUnit.Add(entity);
+
+
         Root.Instance.id ++;
     }
 

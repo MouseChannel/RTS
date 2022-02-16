@@ -3,25 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using RVO;
+using Unity.Collections;
 // [AlwaysUpdateSystem]
 public class ResponseCommandSystem : SystemBase
 {
     public bool needResponse;
-    public List<int> needMovedUnit = new List<int>();
+    public NativeList<Entity> needMovedUnit = new NativeList<Entity>(Allocator.Persistent);
     protected override void OnUpdate()
     {
-        if(!needResponse) return;
-        needResponse = false;
+        // if(!needResponse) return;
+        // needResponse = false;
 
-        Entities.ForEach((Entity entity, in Agent agent)=>{
-            if(needMovedUnit.Contains(agent.id_)){
-                needMovedUnit.Remove(agent.id_);
-                Debug.Log("work");
-            }
+        // Entities.ForEach((Entity entity, in Agent agent)=>{
+
             
-        }).WithoutBurst().Run();
+        // }).WithoutBurst().Run();
 
-        needMovedUnit.Clear();
+        // needMovedUnit.Clear();
         
+        
+    }
+    protected override void OnDestroy()
+    {
+        needMovedUnit.Dispose();
     }
 }

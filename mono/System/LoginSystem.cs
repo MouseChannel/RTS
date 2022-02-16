@@ -15,11 +15,13 @@ public class LoginSystem : Singleton<LoginSystem>{
     }
 
     public void ResponseLogin(PbMessage message){
-        Debug.Log(NetService.Instance.Sid+ "Success login");
+       
         
-        GameRoot.Instance.tipWindow.AddTips("登陆成功");
+     
+        _loginWindow.SetWindowState(false);
         
-        LobbySystem.Instance.EnterLobby();
+
+        LobbySystem.Instance.EnterLobbyWindow();
 
     }
 }

@@ -108,7 +108,7 @@ namespace RVO{
         #region  updateAgentJob
        
             List<UpdateAgentJob> updateAgentJobList = new List<UpdateAgentJob>();
-            Entities.ForEach((Entity entity,   ref Agent agent) =>{
+            Entities.ForEach((Entity entity, int entityInQueryIndex,  ref Agent agent) =>{
                 NativeArray<Vector2> newVelocity = new NativeArray<Vector2>(1,Allocator.TempJob);
                 NativeList<int> rangeNeighbors = new NativeList<int>(Allocator.TempJob);
                 NativeArray<int> enemyUnit = new NativeArray<int>(1,Allocator.TempJob);
@@ -123,17 +123,19 @@ namespace RVO{
                     obstacles = obstacles_,
                     obstacleTree = obstacleTree_,
                     obstacleTreeRoot = obstacleTreeRoot,    
+                   
                 };
                 
 
                 updateAgentJobList.Add(updateAgentJob);
                 var jobhandle = updateAgentJob.Schedule();
                 jobHandleList.Add(jobhandle);
-                
+           
             }).WithoutBurst().Run();  
 
             JobHandle.CompleteAll(jobHandleList);
-            // endFixedStepSimulationEntityCommandBufferSystem.AddJobHandleForProducer(jobhandle);
+            // Dependency.Complete();
+            
 
             
 
@@ -494,19 +496,12 @@ namespace RVO{
                 }
         }
 
+        // protected override JobHandle OnUpdate(JobHandle inputDeps)
+        // {
+        //     throw new System.NotImplementedException();
+        // }
 
-        [BurstCompile]
-        public struct SetVelocityJob : IJob
-        {
-            public Entity entity;
-            public EntityCommandBuffer  ecb;
-            public Vector2 newVelocity;
-            public void Execute()
-            {
-                
-                
-            }
-        }
+
 
 
 

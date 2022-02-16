@@ -7,7 +7,7 @@ public class LoginWindow : WindowRoot
 {
    [SerializeField]
    private GameObject loginButton;
-   protected override void InitWindow(){
+   public override void InitWindow(){
       base.InitWindow();
       OnClick(loginButton,ClickLogin);
    }

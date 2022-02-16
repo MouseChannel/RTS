@@ -129,10 +129,10 @@ public class NetService : Singleton<NetService>
                 break;
 
             case PbMessage.Types.CMD.Room:
-                RoomSystem.Instance.ResponseRoom(message);
+                LobbySystem.Instance.ResponseRoom(message);
                 break;
 
-            case PbMessage.Types.CMD.Battle:
+            case PbMessage.Types.CMD.Fight:
                 BattleSystem.Instance.ResponseBattle(message);
                 break;
 
