@@ -2,26 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Pb;
-public class LoginSystem : Singleton<LoginSystem>{
-    public LoginWindow _loginWindow;
-    public void Init(){
-        
+public class LoginSystem : Singleton<LoginSystem>
+{
+    private LoginWindow loginWindow;
+  
+    public void Init()
+    {
+
     }
 
-    public void EnterLogin(){
+    public void EnterLogin()
+    {
         //登录窗口
-        _loginWindow.SetWindowState();
-
+        ResourceService.Instance.LoadMainWindow<LoginWindow>("UI/UIMainWindow/LoginWindow", ref loginWindow);
+       
     }
 
-    public void ResponseLogin(PbMessage message){
-       
-        
-     
-        _loginWindow.SetWindowState(false);
-        
-
+    public void ResponseLogin(PbMessage message)
+    {
+    
         LobbySystem.Instance.EnterLobbyWindow();
-
     }
 }

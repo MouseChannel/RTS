@@ -2,66 +2,106 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Pb;
+using System.Threading;
 
-public class LobbySystem : Singleton<LobbySystem>{
-    [HideInInspector]public LobbyWindow lobbyWindow;
-    [HideInInspector]public ConfirmWindow confirmWindow;
-    [HideInInspector]public SelectWindow selectWindow;
-    [HideInInspector]public LoadWindow loadWindow;
-     
-   public  void Init(){
-       
+public class LobbySystem : Singleton<LobbySystem>
+{
+    private LobbyWindow lobbyWindow;
+    private ConfirmWindow confirmWindow;
+    private SelectWindow selectWindow;
+    private LoadWindow loadWindow;
 
-   }
+    public void Init()
+    {
 
-    public void EnterLobbyWindow(){
+
+    }
+
+    public void EnterLobbyWindow()
+    {
+        Debug.Log("enter lobby window");
         //登录窗口
-        ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/LobbyWindow",ref lobbyWindow);
-     
+        // Resources.Load<LobbyWindow>("UI/UIMainWindow/LobbyWindow");
+        ResourceService.Instance.LoadMainWindow<LobbyWindow>("UI/UIMainWindow/LobbyWindow", ref lobbyWindow);
+ 
+        Debug.Log("loadLobbt");
         // lobbyWindow.SetWindowState();
-   }
-    public void EnterConfirmWindow(){
-       Debug.Log("EnterConfirm");
-       ResourceService.Instance.LoadSubWindow("UI/UISubWindow/ConfirmWindow",0, 0, ref confirmWindow);
- 
-   }
-    public void EnterSelectWindow(){
-    //    LobbySystem.Instance.lobbyWindow.SetWindowState(false);
-       ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/SelectWindow",ref selectWindow);
-
- 
-   }
-   public void EnterLoadWindow(){
-       ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/LoadWindow", ref loadWindow);
-   }
-   public void ResponseMatch(PbMessage message){
-        switch (message.CmdMatch){
-                    case PbMessage.Types.CmdMatch.JoinMatch:
-                        ResponseJoinMatch(message);
-                        break;
-                    case PbMessage.Types.CmdMatch.QuitMatch:
-                        ResponseQuitMatch(message);
-                        break;
-                    // case PbMessage.Types.CmdMatch.Dissmiss:
-                    //     ResponseDismiss(message);
-                    //     break;
-                }
-   }
-   private void ResponseJoinMatch(PbMessage message){
-        Debug.Log("    Success JOIN mATCH");
-        lobbyWindow.ResponseJoinMatch();      
-       
+    }
+    public void EnterConfirmWindow()
+    {
+        Debug.Log("EnterConfirm");
+        ResourceService.Instance.LoadSubWindow<ConfirmWindow>("UI/UISubWindow/ConfirmWindow", 0, 0, ref confirmWindow);
 
     }
-    private void ResponseQuitMatch(PbMessage message){
-        Debug.Log("    Success quit mATCH");
-        
-        lobbyWindow.ResponseQuitMatch();     
-       
+    public void EnterSelectWindow()
+    {
+        //    LobbySystem.Instance.lobbyWindow.SetWindowState(false);
+        ResourceService.Instance.LoadMainWindow<SelectWindow>("UI/UIMainWindow/SelectWindow", ref selectWindow);
+
 
     }
-    public void ResponseRoom(PbMessage message){
-        switch (message.CmdRoom){
+    int lastPercent = 0;
+    public void EnterLoadWindow()
+    {
+        ResourceService.Instance.LoadMainWindow<LoadWindow>("UI/UIMainWindow/LoadWindow", ref loadWindow);
+        ResourceService.Instance.AsyncLoadScene("FightScene", SceneLoadProgress, SceneLoadDone );
+
+        void SceneLoadProgress(float val)
+        {
+            int percent = (int)(val * 100);
+            if (lastPercent != percent)
+            {
+                var mes = PbTool.Instance.MakeLoadProgress(percent);
+                NetService.Instance.SendMessage(mes);
+                lastPercent = percent;
+            }
+        }
+
+        void SceneLoadDone()
+        {
+            var mes = PbTool.Instance.MakeBattleStart();
+
+         
+            NetService.Instance.SendMessage(mes);
+
+
+        }
+    }
+#region match
+    public void ResponseMatch(PbMessage message)
+    {
+        switch (message.CmdMatch)
+        {
+            case PbMessage.Types.CmdMatch.JoinMatch:
+                ResponseJoinMatch(message);
+                break;
+            case PbMessage.Types.CmdMatch.QuitMatch:
+                ResponseQuitMatch(message);
+                break;
+
+        }
+    }
+    private void ResponseJoinMatch(PbMessage message)
+    {
+       
+        lobbyWindow.ResponseJoinMatch();
+
+
+    }
+    private void ResponseQuitMatch(PbMessage message)
+    {
+       
+
+        lobbyWindow.ResponseQuitMatch();
+
+
+    }
+    
+    #endregion
+    public void ResponseRoom(PbMessage message)
+    {
+        switch (message.CmdRoom)
+        {
             case PbMessage.Types.CmdRoom.Confirm:
                 ResponseConfirm(message);
                 break;
@@ -80,55 +120,64 @@ public class LobbySystem : Singleton<LobbySystem>{
             case PbMessage.Types.CmdRoom.LoadData:
                 ResponseLoadData(message);
                 break;
+            case PbMessage.Types.CmdRoom.FightStart:
+                ResponseFightStart(message);
+                break;
 
-                }
-    
+        }
+
 
     }
-    private void ResponseConfirm(PbMessage message){
+    private void ResponseConfirm(PbMessage message)
+    {
         // confirmWindow.SetWindowState();
         Debug.Log("Resd  condi");
         EnterConfirmWindow();
-       
+
 
     }
-    private void ResponseRoomDismiss(PbMessage message){
-      
-    }    
-    private void ResponseSelect(PbMessage message){
+    private void ResponseRoomDismiss(PbMessage message)
+    {
+        Debug.Log("room dismiss");
+        if (confirmWindow) ResourceService.Instance.Destroy(confirmWindow.gameObject);
+
+
+
+
+
+
+        if (selectWindow) ResourceService.Instance.Destroy(selectWindow.gameObject);
+    }
+    private void ResponseSelect(PbMessage message)
+    {
         Debug.Log("RoomSelect start");
         EnterSelectWindow();
 
 
 
     }
-    
-    private void ResponseSelectData(PbMessage message){
+
+    private void ResponseSelectData(PbMessage message)
+    {
         selectWindow.UpdateSelectData(message);
     }
-    private void ResponseLoad(PbMessage message){
+    private void ResponseLoad(PbMessage message)
+    {
         // selectWindow.SetWindowState(false);
         // loadWindow.SetWindowState(true);
         EnterLoadWindow();
         loadWindow.InitLoadPlayerData(message);
 
     }
-    private void ResponseLoadData(PbMessage message){
+    private void ResponseLoadData(PbMessage message)
+    {
         loadWindow.UpdateLoadPercent(message);
     }
-
     
-    // public void ResponseConfirm(PbMessage message){
-    //     Debug.Log("I Need Confirm");
-    //     roomId = message.RoomId;
-    //     confirmWindow.SetWindowState();
-
-    // }
-    // private void ResponseDismiss(PbMessage message){
-    //     Debug.Log("I Need Confirm");
-    //     confirmWindow.SetWindowState(false);
-    //     roomId = 1<<32;
+    private void ResponseFightStart(PbMessage message){
         
+        ResourceService.Instance.canTransition = true;
+    }
 
-    // }
+
 }

@@ -12,24 +12,34 @@ public class LoadWindow : WindowRoot
         public string name;
         public int faction;
     }
-    public List<PlayerData> playerDatas  ;
+    public List<PlayerData> playerDatas;
        
-    private List<TMP_Text> percentTextList;
-    [SerializeField]private Transform playerCardTransform;
+    private List<Text> percentTextList;
+    private List<Image> percentBarList;
+    private Transform playerCardTransform;
     public override void InitWindow(){
       base.InitWindow();
+        playerCardTransform = transform.Find("PlayerCards");
 
-   }
+    }
     public void InitLoadPlayerData(PbMessage message){
         playerDatas = new List<PlayerData>();
+        percentTextList = new List<Text>();
+        percentBarList = new List<Image>();
         var newPlayerDatas = message.RoomSelectData;
         foreach(var i in newPlayerDatas){
-            GameObject playerCard = ResourceService.Instance.LoadPrefab("UI/UIPrefab/LoadPlayerCard");
-            playerCard.transform.SetParent(playerCardTransform,false);
+            Debug.LogError(i);
             playerDatas.Add(new PlayerData{
                 name = i.PlayerName,
                 faction = i.Faction
             });
+            GameObject playerCard = ResourceService.Instance.LoadPrefab("UI/UIPrefab/LoadPlayerCard");
+            SetParent(playerCard, playerCardTransform);
+            var percentBar = GetImage(playerCard.transform, "Header/LoadingBar/FillBg/Fill");
+            percentBarList.Add(percentBar);
+
+            var percentText = GetText(playerCard.transform, "Header/LoadingBar/LoadPercent");
+            percentTextList.Add(percentText);
 
         }
         
@@ -37,9 +47,18 @@ public class LoadWindow : WindowRoot
 
     }
  
+ 
 
     public void UpdateLoadPercent(PbMessage message ){
+        var index = message.RoomIndex;
         var percent = message.LoadPercent;
+        Debug.Log("index "+  index);
+        
+        percentBarList[index].fillAmount =  percent / 100f;
+        percentTextList[index].text = percent.ToString() + "%";
+ 
+        
+   
    
         
     }

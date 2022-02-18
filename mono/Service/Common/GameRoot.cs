@@ -1,59 +1,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-public class GameRoot : Singleton<GameRoot>
+public class GameRoot : SingletonMonoBehaviour<GameRoot>
 {
     public TipWindow tipWindow;
     public int roomCount = 3,factionCount = 3;
+    public event EventHandler  updateEvent;
     void Start()
     {
         Init();
+        DontDestroyOnLoad(this);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        updateEvent?.Invoke(this, EventArgs.Empty);
     }
-    [HideInInspector]
-    public NetService _netService;
-    [HideInInspector]
-    public ResourceService _resourceService;
-    [HideInInspector]
-    public AudioService _audioService;
+    
 
 
-    public void GetInstance() {
-
-        _netService = NetService.Instance;
-        _resourceService = ResourceService.Instance;
-        _audioService = AudioService.Instance;
-    }
+ 
     void Init(){
-        GetInstance();
-        _netService = GetComponent<NetService>();
-        _netService.Init();
-        _resourceService = GetComponent<ResourceService>();
-        _resourceService.Init();
-        _audioService = GetComponent<AudioService>();
-        _audioService.Init();
+        // gameObject.AddComponent<NetService>();
+        
+        NetService.Instance.Init();
+        ResourceService.Instance.Init();
+        AudioService.Instance.Init();
 
-        LoginSystem _loginSystem = GetComponent<LoginSystem>();
-        _loginSystem.Init();    
-        
-        BattleSystem _battleSystem = GetComponent<BattleSystem>();
-        _battleSystem.Init();
-        
-        LobbySystem _lobbySystem = GetComponent<LobbySystem>();
-        _lobbySystem.Init();   
+        LoginSystem.Instance.Init();
+        LobbySystem.Instance.Init();
+        BattleSystem.Instance.Init();
+ 
 
         //login
-        _loginSystem.EnterLogin(); 
+        LoginSystem.Instance.EnterLogin();
+        
     }
-
+ 
     public void ShowTips(string tips) {
-        tipWindow.AddTips(tips);
+        // tipWindow.AddTips(tips);
     }
 
 

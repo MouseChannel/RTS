@@ -8,22 +8,26 @@ using System;
 
 public class ClientSession : Session
 {
-    protected override void OnConnected() {
-        
-        }
+    protected override void OnConnected()
+    {
 
-    protected override void OnDisConnected() {
-        }
+    }
 
-    protected override void OnReceiveMessage(PbMessage pbMessage) {
-            Debug.Log(pbMessage);
-            GameRoot.Instance._netService.AddMessageQueue(pbMessage);
-        }
+    protected override void OnDisConnected()
+    {
+    }
 
-    protected override void OnUpdate(DateTime now) {
-        }
-    
-    
-    
-   
+    protected override void OnReceiveMessage(PbMessage pbMessage)
+    {
+        Debug.Log(pbMessage);
+        NetService.Instance.AddMessageQueue(pbMessage);
+    }
+
+    protected override void OnUpdate(DateTime now)
+    {
+    }
+
+
+
+
 }

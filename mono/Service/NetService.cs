@@ -13,103 +13,110 @@ public class NetService : Singleton<NetService>
     private static KCPNet<ClientSession> client;
     private Queue<PbMessage> messageQueue = null;
     public static Task<bool> checkTask;
-   
 
-    public uint Sid{
-        get{
-            if(client.session.IsConnected)
+
+    public uint Sid
+    {
+        get
+        {
+            if (client.session.IsConnected)
                 return client.session.GetSid();
             return 0;
         }
     }
-    public void Init(){
+    public void Init()
+    {
         string ip = "127.0.0.1";
         client = new KCPNet<ClientSession>();
-        client.StartClient(ip,7777);
-        checkTask =  client.ConnectServer(200,5000);
+        client.StartClient(ip, 7777);
+        checkTask = client.ConnectServer(200, 5000);
         messageQueue = new Queue<PbMessage>();
-        Debug.Log("net Init");
-        
-        
-    }
+        // Task.Run(StartWork);
+        GameRoot.Instance.updateEvent += Update;
 
-    void Update(){
+
+
+    }
+    void Update(object sender, EventArgs e){
         ConnectServer();
-        if(client != null && client.session != null){
-            if(messageQueue.Count > 0){
-                lock(queue_lock){
-                    PbMessage message = messageQueue.Dequeue();
-                    HandoutMessage(message);
-                }
+            
+            if (client != null && client.session != null)
+            {
 
+                if (messageQueue.Count > 0)
+                {
+                    lock (queue_lock)
+                    {
+                        PbMessage message = messageQueue.Dequeue();
+                        HandoutMessage(message);
+                    }
+
+                }
             }
-        }
     }
 
+ 
 
-    public void AddMessageQueue(PbMessage message){
-        lock(queue_lock){
+
+    public void AddMessageQueue(PbMessage message)
+    {
+        lock (queue_lock)
+        {
             messageQueue.Enqueue(message);
         }
-        
+
     }
     private static int counter = 0;
-    void ConnectServer() {
-        if(checkTask != null &&checkTask.IsCompleted){
-                    if(checkTask.Result){
-                        checkTask = null;
-                       
-                        
-                    }
-                    else{
-                         ++counter;
-                        if(counter > 4) {
-                            Debug.Log(string.Format("Connect Failed {0} Times,Check Your Network Connection.", counter));
-                            checkTask = null;
-                            
-                        }
-                        else {
-                            Debug.Log(string.Format("Connect Faild {0} Times.Retry...", counter));
-                            checkTask = client.ConnectServer(200, 5000);
-                        }
-                        
-                    }
-
-                
+    void ConnectServer()
+    {
+        if (checkTask != null && checkTask.IsCompleted)
+        {
+            if (checkTask.Result)
+            {
+                checkTask = null;
             }
-        }
+            else
+            {
+                ++counter;
+                if (counter > 4)
+                {
+                    Debug.Log(string.Format("Connect Failed {0} Times,Check Your Network Connection.", counter));
+                    checkTask = null;
 
-    static async void SendPingMessage(){
-            while(true){
-                await Task.Delay(5000);
-                if(client != null && client.session != null){
-                    client.session.SendMessage(new PbMessage{
-                        Name = "ping_test",                        
-                    });
-                    // Console.WriteLine("send kcp");
                 }
                 else
-                    break;
+                {
+                    Debug.Log(string.Format("Connect Faild {0} Times.Retry...", counter));
+                    checkTask = client.ConnectServer(200, 5000);
+                }
 
             }
+
+
         }
+    }
 
 
 
 
-/// <summary>
-/// 向服务器发送数据
-/// </summary>
-/// <param name="message"></param>
-/// <param name="cb">callback</param>
-    public void SendMessage(PbMessage message, Action<bool> cb = null){
-        if(client.session != null && client.session.IsConnected) {
+
+
+    /// <summary>
+    /// 向服务器发送数据
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cb">callback</param>
+    public void SendMessage(PbMessage message, Action<bool> cb = null)
+    {
+        if (client.session != null && client.session.IsConnected)
+        {
             client.session.SendMessage(message);
-            
+
             cb?.Invoke(true);
-            Debug.Log("Send ,message  " +message.ToString());
+            Debug.Log("Send ,message  " + message.ToString());
         }
-        else {
+        else
+        {
             GameRoot.Instance.ShowTips("服务器未连接");
             // this.Error("服务器未连接");
             // cb?.Invoke(false);
@@ -117,13 +124,15 @@ public class NetService : Singleton<NetService>
     }
 
 
-    private void HandoutMessage(PbMessage message){
-        Debug.Log("received message :   "+ message);
-        switch (message.Cmd){
+    private void HandoutMessage(PbMessage message)
+    {
+        Debug.Log("received message :   " + message);
+        switch (message.Cmd)
+        {
             case PbMessage.Types.CMD.Login:
                 LoginSystem.Instance.ResponseLogin(message);
                 break;
-                
+
             case PbMessage.Types.CMD.Match:
                 LobbySystem.Instance.ResponseMatch(message);
                 break;
@@ -136,8 +145,8 @@ public class NetService : Singleton<NetService>
                 BattleSystem.Instance.ResponseBattle(message);
                 break;
 
-               
-                
+
+
             default:
                 break;
 

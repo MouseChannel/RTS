@@ -13,7 +13,8 @@ using RaycastHit = Unity.Physics.RaycastHit;
 using Vector2 = UnityEngine.Vector2;
  
  
-[AlwaysUpdateSystem]
+// [AlwaysUpdateSystem]
+[DisableAutoCreation]
 public class SelectionSystem : SystemBase
 {
     private Camera mainCamera;
