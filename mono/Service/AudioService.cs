@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class AudioService : Singleton<AudioService>
 {
-    public void Init(){
 
+    public override void InitInstance()
+    {
+       
     }
+
+ 
 }

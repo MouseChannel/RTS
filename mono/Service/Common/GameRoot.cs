@@ -8,9 +8,11 @@ public class GameRoot : SingletonMonoBehaviour<GameRoot>
     public TipWindow tipWindow;
     public int roomCount = 3,factionCount = 3;
     public event EventHandler  updateEvent;
+ 
+  
     void Start()
     {
-        Init();
+         InitUI();
         DontDestroyOnLoad(this);
     }
 
@@ -19,24 +21,28 @@ public class GameRoot : SingletonMonoBehaviour<GameRoot>
     {
         updateEvent?.Invoke(this, EventArgs.Empty);
     }
+ 
+    public void MyStartCoroutine(IEnumerator action){
+        StartCoroutine(action);
+    }
+ 
     
 
 
  
-    void Init(){
+    void InitUI(){
         // gameObject.AddComponent<NetService>();
         
         NetService.Instance.Init();
-        ResourceService.Instance.Init();
-        AudioService.Instance.Init();
-
-        LoginSystem.Instance.Init();
-        LobbySystem.Instance.Init();
-        BattleSystem.Instance.Init();
+ 
  
 
+ 
         //login
         LoginSystem.Instance.EnterLogin();
+        
+    }
+    void InitfightScene(){
         
     }
  

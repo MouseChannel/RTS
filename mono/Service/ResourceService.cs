@@ -7,36 +7,41 @@ using UnityEngine.UI;
 using Unity.Entities;
 using System.Threading;
 
-public class ResourceService : MonoBehaviour
+public class ResourceService : Singleton<ResourceService>
 {
-    public static ResourceService Instance;
 
-    private SelectionSystem selectionSystem;
+
     [SerializeField] public Transform MainCanvas;
 
-    public void Init()
-    {
+    public override void InitInstance()
+    {    }
 
-    }
-    private void Awake()
-    {
-        Instance = this;
-    }
-    private void Start()
-    {
-        selectionSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<SelectionSystem>();
-    }
+
 
     public bool canTransition = false;
-    public void AsyncLoadScene(string sceneName, Action<float> loadRate, Action loaded)
+    private Action loadSceneAction;
+    private Action transitionAction;
+    public void AsyncLoadScene(string sceneName, Action<float> loadRate, Action loaded, Action changedDone)
     {
         AsyncOperation sceneAsync = SceneManager.LoadSceneAsync(sceneName);
+        sceneAsync.completed += (sceneAsync) =>
+        {
+            changedDone?.Invoke();
+            // loaded?.Invoke();
+        };
         sceneAsync.allowSceneActivation = false;
-        StartCoroutine(LoadSceneProgress(sceneAsync, loadRate, loaded));
+        GameRoot.Instance.MyStartCoroutine(LoadSceneProgress(sceneAsync, loadRate, loaded, changedDone));
+
+
     }
 
-    IEnumerator LoadSceneProgress(AsyncOperation sceneAsync, Action<float> loadRate, Action loaded)
+    IEnumerator LoadSceneProgress(params object[] args)
     {
+        var sceneAsync = args[0] as AsyncOperation;
+        var loadRate = args[1] as Action<float>;
+        var loaded = args[2] as Action;
+        var changedDone = args[3] as Action;
+
 
         while (sceneAsync.progress < 0.9f)
         {
@@ -50,12 +55,12 @@ public class ResourceService : MonoBehaviour
         }
         canTransition = false;
         sceneAsync.allowSceneActivation = true;
+
+
+
+
     }
 
-    private void Update()
-    {
-
-    }
     public void Destroy(GameObject go)
     {
         UnityEngine.Object.Destroy(go);
@@ -64,13 +69,13 @@ public class ResourceService : MonoBehaviour
 
     public void LoadMainWindow<T>(string path, ref T windowScript)
     {
-
+        Debug.Log("load main window");
         GameObject prefab = Resources.Load<GameObject>(path);
 
         GameObject go = null;
         if (prefab != null)
         {
-            go = Instantiate(prefab, MainCanvas, false);
+            go = UnityEngine.Object.Instantiate(prefab, MainCanvas, false);
         }
         if (go.TryGetComponent<WindowRoot>(out WindowRoot window))
         {
@@ -87,7 +92,7 @@ public class ResourceService : MonoBehaviour
         GameObject go = null;
         if (prefab != null)
         {
-            go = Instantiate(prefab, MainCanvas, false);
+            go = UnityEngine.Object.Instantiate(prefab, MainCanvas, false);
             RectTransform rect = go.GetComponent<RectTransform>();
             rect.localPosition = new Vector3(x, y);
         }
@@ -118,10 +123,29 @@ public class ResourceService : MonoBehaviour
         GameObject go = null;
         if (prefab != null)
         {
-            go = Instantiate(prefab);
+            go = UnityEngine.Object.Instantiate(prefab);
         }
         return go;
     }
+
+    // public void LoadPrefab<T>(string path, ref T component)
+    // {
+    //     GameObject prefab = null;
+
+
+    //     prefab = Resources.Load<GameObject>(path);
+
+
+
+
+    //     GameObject go = null;
+    //     if (prefab != null)
+    //     {
+    //         go = UnityEngine.Object.Instantiate(prefab);
+    //     }
+    //     component = go.GetComponent<>
+    // }
+
 
     private Dictionary<string, AudioClip> adDic = new Dictionary<string, AudioClip>();
     public AudioClip LoadAudio(string path, bool cache = false)
@@ -159,47 +183,5 @@ public class ResourceService : MonoBehaviour
 
 
 
-    #region selection box 
 
-    private Texture2D _whiteTexture;
-
-    private Texture2D WhiteTexture
-    {
-        get
-        {
-            if (_whiteTexture == null)
-            {
-                _whiteTexture = new Texture2D(1, 1);
-                _whiteTexture.SetPixel(0, 0, new Color(1, 1, 1, 0.2f));
-                _whiteTexture.Apply();
-            }
-
-            return _whiteTexture;
-        }
-    }
-
-    public Rect GetScreenRect(Vector3 screenPosition1, Vector3 screenPosition2)
-    {
-        // Move origin from bottom left to top left
-        screenPosition1.y = Screen.height - screenPosition1.y;
-        screenPosition2.y = Screen.height - screenPosition2.y;
-        // Calculate corners
-        var topLeft = Vector3.Min(screenPosition1, screenPosition2);
-        var bottomRight = Vector3.Max(screenPosition1, screenPosition2);
-        // Create Rect
-        return Rect.MinMaxRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
-    }
-    public void OnGUI()
-    {
-
-        if (selectionSystem.IsDragging)
-        {
-            var rect = GetScreenRect(selectionSystem.mouseStartPos, Input.mousePosition);
-            GUI.DrawTexture(rect, WhiteTexture);
-        }
-
-    }
-
-
-    #endregion
 }

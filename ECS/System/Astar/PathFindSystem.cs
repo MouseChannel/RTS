@@ -6,22 +6,20 @@ using Unity.Entities;
 using Unity.Collections;
 using Unity.Mathematics;
 using System;
+using RVO;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-public class PathFindSystem : SystemBase
+public class PathFindSystem : WorkSystem
 {
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
-    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
-    protected override void OnCreate()
-    {
-       endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-    }
+ 
     protected override void OnUpdate()
-    {
+    { }
+    public override void Work(){
         int gridWidth = GridInit.Instance.pathfindingGrid.GetWidth();
         int gridHeight = GridInit.Instance.pathfindingGrid.GetHeight();
         int2 gridSize = new int2(gridWidth, gridHeight);
@@ -34,15 +32,15 @@ public class PathFindSystem : SystemBase
         NativeArray<PathNode> pathNodeArray = GetPathNodeArray();
    
 
-        Entities.ForEach((Entity entity, ref PathFindParams pathfindParams  ) => {
+        Entities.ForEach((Entity entity, ref PathFindParams pathfindParams ,in Agent agent ) => {
             NativeArray<PathNode> tmpPathNodeArray = new NativeArray<PathNode>(pathNodeArray, Allocator.TempJob);
-            EntityCommandBuffer ecb = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-
+            EntityCommandBuffer ecb = endFixedStepSimulationEntityCommandBufferSystem.CreateCommandBuffer();
+            var startPos = GridInit.Instance.pathfindingGrid.GetXZ(agent.position_);
             FindPathJob findPathJob = new FindPathJob {
                   
                 gridSize = gridSize,
                 pathNodeArray = tmpPathNodeArray,
-                startPosition = pathfindParams.startPosition,
+                startPosition = startPos,
                 endPosition = pathfindParams.endPosition,
                 entity = entity,
                 

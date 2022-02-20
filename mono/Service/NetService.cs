@@ -24,7 +24,7 @@ public class NetService : Singleton<NetService>
             return 0;
         }
     }
-    public void Init()
+    public override void InitInstance()
     {
         string ip = "127.0.0.1";
         client = new KCPNet<ClientSession>();
@@ -33,29 +33,34 @@ public class NetService : Singleton<NetService>
         messageQueue = new Queue<PbMessage>();
         // Task.Run(StartWork);
         GameRoot.Instance.updateEvent += Update;
+    }
+    public void Init()
+    {
+
 
 
 
     }
-    void Update(object sender, EventArgs e){
+    void Update(object sender, EventArgs e)
+    {
         ConnectServer();
-            
-            if (client != null && client.session != null)
+
+        if (client != null && client.session != null)
+        {
+
+            if (messageQueue.Count > 0)
             {
-
-                if (messageQueue.Count > 0)
+                lock (queue_lock)
                 {
-                    lock (queue_lock)
-                    {
-                        PbMessage message = messageQueue.Dequeue();
-                        HandoutMessage(message);
-                    }
-
+                    PbMessage message = messageQueue.Dequeue();
+                    HandoutMessage(message);
                 }
+
             }
+        }
     }
 
- 
+
 
 
     public void AddMessageQueue(PbMessage message)
@@ -126,7 +131,7 @@ public class NetService : Singleton<NetService>
 
     private void HandoutMessage(PbMessage message)
     {
-        Debug.Log("received message :   " + message);
+
         switch (message.Cmd)
         {
             case PbMessage.Types.CMD.Login:
@@ -142,7 +147,7 @@ public class NetService : Singleton<NetService>
                 break;
 
             case PbMessage.Types.CMD.Fight:
-                BattleSystem.Instance.ResponseBattle(message);
+                FightSystem.Instance.ResponseFightOp(message);
                 break;
 
 

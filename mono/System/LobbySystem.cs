@@ -11,7 +11,7 @@ public class LobbySystem : Singleton<LobbySystem>
     private SelectWindow selectWindow;
     private LoadWindow loadWindow;
 
-    public void Init()
+    public override void InitInstance()
     {
 
 
@@ -44,7 +44,7 @@ public class LobbySystem : Singleton<LobbySystem>
     public void EnterLoadWindow()
     {
         ResourceService.Instance.LoadMainWindow<LoadWindow>("UI/UIMainWindow/LoadWindow", ref loadWindow);
-        ResourceService.Instance.AsyncLoadScene("FightScene", SceneLoadProgress, SceneLoadDone );
+        ResourceService.Instance.AsyncLoadScene("FightScene", SceneLoadProgress, SceneLoadDone,sceneChangedComplete );
 
         void SceneLoadProgress(float val)
         {
@@ -65,6 +65,9 @@ public class LobbySystem : Singleton<LobbySystem>
             NetService.Instance.SendMessage(mes);
 
 
+        }
+        void sceneChangedComplete(){
+            FightSystem.Instance.InitFightScene();
         }
     }
 #region match
@@ -121,8 +124,9 @@ public class LobbySystem : Singleton<LobbySystem>
                 ResponseLoadData(message);
                 break;
             case PbMessage.Types.CmdRoom.FightStart:
-                ResponseFightStart(message);
+                FightSystem.Instance.ResponseFightStart();
                 break;
+ 
 
         }
 
@@ -174,10 +178,10 @@ public class LobbySystem : Singleton<LobbySystem>
         loadWindow.UpdateLoadPercent(message);
     }
     
-    private void ResponseFightStart(PbMessage message){
-        
-        ResourceService.Instance.canTransition = true;
-    }
+ 
+ 
+
+  
 
 
 }

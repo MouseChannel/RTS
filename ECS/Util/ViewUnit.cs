@@ -10,17 +10,17 @@ using Pb;
 using RVO;
 public class ViewUnit : MonoBehaviour
 {
-    Entity entity;
-    [SerializeField] UnitConvert c;
+    [HideInInspector] public Entity entity;
     
-    void Start()
+    
+    void Awake()
     {
         
-        
+
     }
 
     public void SetMoveParams(int2 start, int2 end){
-        entity = c.entity;
+        
         
         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         
@@ -35,7 +35,8 @@ public class ViewUnit : MonoBehaviour
     }
     void Update()
     {
-        entity = c.entity;
+        if(entity == Entity.Null) return;
+
         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         var agent = entityManager.GetComponentData<Agent>(entity);
         var pos = agent.position_;

@@ -9,15 +9,13 @@ using Vector2 = RVO.Vector2;
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 [UpdateAfter(typeof(PathFindSystem))]
 [UpdateBefore(typeof(RVO.RVOSystem))]
-public class MoveSystem : SystemBase
+public class MoveSystem : WorkSystem
 {
-    public EndFixedStepSimulationEntityCommandBufferSystem endFixedStepSimulationEntityCommandBufferSystem;
-    protected override void OnCreate()
-    {
-        endFixedStepSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndFixedStepSimulationEntityCommandBufferSystem>();
-    }
-    protected override void OnUpdate()
-    {
+ 
+ 
+
+    public override void Work(){
+        // Debug.Log("work");
         Entities.ForEach((Entity entity ,   DynamicBuffer<PathPosition> pathPositionBuffer,ref Agent agent, ref PathFollow pathFollow ) =>{
             if (pathFollow.pathIndex >= 0) {
                 // Has path to follow

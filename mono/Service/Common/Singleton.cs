@@ -24,14 +24,40 @@ public abstract class Singleton<T>
     }
 
 
-    // private void Awake(){
-    //     _instance = this as T; 
-
-    // }
+ 
 
 
 
 
 }
+
+
+public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
+{
+    private static T instance;
+    public static T Instance
+    {
+        get {
+            if(applicationIsQuitting){
+                return null;
+            }
+            return instance;
+
+        }
+
+    }
+    private static bool applicationIsQuitting = false;
+
+    private void Awake()
+    {
+        instance = this as T;
+
+    }
+    public virtual void OnDestroy() {
+        if(instance == this)
+            applicationIsQuitting = true;
+    }
+}
+
 
 

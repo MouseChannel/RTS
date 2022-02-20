@@ -4,27 +4,47 @@ using UnityEngine;
 using Unity.Entities;
 using RVO;
 using Unity.Collections;
-// [AlwaysUpdateSystem]
+using Pb;
+
 public class ResponseCommandSystem : SystemBase
 {
-    public bool needResponse;
-    public NativeList<Entity> needMovedUnit = new NativeList<Entity>(Allocator.Persistent);
+  public List<WorkSystem> workList = new List<WorkSystem>();
+    public NativeList<Entity> allMovedUnit = new NativeList<Entity>(Allocator.Persistent);
     protected override void OnUpdate()
     {
-        // if(!needResponse) return;
-        // needResponse = false;
+ 
 
-        // Entities.ForEach((Entity entity, in Agent agent)=>{
 
-            
-        // }).WithoutBurst().Run();
+    }
+     public void ResponseMoveCommand(FightMessage mes)
+    {
+        Debug.Log("response move");
+        foreach (var i in mes.SelectedUnit){
+            EntityManager.AddComponentData(allMovedUnit[i], new PathFindParams { endPosition = new Unity.Mathematics.int2(((byte)mes.EndPos[0]), mes.EndPos[1]) });
+        }
+ 
+    }
+    public void ResponseFightOp(PbMessage mes)
+    {
+        foreach (var i in workList)
+        {
+            i.Work();
+        }
 
-        // needMovedUnit.Clear();
-        
-        
+        foreach (var i in mes.FightMessage)
+        {
+            switch (i.BattleCMD)
+            {
+                case FightMessage.Types.BattleCMD.Move:
+                    ResponseMoveCommand(i);
+                    break;
+
+            }
+        }
+
     }
     protected override void OnDestroy()
     {
-        needMovedUnit.Dispose();
+        allMovedUnit.Dispose();
     }
 }

@@ -19,7 +19,7 @@ public class ClientSession : Session
 
     protected override void OnReceiveMessage(PbMessage pbMessage)
     {
-        Debug.Log(pbMessage);
+        
         NetService.Instance.AddMessageQueue(pbMessage);
     }
 
