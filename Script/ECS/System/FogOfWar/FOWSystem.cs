@@ -83,8 +83,6 @@ public partial class FOWSystem : SystemBase
                 {
                     Debug.Log("different");
                 }
-                // map.Add(new FOWTile(mapData[i, j], i, j));
-                // colorBuffer[i] = ;
             }
 
         }
@@ -113,12 +111,7 @@ public partial class FOWSystem : SystemBase
 
         }).WithoutBurst().Run();
         JobHandle.CompleteAll(jobList);
-
-        // for (int i = 0; i < blurBuffer.Length; i++)
-        // {
-        //     if(blurBuffer[i].a != 255)
-        //         Debug.Log("testArray[i]");
-        // }
+ 
         testArray.Dispose();
     }
 
