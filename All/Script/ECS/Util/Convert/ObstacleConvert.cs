@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Entities;
 using FixedMath;
 using RVO;
-using Vector2 = RVO.FixedVector2;
+ 
 public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
 {
     [SerializeField] BoxCollider  boxCollider;
@@ -22,10 +22,10 @@ public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
                         boxCollider.size.z*boxCollider.transform.lossyScale.z*0.5f;
         dstManager.AddBuffer<ObstacleVertice>(entity);
         var vertices =  dstManager.GetBuffer<ObstacleVertice>(entity);
-        vertices.Add( new ObstacleVertice{vertice = new Vector2((FixedInt)maxX, (FixedInt)maxZ  )});
-        vertices.Add(new ObstacleVertice{vertice = new Vector2((FixedInt)minX, (FixedInt)maxZ  )});
-        vertices.Add(new ObstacleVertice{vertice = new Vector2((FixedInt)minX, (FixedInt)minZ  )});
-        vertices.Add(new ObstacleVertice{vertice = new Vector2((FixedInt)maxX, (FixedInt)minZ  )});
+        vertices.Add( new ObstacleVertice{vertice = new FixedVector2((FixedInt)maxX, (FixedInt)maxZ  )});
+        vertices.Add(new ObstacleVertice{vertice = new FixedVector2((FixedInt)minX, (FixedInt)maxZ  )});
+        vertices.Add(new ObstacleVertice{vertice = new FixedVector2((FixedInt)minX, (FixedInt)minZ  )});
+        vertices.Add(new ObstacleVertice{vertice = new FixedVector2((FixedInt)maxX, (FixedInt)minZ  )});
     }
 
 

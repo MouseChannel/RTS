@@ -239,6 +239,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Unit (49)
       objectReference: {fileID: 0}
+    - target: {fileID: 2474633670857103733, guid: fc790081a211f994f92586517990f228, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc790081a211f994f92586517990f228, type: 3}
 --- !u!1001 &181801607
@@ -3477,6 +3481,7 @@ GameObject:
   - component: {fileID: 1657254587}
   - component: {fileID: 1657254586}
   - component: {fileID: 1657254585}
+  - component: {fileID: 1657254583}
   m_Layer: 0
   m_Name: FOW
   m_TagString: Untagged
@@ -3484,6 +3489,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+--- !u!114 &1657254583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657254582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9fe2eb09830d242a5a741c8baf0c5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!23 &1657254585
 MeshRenderer:
   m_ObjectHideFlags: 0

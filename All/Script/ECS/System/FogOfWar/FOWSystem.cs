@@ -6,7 +6,7 @@ using Unity.Collections;
 using RVO;
 using Unity.Jobs;
 
-// [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class FOWSystem : SystemBase
 {
     public NativeArray<Color32> colorBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
@@ -46,9 +46,7 @@ public partial class FOWSystem : SystemBase
 
     }
     protected override void OnUpdate()
-    { }
-    public void FFF()
-    {
+    { 
         FreshFog();
         CalculateFog();
 
@@ -109,6 +107,7 @@ public partial class FOWSystem : SystemBase
 
         }).WithoutBurst().Run();
         JobHandle.CompleteAll(jobList);
+        jobList.Dispose();
 
 
     }

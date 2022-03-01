@@ -24,8 +24,8 @@ public class FightSystem : Singleton<FightSystem>
         // var s = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<SelectionSystem>();
         // s.GetMainCamera();
 
-        // var fow = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
-        // fow.InitFOW();
+        var fow = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
+        fow.InitFOW();
     }
  
     public override void InitInstance()

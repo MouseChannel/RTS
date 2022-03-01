@@ -3,6 +3,7 @@ using System.Collections.Generic;
  
 using Unity.Entities;
 using RVO;
+using FixedMath;
 
 public struct Building : IComponentData
 {

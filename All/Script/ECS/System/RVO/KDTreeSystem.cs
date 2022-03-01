@@ -78,15 +78,15 @@ namespace RVO
             var treeNode = agentTree_[node];
             treeNode.begin_ = begin;
             treeNode.end_ = end;
-            treeNode.minX_ = treeNode.maxX_ = agents_[begin].position_.x_;
-            treeNode.minY_ = treeNode.maxY_ = agents_[begin].position_.y_;
+            treeNode.minX_ = treeNode.maxX_ = agents_[begin].position_.X;
+            treeNode.minY_ = treeNode.maxY_ = agents_[begin].position_.Y;
             agentTree_[node] = treeNode;
             for (int i = begin + 1; i < end; ++i)
             {
-                treeNode.maxX_ = FixedCalculate.Max(agentTree_[node].maxX_, agents_[i].position_.x_);
-                treeNode.minX_ = FixedCalculate.Min(agentTree_[node].minX_, agents_[i].position_.x_);
-                treeNode.maxY_ = FixedCalculate.Max(agentTree_[node].maxY_, agents_[i].position_.y_);
-                treeNode.minY_ = FixedCalculate.Min(agentTree_[node].minY_, agents_[i].position_.y_);
+                treeNode.maxX_ = FixedCalculate.Max(agentTree_[node].maxX_, agents_[i].position_.X);
+                treeNode.minX_ = FixedCalculate.Min(agentTree_[node].minX_, agents_[i].position_.X);
+                treeNode.maxY_ = FixedCalculate.Max(agentTree_[node].maxY_, agents_[i].position_.Y);
+                treeNode.minY_ = FixedCalculate.Min(agentTree_[node].minY_, agents_[i].position_.Y);
 
                 agentTree_[node] = treeNode;
             }
@@ -101,12 +101,12 @@ namespace RVO
 
                 while (left < right)
                 {
-                    while (left < right && (isVertical ? agents_[left].position_.x_ : agents_[left].position_.y_) < splitValue)
+                    while (left < right && (isVertical ? agents_[left].position_.X : agents_[left].position_.Y) < splitValue)
                     {
                         ++left;
                     }
 
-                    while (right > left && (isVertical ? agents_[right - 1].position_.x_ : agents_[right - 1].position_.y_) >= splitValue)
+                    while (right > left && (isVertical ? agents_[right - 1].position_.X : agents_[right - 1].position_.Y) >= splitValue)
                     {
                         --right;
                     }
@@ -191,7 +191,7 @@ namespace RVO
                     // obstacle.next_.previous_ = obstacle;
                 }
 
-                obstacle.direction_ = RVOMath.normalize(obstacleVertices[(i == obstacleVertices.Length - 1 ? 0 : i + 1)].vertice - obstacleVertices[i].vertice);
+                obstacle.direction_ = FixedCalculate.normalize(obstacleVertices[(i == obstacleVertices.Length - 1 ? 0 : i + 1)].vertice - obstacleVertices[i].vertice);
 
                 if (obstacleVertices.Length == 2)
                 {
@@ -199,7 +199,7 @@ namespace RVO
                 }
                 else
                 {
-                    obstacle.convex_ = (RVOMath.leftOf(obstacleVertices[(i == 0 ? obstacleVertices.Length - 1 : i - 1)].vertice, obstacleVertices[i].vertice, obstacleVertices[(i == obstacleVertices.Length - 1 ? 0 : i + 1)].vertice) >= 0);
+                    obstacle.convex_ = (FixedCalculate.leftOf(obstacleVertices[(i == 0 ? obstacleVertices.Length - 1 : i - 1)].vertice, obstacleVertices[i].vertice, obstacleVertices[(i == obstacleVertices.Length - 1 ? 0 : i + 1)].vertice) >= 0);
                 }
                 obstacles_[obstacle.id_] = obstacle;
 
@@ -256,8 +256,8 @@ namespace RVO
 
                     Obstacle obstacleJ2 = obstacles[obstacleJ1.next_];
 
-                    FixedInt j1LeftOfI = RVOMath.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
-                    FixedInt j2LeftOfI = RVOMath.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
+                    FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
+                    FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
 
 
                     if (j1LeftOfI >= -FixedCalculate.superSmallValue && j2LeftOfI >= -FixedCalculate.superSmallValue)
@@ -325,8 +325,8 @@ namespace RVO
                     Obstacle obstacleJ1 = current[j];
                     Obstacle obstacleJ2 = obstacles[obstacleJ1.next_];
 
-                    FixedInt j1LeftOfI = RVOMath.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
-                    FixedInt j2LeftOfI = RVOMath.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
+                    FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
+                    FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
 
 
                     if (j1LeftOfI >= -FixedCalculate.superSmallValue && j2LeftOfI >= -FixedCalculate.superSmallValue)
@@ -340,7 +340,7 @@ namespace RVO
                     else
                     {
                         /* Split obstacle j. */
-                        FixedInt t = RVOMath.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / RVOMath.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
+                        FixedInt t = FixedCalculate.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / FixedCalculate.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
 
                         FixedVector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
 
@@ -398,7 +398,7 @@ namespace RVO
                 for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
                 {
                      
-                    FixedInt distSq = RVOMath.absSq(position - agents_[i].position_);
+                    FixedInt distSq = FixedCalculate.absSq(position - agents_[i].position_);
                     //Find EnemyUnit
                     if (distSq < rangeSq)
                     {
@@ -409,8 +409,8 @@ namespace RVO
             }
             else
             {
-                FixedInt distSqLeft = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0, position.x_ - agentTree_[agentTree_[node].left_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].left_].maxY_));
-                FixedInt distSqRight = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0, position.x_ - agentTree_[agentTree_[node].right_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].right_].maxY_));
+                FixedInt distSqLeft = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
+                FixedInt distSqRight = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
          
                 if (distSqLeft < distSqRight)
                 {
@@ -464,8 +464,8 @@ namespace RVO
             }
             else
             {
-                FixedInt distSqLeft = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0, position.x_ - agentTree_[agentTree_[node].left_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].left_].maxY_));
-                FixedInt distSqRight = RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.x_)) + RVOMath.sqr(FixedCalculate.Max(0, position.x_ - agentTree_[agentTree_[node].right_].maxX_)) + RVOMath.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.y_)) + RVOMath.sqr(FixedCalculate.Max(0, position.y_ - agentTree_[agentTree_[node].right_].maxY_));
+                FixedInt distSqLeft = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
+                FixedInt distSqRight = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
 
                 if (distSqLeft < distSqRight)
                 {
@@ -503,8 +503,8 @@ namespace RVO
             bool Vaild(float a, float min, float max) => a > min && a < max;
         
 
-            if (Vaild(pos.x_.RawFloat, areaRect[0], areaRect[1]) &&
-                        Vaild(pos.y_.RawFloat, areaRect[2], areaRect[3]))
+            if (Vaild(pos.X.RawFloat, areaRect[0], areaRect[1]) &&
+                        Vaild(pos.Y.RawFloat, areaRect[2], areaRect[3]))
             {
                 areaAgents.Add(agent.id_);
             }

@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
- 
+using FixedMath;
 using Unity.Entities;
 
-namespace RVO{
+ 
 
 
     public struct Line :IBufferElementData
@@ -11,4 +11,4 @@ namespace RVO{
         public FixedVector2 direction;
         public FixedVector2 point;
     }
-}
+ 

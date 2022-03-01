@@ -9,7 +9,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Burst;
 using System;
-[DisableAutoCreation]
+ 
 public partial class FOWSystem
 {
     [BurstCompile]
@@ -35,9 +35,10 @@ public partial class FOWSystem
                 for (int x = 0; x < rangeWidth; x++)
                 {
                     var index = GetRangeIndex(x, y, rangeWidth);
-                    if (CheckRange(x - range, y - range, range))
+                    if (!CheckInRange(x - range, y - range, range))
                     {
-                        colorBuffer[index] = ChangeColor(colorBuffer[index], 'a', 255);
+                         
+                        colorBuffer[index] = ChangeColor(colorBuffer[index], 'a',  255);
                     }
                     else
                     {
@@ -59,7 +60,7 @@ public partial class FOWSystem
             //     if (c.r == 0)
             //     {
 
-            //         blurBuffer[i] = ChangeColor(blurBuffer[i], 'a', c.b == 255 ? (byte)120 : (byte)255);
+            //         blurBuffer[i] = ChangeColor(blurBuffer[i], 'a', c.b == 255 ?  120 :  255);
             //     }
             //     else
             //     {
@@ -93,7 +94,7 @@ public partial class FOWSystem
 
         }
 
-        public bool CheckRange(int x, int y, int range) => x * x + y * y > range * range;
+        public bool CheckInRange(int x, int y, int range) => x * x + y * y < range * range;
         public int GetRangeIndex(int x, int y, int width) => y * width + x;
 
         public int GetMapIndex(int index, int rangeWidth)
@@ -101,7 +102,7 @@ public partial class FOWSystem
             //暂时
             int mapWidth = 100;
 
-            int startPos = fowUnit.gridIndex;
+            int startPos = GridSystem.GetGridIndexInFOW(fowUnit.position);
             var y = startPos / mapWidth;
             var x = startPos % mapWidth;
 
@@ -119,22 +120,22 @@ public partial class FOWSystem
             return resulty * mapWidth + resultx;
         }
 
-        public Color32 ChangeColor(Color32 before, char mark, byte value)
+        public Color32 ChangeColor(Color32 before, char mark, int value)
         {
             switch (mark)
             {
                 case 'r':
-                    before.r = value;
+                    before.r = (byte)value;
 
                     break;
                 case 'g':
-                    before.g = value;
+                    before.g = (byte)value;
                     break;
                 case 'b':
-                    before.b = value;
+                    before.b = (byte)value;
                     break;
                 case 'a':
-                    before.a = value;
+                    before.a = (byte)value;
                     break;
             }
             return before;

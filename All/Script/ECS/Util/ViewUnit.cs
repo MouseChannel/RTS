@@ -22,19 +22,16 @@ public class ViewUnit : MonoBehaviour
         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         var agent = entityManager.GetComponentData<Agent>(entity);
         var pos = agent.position_;
-        poss = new UnityEngine.Vector2(pos.x_.RawFloat, pos.y_.RawFloat);
+        poss = new UnityEngine.Vector2(pos.X.RawFloat, pos.Y.RawFloat);
         var dir = agent.velocity_;
         // Debug.Log(dir);
-        transform.position = Vector3.Lerp(transform.position, new Vector3(pos.x_.RawFloat, 0, pos.y_.RawFloat), Time.deltaTime * 4);
-        if (RVOMath.absSq(dir) > (FixedInt)0.001)
-            transform.forward = Vector3.Lerp(transform.forward, new Vector3(dir.x_.RawFloat, 0, dir.y_.RawFloat), Time.deltaTime * 10);
+        transform.position = Vector3.Lerp(transform.position, new Vector3(pos.X.RawFloat, 0, pos.Y.RawFloat), Time.deltaTime * 4);
+        if ( FixedCalculate.absSq(dir) > (FixedInt)0.001)
+            transform.forward = Vector3.Lerp(transform.forward, new Vector3(dir.X.RawFloat, 0, dir.Y.RawFloat), Time.deltaTime * 10);
 
-        MonoPhysics();
+        
     }
-    void MonoPhysics()
-    {
 
-    }
 
 
 }

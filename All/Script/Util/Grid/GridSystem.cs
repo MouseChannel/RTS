@@ -28,9 +28,9 @@ public class GridSystem : Singleton<GridSystem>
         }
 
     }
-    public int GetIndex(RVO.FixedVector2 agentPosition){
-        var x = (agentPosition.X().round).RawInt;
-        var y = (agentPosition.Y().round).RawInt;
+    public int GetIndex( FixedVector2 agentPosition){
+        var x = (agentPosition.X.round).RawInt;
+        var y = (agentPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);
         return y * width + x;
     }
@@ -48,23 +48,30 @@ public class GridSystem : Singleton<GridSystem>
     }
 
  
-    public int2 GetXZ(RVO.FixedVector2 worldPosition)
+    public int2 GetXZ( FixedVector2 worldPosition)
     {
-        var x = (worldPosition.X().round).RawInt;
-        var y = (worldPosition.Y().round).RawInt;
+        var x = (worldPosition.X.round).RawInt;
+        var y = (worldPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);
         return new int2(x, y);
     }
     public int GetGridIndex(float3 worldPosition)
     {
-        RVO.FixedVector2 temp = new RVO.FixedVector2((FixedInt)worldPosition.x, (FixedInt)worldPosition.z);
+         FixedVector2 temp = new  FixedVector2((FixedInt)worldPosition.x, (FixedInt)worldPosition.z);
         return GetGridIndex(temp);
     }
  
-    public static int GetGridIndex(RVO.FixedVector2 worldPosition)
+    public static int GetGridIndex( FixedVector2 worldPosition)
     {
-        var x = (worldPosition.X().round ).RawInt ;
-        var y = (worldPosition.Y().round ).RawInt;
+        var x = (worldPosition.X.round ).RawInt ;
+        var y = (worldPosition.Y.round ).RawInt;
+        ValidateGridPosition(ref x, ref y);
+        return y * ConfigData.gridWidth + x;
+    }
+    public static int GetGridIndexInFOW( FixedVector2 worldPosition)
+    {
+        var x = (worldPosition.X.round ).RawInt  + 50;
+        var y = (worldPosition.Y.round ).RawInt + 50 ;
         ValidateGridPosition(ref x, ref y);
         return y * ConfigData.gridWidth + x;
     }
@@ -101,7 +108,7 @@ public class GridSystem : Singleton<GridSystem>
 
     // }
 
-    private static void ValidateGridPosition(ref int x, ref int y)
+    private static  void ValidateGridPosition(ref int x, ref int y)
     {
         x = math.clamp(x, 0, ConfigData.gridWidth - 1);
         y = math.clamp(y, 0, ConfigData.gridWidth - 1);

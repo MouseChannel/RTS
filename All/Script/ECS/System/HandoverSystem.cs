@@ -6,7 +6,7 @@ using FixedMath;
 using RVO;
 using Unity.Burst;
 using Unity.Jobs;
-using FixedVector2 = RVO.FixedVector2;
+
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -30,14 +30,14 @@ public class HandoverSystem : WorkSystem
 
                 FixedVector2 targetPosition = new FixedVector2(pathPosition.position.x, pathPosition.position.y);
                 FixedVector2 moveDir = targetPosition - agent.position_;
-                if (RVOMath.absSq(moveDir) != 0)
-                    moveDir = RVOMath.normalize(moveDir);
+                if ( FixedCalculate.absSq(moveDir) != 0)
+                    moveDir =  FixedCalculate.normalize(moveDir);
                 agent.prefVelocity_ = moveDir;
 
 
 
 
-                if (RVOMath.absSq(agent.position_ - targetPosition) >= 0 && RVOMath.abs(agent.position_ - targetPosition) < FixedInt.half)
+                if ( FixedCalculate.absSq(agent.position_ - targetPosition) >= 0 &&  FixedCalculate.abs(agent.position_ - targetPosition) < FixedInt.half)
                 {
                     // Next waypoint
                     currentPathIndex.pathIndex--;

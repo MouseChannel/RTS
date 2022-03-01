@@ -146,7 +146,7 @@ public class SelectSystem : SystemBase
         if (Physics.Raycast(ray, out RaycastHit hit, 500))
         {
             
-            RVO.FixedVector2 position = new RVO.FixedVector2((FixedInt)hit.point.x, (FixedInt)hit.point.z);
+             FixedVector2 position = new  FixedVector2((FixedInt)hit.point.x, (FixedInt)hit.point.z);
             FixedInt distance = FixedInt.half * 2;
             singlepoint = hit.point;
             int agentNo = -1;
@@ -167,8 +167,8 @@ public class SelectSystem : SystemBase
         IsDragging = false;
         Vector4 areaRect = ModifyRect();
   
-        RVO.FixedVector2 centerPoint = new RVO.FixedVector2((FixedInt) (areaRect[0] + areaRect[1]) / 2, (FixedInt)(areaRect[2] + areaRect[3]) / 2);
-        FixedInt radius = RVOMath.distance(new RVO.FixedVector2((FixedInt)areaRect[0], (FixedInt)areaRect[2]), centerPoint);
+         FixedVector2 centerPoint = new  FixedVector2((FixedInt) (areaRect[0] + areaRect[1]) / 2, (FixedInt)(areaRect[2] + areaRect[3]) / 2);
+        FixedInt radius =  FixedCalculate.distance(new  FixedVector2((FixedInt)areaRect[0], (FixedInt)areaRect[2]), centerPoint);
  
 
         List<int> tem = new  List<int>( );

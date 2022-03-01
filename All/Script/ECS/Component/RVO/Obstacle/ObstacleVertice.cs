@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
+using FixedMath;
 
-namespace RVO{
 
 
-    public struct ObstacleVertice : IBufferElementData
-    {
-        public FixedVector2 vertice;
+
+public struct ObstacleVertice : IBufferElementData
+{
+    public FixedVector2 vertice;
 }
-}
+
