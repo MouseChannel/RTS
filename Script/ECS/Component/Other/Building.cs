@@ -7,7 +7,7 @@ using RVO;
 public struct Building : IComponentData
 {
     public int faction;
-    public Vector2 position;
+    public FixedVector2 position;
     
 
 

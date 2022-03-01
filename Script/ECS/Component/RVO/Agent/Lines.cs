@@ -8,7 +8,7 @@ namespace RVO{
 
     public struct Line :IBufferElementData
     {
-        public Vector2 direction;
-        public Vector2 point;
+        public FixedVector2 direction;
+        public FixedVector2 point;
     }
 }

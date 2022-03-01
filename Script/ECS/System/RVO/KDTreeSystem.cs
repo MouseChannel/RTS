@@ -342,7 +342,7 @@ namespace RVO
                         /* Split obstacle j. */
                         FixedInt t = RVOMath.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / RVOMath.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
 
-                        Vector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
+                        FixedVector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
 
                         Obstacle newObstacle = new Obstacle();
                         newObstacle.point_ = splitPoint;
@@ -389,15 +389,15 @@ namespace RVO
         }
 
         #region  selection
-        public void GetClosestAgent(Vector2 position, ref FixedInt rangeSq, ref int agentNo, int node)
+        public void GetClosestAgent(FixedVector2 position, ref FixedInt rangeSq, ref int agentNo, int node)
         {
- 
+            Debug.Log("single Select" );
 
             if (agentTree_[node].end_ - agentTree_[node].begin_ <= MAX_LEAF_SIZE)
             {
                 for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
                 {
-                    Debug.Log(agents_[i].id_);
+                     
                     FixedInt distSq = RVOMath.absSq(position - agents_[i].position_);
                     //Find EnemyUnit
                     if (distSq < rangeSq)
@@ -449,8 +449,9 @@ namespace RVO
         /// <param name="rangeSq"></param>
         /// <param name="node"></param>
         /// <param name="areaAgents"></param>
-        public void GetAreaAgents(Vector2 position, Vector4 areaRect, FixedInt rangeSq, int node, List<int> areaAgents)
+        public void GetAreaAgents(FixedVector2 position, Vector4 areaRect, FixedInt rangeSq, int node, List<int> areaAgents)
         {
+       
 
             if (agentTree_[node].end_ - agentTree_[node].begin_ <= MAX_LEAF_SIZE)
             {
@@ -497,6 +498,7 @@ namespace RVO
 
         private void InsertAreaAgents(Agent agent, Vector4 areaRect, List<int> areaAgents)
         {
+ 
             var pos = agent.position_;
             bool Vaild(float a, float min, float max) => a > min && a < max;
         

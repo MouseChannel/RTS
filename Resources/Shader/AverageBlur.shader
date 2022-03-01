@@ -8,7 +8,30 @@
 		_BlurRadius("BlurRadius",float) = 1.3
 		_LerpRate("LerpRate",float) = 0.05
 	}
-	CGINCLUDE
+
+	SubShader
+	{
+		Cull Off ZWrite Off ZTest Always 
+		Pass	//Pass 通道 主要是实现一些顶点和片段着色器功能
+		{
+			CGPROGRAM	//CG程序开始
+			 //声明顶点着色器函数名字为vert
+			#pragma vertex vert	
+			 //声明片段着色器函数名字为frag
+			#pragma fragment frag2
+			ENDCG		 //CG程序结束
+		}
+		Pass
+		{
+			CGPROGRAM	//CG程序开始
+			 //声明顶点着色器函数名字为vert
+			#pragma vertex vert	
+			 //声明片段着色器函数名字为frag
+			#pragma fragment lerpFrag
+			ENDCG		 //CG程序结束
+		}
+	}
+		CGINCLUDE
 	#include "UnityCG.cginc"
 	struct v2f
 	{
@@ -68,26 +91,4 @@
 		return lerp(col2,col1,_LerpRate);		//因遍历周围9各像素点
 	} 
 	ENDCG
-	SubShader
-	{
-		Cull Off ZWrite Off ZTest Always 
-		Pass	//Pass 通道 主要是实现一些顶点和片段着色器功能
-		{
-			CGPROGRAM	//CG程序开始
-			 //声明顶点着色器函数名字为vert
-			#pragma vertex vert	
-			 //声明片段着色器函数名字为frag
-			#pragma fragment frag2
-			ENDCG		 //CG程序结束
-		}
-		Pass
-		{
-			CGPROGRAM	//CG程序开始
-			 //声明顶点着色器函数名字为vert
-			#pragma vertex vert	
-			 //声明片段着色器函数名字为frag
-			#pragma fragment lerpFrag
-			ENDCG		 //CG程序结束
-		}
-	}
 }

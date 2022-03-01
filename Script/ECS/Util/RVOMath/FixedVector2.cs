@@ -41,7 +41,7 @@ using Unity.Entities;
     /**
      * <summary>Defines a two-dimensional vector.</summary>
      */
-    public struct Vector2 :IComponentData
+    public struct FixedVector2 :IComponentData
     {
         public FixedInt x_;
         public FixedInt y_;
@@ -55,7 +55,7 @@ using Unity.Entities;
          * <param name="y">The y-coordinate of the two-dimensional vector.
          * </param>
          */
-        public Vector2(FixedInt x, FixedInt y)
+        public FixedVector2(FixedInt x, FixedInt y)
         {
             x_ = x;
             y_ = y;
@@ -77,7 +77,7 @@ using Unity.Entities;
          *
          * <returns>The x-coordinate of the two-dimensional vector.</returns>
          */
-        public FixedInt x()
+        public FixedInt X()
         {
             return x_;
         }
@@ -88,7 +88,7 @@ using Unity.Entities;
          *
          * <returns>The y-coordinate of the two-dimensional vector.</returns>
          */
-        public FixedInt y()
+        public FixedInt Y()
         {
             return y_;
         }
@@ -103,7 +103,7 @@ using Unity.Entities;
          * <param name="vector1">The first two-dimensional vector.</param>
          * <param name="vector2">The second two-dimensional vector.</param>
          */
-        public static FixedInt operator *(Vector2 vector1, Vector2 vector2)
+        public static FixedInt operator *(FixedVector2 vector1, FixedVector2 vector2)
         {
             return vector1.x_ * vector2.x_ + vector1.y_ * vector2.y_;
         }
@@ -118,7 +118,7 @@ using Unity.Entities;
          * <param name="scalar">The scalar value.</param>
          * <param name="vector">The two-dimensional vector.</param>
          */
-        public static Vector2 operator *(FixedInt scalar, Vector2 vector)
+        public static FixedVector2 operator *(FixedInt scalar, FixedVector2 vector)
         {
             return vector * scalar;
         }
@@ -133,9 +133,9 @@ using Unity.Entities;
          * <param name="vector">The two-dimensional vector.</param>
          * <param name="scalar">The scalar value.</param>
          */
-        public static Vector2 operator *(Vector2 vector, FixedInt scalar)
+        public static FixedVector2 operator *(FixedVector2 vector, FixedInt scalar)
         {
-            return new Vector2(vector.x_ * scalar, vector.y_ * scalar);
+            return new FixedVector2(vector.x_ * scalar, vector.y_ * scalar);
         }
 
         /**
@@ -148,9 +148,9 @@ using Unity.Entities;
          * <param name="vector">The two-dimensional vector.</param>
          * <param name="scalar">The scalar value.</param>
          */
-        public static Vector2 operator /(Vector2 vector, FixedInt scalar)
+        public static FixedVector2 operator /(FixedVector2 vector, FixedInt scalar)
         {
-            return new Vector2(vector.x_ / scalar, vector.y_ / scalar);
+            return new FixedVector2(vector.x_ / scalar, vector.y_ / scalar);
         }
 
         /**
@@ -163,9 +163,9 @@ using Unity.Entities;
          * <param name="vector1">The first two-dimensional vector.</param>
          * <param name="vector2">The second two-dimensional vector.</param>
          */
-        public static Vector2 operator +(Vector2 vector1, Vector2 vector2)
+        public static FixedVector2 operator +(FixedVector2 vector1, FixedVector2 vector2)
         {
-            return new Vector2(vector1.x_ + vector2.x_, vector1.y_ + vector2.y_);
+            return new FixedVector2(vector1.x_ + vector2.x_, vector1.y_ + vector2.y_);
         }
 
         /**
@@ -178,9 +178,9 @@ using Unity.Entities;
          * <param name="vector1">The first two-dimensional vector.</param>
          * <param name="vector2">The second two-dimensional vector.</param>
          */
-        public static Vector2 operator -(Vector2 vector1, Vector2 vector2)
+        public static FixedVector2 operator -(FixedVector2 vector1, FixedVector2 vector2)
         {
-            return new Vector2(vector1.x_ - vector2.x_, vector1.y_ - vector2.y_);
+            return new FixedVector2(vector1.x_ - vector2.x_, vector1.y_ - vector2.y_);
         }
 
         /**
@@ -192,9 +192,9 @@ using Unity.Entities;
          *
          * <param name="vector">The two-dimensional vector.</param>
          */
-        public static Vector2 operator -(Vector2 vector)
+        public static FixedVector2 operator -(FixedVector2 vector)
         {
-            return new Vector2(-vector.x_, -vector.y_);
+            return new FixedVector2(-vector.x_, -vector.y_);
         }
  
     }

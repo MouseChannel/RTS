@@ -42,12 +42,12 @@ public class PbTool : Singleton<PbTool>
 
     public static PbMessage MakeMove(float3 destinationPox, List<int> seletedUnits)
     {
-        GridInit.Instance.pathfindingGrid.GetXZ(destinationPox, out int endx, out int endy);
+        var endIndex = GridSystem.Instance.GetGridIndex(destinationPox );
         var sendFightMessage = new FightMessage
         {
             BattleCMD = FightMessage.Types.BattleCMD.Move,
             SelectedUnit = { seletedUnits },
-            EndPos = { endx, endy }
+            EndPos = endIndex
         };
 
 

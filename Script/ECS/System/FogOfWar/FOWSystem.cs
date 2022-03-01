@@ -9,8 +9,8 @@ using Unity.Jobs;
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial class FOWSystem : SystemBase
 {
-    public NativeArray<Color32> colorBuffer = new NativeArray<Color32>(GridInit.Instance.gridCount, Allocator.Persistent);
-    public NativeArray<Color32> blurBuffer = new NativeArray<Color32>(GridInit.Instance.gridCount, Allocator.Persistent);
+    public NativeArray<Color32> colorBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
+    public NativeArray<Color32> blurBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
     public Material blurMat;
     private Texture2D texBuffer;
     private RenderTexture renderBuffer;
@@ -49,12 +49,12 @@ public partial class FOWSystem : SystemBase
     {
         FreshFog();
         CalculateFog();
- 
 
-        // texBuffer.SetPixels32(colorBuffer.ToArray());
+
+ 
         texBuffer.SetPixels32(blurBuffer.ToArray());
         texBuffer.Apply();
-        Graphics.Blit(texBuffer, curTexture);
+        Graphics.Blit(texBuffer, curTexture, blurMat, 0);
 
         // Graphics.Blit(texBuffer, renderBuffer, blurMat, 0);
         // // for (int i = 0; i < 1; i++)
@@ -68,24 +68,24 @@ public partial class FOWSystem : SystemBase
 
 
 
-        Lerp();
+        // Lerp();
 
 
 
-        var mapWidth = GridInit.Instance.pathfindingGrid.GetWidth();
+        // var mapWidth = GridSystem.Instance.pathfindingGrid.GetWidth();
 
-        var mapHeight = GridInit.Instance.pathfindingGrid.GetHeight();
-        for (int j = 0; j < mapHeight; j++)
-        {
-            for (int i = 0; i < mapWidth; i++)
-            {
-                if (colorBuffer[i].a != 255)
-                {
-                    Debug.Log("different");
-                }
-            }
+        // var mapHeight = GridSystem.Instance.pathfindingGrid.GetHeight();
+        // for (int j = 0; j < mapHeight; j++)
+        // {
+        //     for (int i = 0; i < mapWidth; i++)
+        //     {
+        //         if (colorBuffer[i].a != 255)
+        //         {
+        //             Debug.Log("different");
+        //         }
+        //     }
 
-        }
+        // }
 
 
     }
@@ -93,7 +93,7 @@ public partial class FOWSystem : SystemBase
     private void CalculateFog()
     {
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
-        NativeArray<int> testArray = new NativeArray<int>(3, Allocator.TempJob);
+     
         Entities.ForEach((in FOWUnit fogUnit) =>
         {
             ComputeFog computeFog = new ComputeFog
@@ -103,27 +103,24 @@ public partial class FOWSystem : SystemBase
             };
             jobList.Add(computeFog.Schedule());
 
-            TestJob testJob = new TestJob
-            {
-                test = testArray
-            };
-            jobList.Add(testJob.Schedule());
+ 
 
         }).WithoutBurst().Run();
         JobHandle.CompleteAll(jobList);
  
-        testArray.Dispose();
+  
     }
 
     public void InitFOW()
     {
-        var mapWidth = GridInit.Instance.pathfindingGrid.GetWidth();
+        var mapWidth = GridSystem.Instance.GetWidth();
 
-        var mapHeight = GridInit.Instance.pathfindingGrid.GetHeight();
+        var mapHeight = GridSystem.Instance.GetWidth();
         // colorBuffer = new Color32[mapWidth * mapHeight];
         // blurBuffer = new Color32[mapWidth * mapHeight];
 
         blurMat = new Material(Shader.Find("ImageEffect/AverageBlur"));
+        
         texBuffer = new Texture2D(mapWidth, mapHeight, TextureFormat.ARGB32, false);
         texBuffer.wrapMode = TextureWrapMode.Clamp;
         renderBuffer = RenderTexture.GetTemporary((int)(mapWidth * 1.5f), (int)(mapHeight * 1.5f), 0);
@@ -134,16 +131,7 @@ public partial class FOWSystem : SystemBase
             colorBuffer[i] = new Color32(0, 0, 0, 255);
 
         }
-            // for (int i = 0; i < mapHeight; i++)
-            // {
-            //     for (int j = 0; j < mapWidth; j++)
-            //     {
 
-            //         // map.Add(new FOWTile(mapData[i, j], i, j));
-            //         colorBuffer[i * mapWidth + j] = new Color32(0, 0, 0, 255);
-            //     }
-
-            // }
         Debug.Log("InitFog");
     }
 
@@ -153,10 +141,12 @@ public partial class FOWSystem : SystemBase
         {
             var color = colorBuffer[i];
          
-            if (color.r == 255)
-            {
-                colorBuffer[i] = new Color32(0, color.g, color.b, color.a);
-            }
+            // if (color.r == 255)
+            // {
+            //     colorBuffer[i] = new Color32(0, color.g, color.b, color.a);
+            // }
+            blurBuffer[i] = new Color32(0, 0, 0, 255);
+            
         }
     }
     private void Lerp()

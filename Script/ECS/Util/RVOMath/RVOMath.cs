@@ -56,7 +56,7 @@ namespace RVO{
          * computed.</param>
          * <returns>The length of the two-dimensional vector.</returns>
          */
-        public static FixedInt abs(Vector2 vector)
+        public static FixedInt abs(FixedVector2 vector)
         {
             return sqrt(absSq(vector));
         }
@@ -70,11 +70,11 @@ namespace RVO{
          * <param name="vector">The two-dimensional vector whose squared length
          * is to be computed.</param>
          */
-        public static FixedInt absSq(Vector2 vector)
+        public static FixedInt absSq(FixedVector2 vector)
         {
             return vector * vector;
         }
-        public static FixedInt distance(Vector2 a, Vector2 b){
+        public static FixedInt distance(FixedVector2 a, FixedVector2 b){
             return abs(a - b);
         }
 
@@ -87,7 +87,7 @@ namespace RVO{
          * <param name="vector">The two-dimensional vector whose normalization
          * is to be computed.</param>
          */
-        public static Vector2 normalize(Vector2 vector)
+        public static FixedVector2 normalize(FixedVector2 vector)
         {
             return vector / abs(vector);
         }
@@ -105,7 +105,7 @@ namespace RVO{
          * <param name="vector2">The bottom row of the two-dimensional square
          * matrix.</param>
          */
-        internal static FixedInt det(Vector2 vector1, Vector2 vector2)
+        internal static FixedInt det(FixedVector2 vector1, FixedVector2 vector2)
         {
             return vector1.x_ * vector2.y_ - vector1.y_ * vector2.x_;
         }
@@ -123,7 +123,7 @@ namespace RVO{
          * <param name="vector3">The point to which the squared distance is to
          * be calculated.</param>
          */
-        internal static FixedInt distSqPointLineSegment(Vector2 vector1, Vector2 vector2, Vector2 vector3)
+        internal static FixedInt distSqPointLineSegment(FixedVector2 vector1, FixedVector2 vector2, FixedVector2 vector3)
         {
             FixedInt r = ((vector3 - vector1) * (vector2 - vector1)) / absSq(vector2 - vector1);
 
@@ -168,7 +168,7 @@ namespace RVO{
          * <param name="c">The point to which the signed distance is to be
          * calculated.</param>
          */
-        internal static FixedInt leftOf(Vector2 a, Vector2 b, Vector2 c)
+        internal static FixedInt leftOf(FixedVector2 a, FixedVector2 b, FixedVector2 c)
         {
             return det(a - c, b - a);
         }

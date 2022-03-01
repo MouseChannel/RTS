@@ -91,6 +91,13 @@ public class SelectSystem : SystemBase
     private void DeSelectAll()
     {
         selectedUnits.Clear();
+        //-------------
+        if (selectionBoxRect == null)
+        {
+            ResourceService.Instance.LoadMainWindow("UI/UIMainWindow/SelectionVisualBox", ref selectionBoxRect);
+        }
+        if (selectionBoxRect == null) return;
+        //---------------
 
         selectionBoxRect.sizeDelta = UnityEngine.Vector2.zero;
     }
@@ -124,6 +131,8 @@ public class SelectSystem : SystemBase
 
         return new Vector4(xmin, xmax, ymin, ymax);
     }
+
+    
     private void SelectSingleUnit()
     {
 
@@ -137,7 +146,7 @@ public class SelectSystem : SystemBase
         if (Physics.Raycast(ray, out RaycastHit hit, 500))
         {
             
-            RVO.Vector2 position = new RVO.Vector2((FixedInt)hit.point.x, (FixedInt)hit.point.z);
+            RVO.FixedVector2 position = new RVO.FixedVector2((FixedInt)hit.point.x, (FixedInt)hit.point.z);
             FixedInt distance = FixedInt.half * 2;
             singlepoint = hit.point;
             int agentNo = -1;
@@ -146,9 +155,6 @@ public class SelectSystem : SystemBase
             {
                 selectedUnits.Add(agentNo);
             }
-
-
-
         }
 
 
@@ -161,20 +167,42 @@ public class SelectSystem : SystemBase
         IsDragging = false;
         Vector4 areaRect = ModifyRect();
   
-        RVO.Vector2 centerPoint = new RVO.Vector2((FixedInt) (areaRect[0] + areaRect[1]) / 2, (FixedInt)(areaRect[2] + areaRect[3]) / 2);
-        FixedInt radius = RVOMath.distance(new RVO.Vector2((FixedInt)areaRect[0], (FixedInt)areaRect[2]), centerPoint);
+        RVO.FixedVector2 centerPoint = new RVO.FixedVector2((FixedInt) (areaRect[0] + areaRect[1]) / 2, (FixedInt)(areaRect[2] + areaRect[3]) / 2);
+        FixedInt radius = RVOMath.distance(new RVO.FixedVector2((FixedInt)areaRect[0], (FixedInt)areaRect[2]), centerPoint);
  
 
         List<int> tem = new  List<int>( );
 
-        kDTreeSystem.GetAreaAgents(centerPoint, areaRect, radius, 0, tem);
+        kDTreeSystem.GetAreaAgents(centerPoint, areaRect, radius, 0, tem );
        
         foreach(var i in tem){
             selectedUnits.Add (i);
         }
         
          
-    }
+    } 
+    // Agent agent, Vector4 areaRect, List<int> areaAgents ,
+        // private void InsertAreaAgents( params object[] args)
+        // {
+        //     Agent agent =  (Agent)args[0];
+        //     Vector4 areaRect = (Vector4)args[1];
+        //     List<int> areaAgents = (List<int>)args[2];
+
+
+
+
+
+
+        //     var pos = agent.position_;
+        //     bool Vaild(float a, float min, float max) => a > min && a < max;
+        
+
+        //     if (Vaild(pos.x_.RawFloat, areaRect[0], areaRect[1]) &&
+        //                 Vaild(pos.y_.RawFloat, areaRect[2], areaRect[3]))
+        //     {
+        //         areaAgents.Add(agent.id_);
+        //     }
+        // }
 
  
 }

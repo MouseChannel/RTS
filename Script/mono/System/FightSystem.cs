@@ -10,7 +10,7 @@ using RVO;
 public class FightSystem : Singleton<FightSystem>
 {
 
-    private ResponseCommandSystem responseCommandSystem;
+    // private ResponseCommandSystem responseCommandSystem;
     private EntityManager entityManager;
     public List<WorkSystem> workList = new List<WorkSystem>();
     public  List<Entity> allMovedUnit = new  List<Entity>( );
@@ -21,8 +21,8 @@ public class FightSystem : Singleton<FightSystem>
    
     public void InitFightScene()
     {
-        var s = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<SelectionSystem>();
-        s.GetMainCamera();
+        // var s = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<SelectionSystem>();
+        // s.GetMainCamera();
 
         var fow = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
         fow.InitFOW();
@@ -30,11 +30,11 @@ public class FightSystem : Singleton<FightSystem>
  
     public override void InitInstance()
     {
-        responseCommandSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<ResponseCommandSystem>();
+        // responseCommandSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<ResponseCommandSystem>();
         entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         
         workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<PathFindSystem>());
-        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<MoveSystem>());
+        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<HandoverSystem>());
         workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>());
         workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<AgentSystem>());
 
@@ -51,7 +51,7 @@ public class FightSystem : Singleton<FightSystem>
     {
 
         foreach (var i in mes.SelectedUnit){
-            entityManager.AddComponentData(allMovedUnit[i], new PathFindParams { endPosition = new Unity.Mathematics.int2(((byte)mes.EndPos[0]), mes.EndPos[1]) });
+            entityManager.AddComponentData(allMovedUnit[i], new PathFindParams { endPosition = mes.EndPos });
         }
  
     }

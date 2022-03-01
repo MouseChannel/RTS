@@ -6,14 +6,19 @@ using Unity.Entities;
 // [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public class WorkSystem : SystemBase
 {
-    protected EndSimulationEntityCommandBufferSystem endFixedStepSimulationEntityCommandBufferSystem;
+    // protected EndSimulationEntityCommandBufferSystem 
+    protected EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    // protected BeginPresentationEntityCommandBufferSystem beginPresentationEntityCommandBufferSystem;
+    
     protected override void OnCreate()
     {
-        endFixedStepSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
  
+        endSimulationEntityCommandBufferSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
+        // beginPresentationEntityCommandBufferSystem = World.GetExistingSystem<BeginPresentationEntityCommandBufferSystem>();
         // World.GetOrCreateSystem<ResponseCommandSystem>().workList.Add(this);
         // FightSystem.Instance.workList.Add(this);
     }
+    // public virtual void Init(){}
  
     public virtual void Work(){}
 

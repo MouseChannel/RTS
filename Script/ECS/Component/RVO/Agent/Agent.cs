@@ -11,9 +11,9 @@ namespace RVO{
 
     public struct Agent :IComponentData
     {
-        public Vector2 position_;
-        public Vector2 prefVelocity_;
-        public Vector2 velocity_;
+        public FixedVector2 position_;
+        public FixedVector2 prefVelocity_;
+        public FixedVector2 velocity_;
         public int id_  ;
         public int maxNeighbors_  ;
         public FixedInt maxSpeed_  ;
@@ -21,7 +21,7 @@ namespace RVO{
         public FixedInt radius_ ;
         public FixedInt timeHorizon_  ;
         public FixedInt timeHorizonObst_  ;
-        public Vector2 newVelocity_;
+        public FixedVector2 newVelocity_;
         public bool needDelete_;
      
         public int faction_;
@@ -37,25 +37,16 @@ namespace RVO{
 
         #endregion
         
+
+
+
+        // public int GetGridIndex(){
+        //     return GridSystem.Instance.GetGridIndex(position_);
+        // }
+
  
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
-        public static bool operator ==(Agent a, Agent b) => a.id_ == b.id_;
-        public static bool operator !=(Agent a, Agent b) => a.id_ != b.id_;
+        // public static bool operator ==(Agent a, Agent b) => a.id_ == b.id_;
+        // public static bool operator !=(Agent a, Agent b) => a.id_ != b.id_;
 
 
 

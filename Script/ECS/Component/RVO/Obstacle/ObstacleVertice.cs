@@ -8,6 +8,6 @@ namespace RVO{
 
     public struct ObstacleVertice : IBufferElementData
     {
-        public Vector2 vertice;
+        public FixedVector2 vertice;
 }
 }

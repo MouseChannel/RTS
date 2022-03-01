@@ -7,6 +7,6 @@ using Unity.Mathematics;
 public struct PathFindParams : IComponentData
 {
     // public int2 startPosition;
-    public int2 endPosition;
+    public int endPosition;
     
 }

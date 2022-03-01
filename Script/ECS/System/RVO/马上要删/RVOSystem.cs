@@ -113,7 +113,7 @@ namespace RVO
             List<UpdateAgentJob> updateAgentJobList = new List<UpdateAgentJob>();
             Entities.ForEach((Entity entity, int entityInQueryIndex, ref Agent agent) =>
             {
-                NativeArray<Vector2> newVelocity = new NativeArray<Vector2>(1, Allocator.TempJob);
+                NativeArray<FixedVector2> newVelocity = new NativeArray<FixedVector2>(1, Allocator.TempJob);
                 NativeList<int> rangeNeighbors = new NativeList<int>(Allocator.TempJob);
                 NativeArray<int> enemyUnit = new NativeArray<int>(1, Allocator.TempJob);
                 UpdateAgentJob updateAgentJob = new UpdateAgentJob
@@ -149,7 +149,7 @@ namespace RVO
 
 
             #region   entityCommandBuffer
-            EntityCommandBuffer ecb = endFixedStepSimulationEntityCommandBufferSystem.CreateCommandBuffer();
+            EntityCommandBuffer ecb = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
 
             foreach (var computeJob in updateAgentJobList)
             {
@@ -467,7 +467,7 @@ namespace RVO
                         /* Split obstacle j. */
                         FixedInt t = RVOMath.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / RVOMath.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
 
-                        Vector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
+                        FixedVector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
 
                         Obstacle newObstacle = new Obstacle();
                         newObstacle.point_ = splitPoint;
