@@ -12,14 +12,15 @@ namespace RVO
     [DisableAutoCreation]
     public partial class KDTreeSystem : WorkSystem
     {
-        int aaa = 3;
+
         private const int MAX_LEAF_SIZE = 10;
-        private int ObstacleCount;
+        private int obstacleCount;
         public NativeList<Agent> agents_ = new NativeList<Agent>(Allocator.Persistent);
         public NativeList<AgentTreeNode> agentTree_ = new NativeList<AgentTreeNode>(Allocator.Persistent);
         public NativeList<Obstacle> obstacles_ = new NativeList<Obstacle>(Allocator.Persistent);
         public NativeList<ObstacleTreeNode> obstacleTree_ = new NativeList<ObstacleTreeNode>(Allocator.Persistent);
 
+        private NativeList<Obstacle> splitObstaclesDuringBuild = new NativeList<Obstacle>(Allocator.Persistent);
         public ObstacleTreeNode obstacleTreeRoot;
         protected override void OnDestroy()
         {
@@ -27,11 +28,14 @@ namespace RVO
             agentTree_.Dispose();
             obstacles_.Dispose();
             obstacleTree_.Dispose();
+            splitObstaclesDuringBuild.Dispose();
 
 
         }
         public override void Work()
         {
+
+
             #region Build Agent Tree
 
             agents_.Clear();
@@ -50,26 +54,35 @@ namespace RVO
 
 
             BuildAgentTree(0, agents_.Length, 0);
+ 
+
             #endregion
 
-            #region  Build Obstacle Tree
 
+        }
+ 
+
+        public void UpdateObstacleTree()
+        {
             obstacles_.Clear();
             obstacleTree_.Clear();
-            // NativeList<Obstacle> obstacles_ = new NativeList<Obstacle>(Allocator.TempJob);
-            // NativeList<ObstacleTreeNode> obstacleTree_ = new NativeList<ObstacleTreeNode>(Allocator.TempJob);
+
             Entities.ForEach((Entity entity, DynamicBuffer<ObstacleVertice> obstacleVertices) =>
             {
                 ObstacleCollect(obstacles_, obstacleVertices);
             }).WithoutBurst().Run();
 
-            InitObstacleTree(obstacleTree_, obstacles_.Length);
-            obstacleTreeRoot = BuildObstacleTree(obstacles_, obstacles_, obstacleTree_);
+ 
 
+            InitObstacleTree(obstacles_.Length);
+            NativeList<Obstacle> currentObstacles = new NativeList<Obstacle> (  Allocator.Temp);
+            currentObstacles.AddRange(obstacles_);
+            obstacleTreeRoot = BuildObstacleTreeRecursive(currentObstacles);
 
-            #endregion
+         
+            currentObstacles.Dispose();
 
-
+ 
         }
 
         private void BuildAgentTree(int begin, int end, int node)
@@ -209,11 +222,11 @@ namespace RVO
 
         }
 
-        private void InitObstacleTree(NativeList<ObstacleTreeNode> obstacleTree, int length)
+        private void InitObstacleTree(int length)
         {
             for (int i = 0; i < length; i++)
             {
-                obstacleTree.Add(new ObstacleTreeNode
+                obstacleTree_.Add(new ObstacleTreeNode
                 {
                     obstacleIndex = i,
                     left_index = -1,
@@ -222,11 +235,11 @@ namespace RVO
             }
         }
 
-
-        private ObstacleTreeNode BuildObstacleTree(NativeList<Obstacle> current, NativeList<Obstacle> obstacles, NativeList<ObstacleTreeNode> obstacleTree_)
+ 
+    private ObstacleTreeNode BuildObstacleTreeRecursive(NativeList<Obstacle> current)
         {
             if (current.Length == 0) return new ObstacleTreeNode { obstacleIndex = -1 };
-            ObstacleCount = 0;
+       
             ObstacleTreeNode node = new ObstacleTreeNode();
             int length = current.Length;
 
@@ -240,7 +253,7 @@ namespace RVO
                 int rightSize = 0;
 
                 Obstacle obstacleI1 = current[i];
-                Obstacle obstacleI2 = obstacles[obstacleI1.next_];
+                Obstacle obstacleI2 = obstacles_[obstacleI1.next_];
 
                 /* Compute optimal split node. */
                 for (int j = 0; j < current.Length; ++j)
@@ -254,7 +267,7 @@ namespace RVO
 
 
 
-                    Obstacle obstacleJ2 = obstacles[obstacleJ1.next_];
+                    Obstacle obstacleJ2 = obstacles_[obstacleJ1.next_];
 
                     FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
                     FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
@@ -313,7 +326,7 @@ namespace RVO
                 int i = optimalSplit;
 
                 Obstacle obstacleI1 = current[i];
-                Obstacle obstacleI2 = obstacles[obstacleI1.next_];
+                Obstacle obstacleI2 = obstacles_[obstacleI1.next_];
 
                 for (int j = 0; j < current.Length; ++j)
                 {
@@ -323,7 +336,7 @@ namespace RVO
                     }
 
                     Obstacle obstacleJ1 = current[j];
-                    Obstacle obstacleJ2 = obstacles[obstacleJ1.next_];
+                    Obstacle obstacleJ2 = obstacles_[obstacleJ1.next_];
 
                     FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
                     FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
@@ -351,11 +364,12 @@ namespace RVO
                         newObstacle.convex_ = true;
                         newObstacle.direction_ = obstacleJ1.direction_;
 
-                        newObstacle.id_ = ObstacleCount;
-                        ObstacleCount++;
+                        newObstacle.id_ = obstacles_.Length;
+                       
 
                         // Simulator.Instance.obstacles_.Add(newObstacle);
-                        obstacles.Add(newObstacle);
+                        obstacles_.Add(newObstacle);
+                        obstacleTree_.Add(new ObstacleTreeNode());
 
                         obstacleJ1.next_ = newObstacle.id_;
                         obstacleJ2.previous_ = newObstacle.id_;
@@ -378,8 +392,8 @@ namespace RVO
 
                 node.obstacleIndex = obstacleI1.id_;
 
-                node.left_index = BuildObstacleTree(leftObstacles, obstacles, obstacleTree_).obstacleIndex;
-                node.right_index = BuildObstacleTree(rightObstacles, obstacles, obstacleTree_).obstacleIndex;
+                node.left_index = BuildObstacleTreeRecursive(leftObstacles ).obstacleIndex;
+                node.right_index = BuildObstacleTreeRecursive(rightObstacles ).obstacleIndex;
                 obstacleTree_[node.obstacleIndex] = node;
                 leftObstacles.Dispose();
                 rightObstacles.Dispose();
@@ -388,127 +402,12 @@ namespace RVO
             }
         }
 
-        #region  selection
-        public void GetClosestAgent(FixedVector2 position, ref FixedInt rangeSq, ref int agentNo, int node)
-        {
-            Debug.Log("single Select" );
 
-            if (agentTree_[node].end_ - agentTree_[node].begin_ <= MAX_LEAF_SIZE)
-            {
-                for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
-                {
-                     
-                    FixedInt distSq = FixedCalculate.absSq(position - agents_[i].position_);
-                    //Find EnemyUnit
-                    if (distSq < rangeSq)
-                    {
-                        rangeSq = distSq;
-                        agentNo = agents_[i].id_;
-                    }
-                }
-            }
-            else
-            {
-                FixedInt distSqLeft = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
-                FixedInt distSqRight = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
-         
-                if (distSqLeft < distSqRight)
-                {
-                    if (distSqLeft < rangeSq)
-                    {
-                        GetClosestAgent(position, ref rangeSq, ref agentNo, agentTree_[node].left_);
 
-                        if (distSqRight < rangeSq)
-                        {
-                            GetClosestAgent(position, ref rangeSq, ref agentNo, agentTree_[node].right_);
-                        }
-                    }
-                }
-                else
-                {
-                    if (distSqRight < rangeSq)
-                    {
-                        GetClosestAgent(position, ref rangeSq, ref agentNo, agentTree_[node].right_);
 
-                        if (distSqLeft < rangeSq)
-                        {
-                            GetClosestAgent(position, ref rangeSq, ref agentNo, agentTree_[node].left_);
-                        }
-                    }
-                }
 
-            }
 
-        }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="position"></param>
-        /// <param name="areaRect">xmin, xmax,ymin,  ymax</param>
-        /// <param name="rangeSq"></param>
-        /// <param name="node"></param>
-        /// <param name="areaAgents"></param>
-        public void GetAreaAgents(FixedVector2 position, Vector4 areaRect, FixedInt rangeSq, int node, List<int> areaAgents)
-        {
-       
-
-            if (agentTree_[node].end_ - agentTree_[node].begin_ <= MAX_LEAF_SIZE)
-            {
-                for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
-                {
-
-                    InsertAreaAgents(agents_[i], areaRect, areaAgents);
-
-                }
-            }
-            else
-            {
-                FixedInt distSqLeft = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
-                FixedInt distSqRight = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
-
-                if (distSqLeft < distSqRight)
-                {
-                    if (distSqLeft < rangeSq)
-                    {
-                        GetAreaAgents(position, areaRect, rangeSq, agentTree_[node].left_, areaAgents);
-
-                        if (distSqRight < rangeSq)
-                        {
-                            GetAreaAgents(position, areaRect, rangeSq, agentTree_[node].right_, areaAgents);
-                        }
-                    }
-                }
-                else
-                {
-                    if (distSqRight < rangeSq)
-                    {
-                        GetAreaAgents(position, areaRect, rangeSq, agentTree_[node].right_, areaAgents);
-
-                        if (distSqLeft < rangeSq)
-                        {
-                            GetAreaAgents(position, areaRect, rangeSq, agentTree_[node].left_, areaAgents);
-                        }
-                    }
-                }
-
-            }
-
-        }
-
-        private void InsertAreaAgents(Agent agent, Vector4 areaRect, List<int> areaAgents)
-        {
- 
-            var pos = agent.position_;
-            bool Vaild(float a, float min, float max) => a > min && a < max;
-        
-
-            if (Vaild(pos.X.RawFloat, areaRect[0], areaRect[1]) &&
-                        Vaild(pos.Y.RawFloat, areaRect[2], areaRect[3]))
-            {
-                areaAgents.Add(agent.id_);
-            }
-        }
     }
-    #endregion
+
 }

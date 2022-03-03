@@ -15,7 +15,11 @@ namespace RVO
 
     public partial class AgentSystem
     {
-        private const int MAX_LEAF_SIZE = 10; 
+ 
+        private const int MAX_LEAF_SIZE = 10;
+
+        
+
         [BurstCompile]     
         public struct UpdateAgentJob : IJob
         {
@@ -41,6 +45,7 @@ namespace RVO
 
             public void Execute()
             {
+                 
                 #region  Compute Agent Neighbor
                 NativeList<AgentNeighbor> agentNeighbors = new NativeList<AgentNeighbor>(Allocator.Temp);
                 var rangeSq = FixedCalculate.sqr(agent.neighborDist_);
@@ -51,13 +56,14 @@ namespace RVO
                 #region  Compute Obstacle Neighbor
 
                 NativeList<ObstacleNeighbor> obstacleNeighbors = new NativeList<ObstacleNeighbor>(Allocator.Temp);
-                rangeSq = FixedCalculate.sqr(agent.timeHorizonObst_ * agent.maxSpeed_ + agent.radius_);
-
+                var obstacleRangeSq = FixedCalculate.sqr(agent.timeHorizonObst_ * agent.maxSpeed_ + agent.radius_);
+                // obstacleRangeSq = FixedCalculate.Max(obstacleRangeSq, 100);
                 // ComputeObstacleNeighbor(obstacles, obstacleTree, obstacleTreeRoot, agent, ref rangeSq, obstacleNeighbors);
-                ComputeObstacleNeighbor(obstacleTreeRoot, ref rangeSq, obstacleNeighbors);
-
+                ComputeObstacleNeighbor(obstacleTreeRoot,  obstacleRangeSq, obstacleNeighbors);
+                // foreach(var i in obstacleNeighbors)
+                //     Debug.Log(string.Format("neu   {0}", i.obstacle));
                 // for(int i=0 ;i< obstacleNeighbors.Length;i++){
-                //     Debug.Log(string.Format(" {0} ", obstacleNeighbors[i].obstacle.id_));
+                //     Debug.Log(string.Format(" {0} {1} {2}", obstacleNeighbors[i].obstacle.id_,obstacleNeighbors[i].obstacle.direction_, obstacleNeighbors[i].obstacle.point_));
                 // }
                 #endregion
 
@@ -73,7 +79,7 @@ namespace RVO
 
 
                 ecbPara.SetComponent<Agent>( indexInEntityQuery,entity, agent);
-                ecbPara.SetComponent<FOWUnit>(indexInEntityQuery, entity, new FOWUnit { position = agent.position_, range = 5 });
+                ecbPara.SetComponent<FOWUnit>(indexInEntityQuery, entity, new FOWUnit { position = agent.position_, range = 10 });
 
                 agentNeighbors.Dispose();
                 obstacleNeighbors.Dispose();
@@ -125,7 +131,7 @@ namespace RVO
                 }
             }
 
-            private void ComputeObstacleNeighbor(ObstacleTreeNode node, ref FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
+            private void ComputeObstacleNeighbor(ObstacleTreeNode node,  FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
             {
                 if (node.obstacleIndex == -1) return;
                 Obstacle obstacle1 = obstacles[node.obstacleIndex];
@@ -135,11 +141,11 @@ namespace RVO
 
                 if (agentLeftOfLine >= 0)
                 {
-                    if (node.left_index != -1) ComputeObstacleNeighbor(obstacleTree[node.left_index], ref rangeSq, obstacleNeighbors);
+                    if (node.left_index != -1) ComputeObstacleNeighbor(obstacleTree[node.left_index], rangeSq, obstacleNeighbors);
                 }
                 else
                 {
-                    if (node.right_index != -1) ComputeObstacleNeighbor(obstacleTree[node.right_index], ref rangeSq, obstacleNeighbors);
+                    if (node.right_index != -1) ComputeObstacleNeighbor(obstacleTree[node.right_index], rangeSq, obstacleNeighbors);
                 }
                 // ComputeObstacleNeighbor(obstacles,obstacleTree, agentLeftOfLine >= 0 ? obstacleTree[node.left_index] : obstacleTree[node.right_index]  , agent, ref rangeSq, obstacleNeighbors);
 
@@ -160,11 +166,11 @@ namespace RVO
                     /* Try other side of line. */
                     if (agentLeftOfLine >= 0)
                     {
-                        if (node.right_index != -1) ComputeObstacleNeighbor(obstacleTree[node.right_index], ref rangeSq, obstacleNeighbors);
+                        if (node.right_index != -1) ComputeObstacleNeighbor(obstacleTree[node.right_index],  rangeSq, obstacleNeighbors);
                     }
                     else
                     {
-                        if (node.left_index != -1) ComputeObstacleNeighbor(obstacleTree[node.left_index], ref rangeSq, obstacleNeighbors);
+                        if (node.left_index != -1) ComputeObstacleNeighbor(obstacleTree[node.left_index],rangeSq, obstacleNeighbors);
                     }
 
                 }

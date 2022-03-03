@@ -5,8 +5,11 @@ using Unity.Entities;
 using Unity.Collections;
 using RVO;
 using Unity.Jobs;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+[DisableAutoCreation]
 public partial class FOWSystem : SystemBase
 {
     public NativeArray<Color32> colorBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
@@ -29,10 +32,13 @@ public partial class FOWSystem : SystemBase
         }
     }
 
+    private KDTreeSystem kDTreeSystem;
+
 
     protected override void OnCreate()
     {
         World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = 0.5f;
+        kDTreeSystem = World.GetOrCreateSystem<KDTreeSystem>();
     }
     protected override void OnDestroy()
     {
@@ -46,7 +52,7 @@ public partial class FOWSystem : SystemBase
 
     }
     protected override void OnUpdate()
-    { 
+    {
         FreshFog();
         CalculateFog();
 
@@ -93,13 +99,25 @@ public partial class FOWSystem : SystemBase
     private void CalculateFog()
     {
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
+        NativeArray<Obstacle> obstacles_ = new NativeArray<Obstacle>(kDTreeSystem.obstacles_, Allocator.TempJob);
+        NativeArray<ObstacleTreeNode> obstacleTree_ = new NativeArray<ObstacleTreeNode>(kDTreeSystem.obstacleTree_, Allocator.TempJob);
+        ObstacleTreeNode obstacleTreeRoot = kDTreeSystem.obstacleTreeRoot;
 
+
+        UnsafeHashSet<int2> visiableArea = new UnsafeHashSet<int2>(colorBuffer.Length, Allocator.TempJob);
+        var setParaWriter = visiableArea.AsParallelWriter();
         Entities.ForEach((in FOWUnit fogUnit) =>
         {
             ComputeFog computeFog = new ComputeFog
             {
                 mapBlurBuffer = blurBuffer,
-                fowUnit = fogUnit
+                fowUnit = fogUnit,
+                obstacles_ = obstacles_,
+                obstacleTree_ = obstacleTree_,
+                obstacleTreeRoot = obstacleTreeRoot,
+                setParaWriter = setParaWriter
+
+
             };
             jobList.Add(computeFog.Schedule());
 
@@ -128,9 +146,9 @@ public partial class FOWSystem : SystemBase
         renderBuffer2 = RenderTexture.GetTemporary((int)(mapWidth * 1.5f), (int)(mapHeight * 1.5f), 0);
         nextTexture = RenderTexture.GetTemporary((int)(mapWidth * 1.5f), (int)(mapHeight * 1.5f), 0);
         curTexture = RenderTexture.GetTemporary((int)(mapWidth * 1.5f), (int)(mapHeight * 1.5f), 0);
-        for (int i = 0; i < colorBuffer.Length; i++)
+        for (int i = 0; i < blurBuffer.Length; i++)
         {
-            colorBuffer[i] = new Color32(0, 0, 0, 255);
+            blurBuffer[i] = new Color32(0, 0, 0, 255);
 
         }
 
@@ -139,15 +157,23 @@ public partial class FOWSystem : SystemBase
 
     private void FreshFog()
     {
-        for (int i = 0; i < colorBuffer.Length; i++)
+        for (int i = 0; i < blurBuffer.Length; i++)
         {
-            var color = colorBuffer[i];
-
+            var color = blurBuffer[i];
+            if (color.a == 0 || color.a == 120)
+            {
+                blurBuffer[i] = new Color32(0, 0, 0, 120);
+            }
+            else
+            {
+                blurBuffer[i] = new Color32(0, 0, 0, 255);
+            }
+            blurBuffer[i] = new Color32(0, 0, 0, 255);
             // if (color.r == 255)
             // {
             //     colorBuffer[i] = new Color32(0, color.g, color.b, color.a);
             // }
-            blurBuffer[i] = new Color32(0, 0, 0, 255);
+
 
         }
     }

@@ -10,5 +10,6 @@ using FixedMath;
 public struct ObstacleVertice : IBufferElementData
 {
     public FixedVector2 vertice;
+    // public int verticeCount;
 }
 

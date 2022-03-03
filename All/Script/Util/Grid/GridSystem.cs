@@ -28,13 +28,14 @@ public class GridSystem : Singleton<GridSystem>
         }
 
     }
-    public int GetIndex( FixedVector2 agentPosition){
+    public int GetIndex(FixedVector2 agentPosition)
+    {
         var x = (agentPosition.X.round).RawInt;
         var y = (agentPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);
         return y * width + x;
     }
-    
+
 
 
     public void GetXZ(float3 worldPosition, out int x, out int y)
@@ -47,8 +48,8 @@ public class GridSystem : Singleton<GridSystem>
 
     }
 
- 
-    public int2 GetXZ( FixedVector2 worldPosition)
+
+    public int2 GetXZ(FixedVector2 worldPosition)
     {
         var x = (worldPosition.X.round).RawInt;
         var y = (worldPosition.Y.round).RawInt;
@@ -57,21 +58,21 @@ public class GridSystem : Singleton<GridSystem>
     }
     public int GetGridIndex(float3 worldPosition)
     {
-         FixedVector2 temp = new  FixedVector2((FixedInt)worldPosition.x, (FixedInt)worldPosition.z);
+        FixedVector2 temp = new FixedVector2((FixedInt)worldPosition.x, (FixedInt)worldPosition.z);
         return GetGridIndex(temp);
     }
- 
-    public static int GetGridIndex( FixedVector2 worldPosition)
+
+    public static int GetGridIndex(FixedVector2 worldPosition)
     {
-        var x = (worldPosition.X.round ).RawInt ;
-        var y = (worldPosition.Y.round ).RawInt;
+        var x = (worldPosition.X.round).RawInt;
+        var y = (worldPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);
         return y * ConfigData.gridWidth + x;
     }
-    public static int GetGridIndexInFOW( FixedVector2 worldPosition)
+    public static int GetGridIndexInFOW(FixedVector2 worldPosition)
     {
-        var x = (worldPosition.X.round ).RawInt  + 50;
-        var y = (worldPosition.Y.round ).RawInt + 50 ;
+        var x = (worldPosition.X.round).RawInt + 50;
+        var y = (worldPosition.Y.round).RawInt + 50;
         ValidateGridPosition(ref x, ref y);
         return y * ConfigData.gridWidth + x;
     }
@@ -99,16 +100,20 @@ public class GridSystem : Singleton<GridSystem>
         if (x >= 0 && y >= 0 && x < width && y < width)
             gridArray[x * width + y] = value;
     }
+    public void SetUnWalkableArea(int2 center, FixedInt radius, int vertices)
+    {
+        //暂时只会写vertices == 4的情况
+        for (FixedInt i = center.x - radius; i <= center.x + radius; i++)
+            for (FixedInt j = center.y - radius; j <= center.y + radius; j++)
+            {
+                var index = GetGridIndex(new FixedVector2(i, j));
+                gridArray[index].SetIsWalkable(false);
+            }
+    }
 
-    // public void SetNode(FixedVector3 worldPosition, GridNode value)
-    // {
-    //     int x, z;
-    //     GetXZ(worldPosition, out x, out z);
-    //     SetNode(x, z, value);
 
-    // }
 
-    private static  void ValidateGridPosition(ref int x, ref int y)
+    private static void ValidateGridPosition(ref int x, ref int y)
     {
         x = math.clamp(x, 0, ConfigData.gridWidth - 1);
         y = math.clamp(y, 0, ConfigData.gridWidth - 1);

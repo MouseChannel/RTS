@@ -14,7 +14,7 @@ namespace RVO
 
     public partial class AgentSystem : WorkSystem
     {
-
+        public int aas = 3;
 
 
         public override void Work()

@@ -8,8 +8,7 @@ public struct Obstacle : IComponentData
 {
     public int next_;
     public int previous_;
-    // public Obstacle next_;
-    // public Obstacle previous_;
+
     public FixedVector2 direction_;
     public FixedVector2 point_;
     public int id_;
