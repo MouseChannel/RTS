@@ -34,7 +34,7 @@ namespace RVO
             public NativeList<AgentTreeNode> agentTree;
 
             [ReadOnly]
-            public NativeList<Obstacle> obstacles;
+            public NativeList<ObstacleVertice> obstacles;
             [ReadOnly]
             public NativeList<ObstacleTreeNode> obstacleTree;
             [ReadOnly]
@@ -134,8 +134,8 @@ namespace RVO
             private void ComputeObstacleNeighbor(ObstacleTreeNode node,  FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
             {
                 if (node.obstacleIndex == -1) return;
-                Obstacle obstacle1 = obstacles[node.obstacleIndex];
-                Obstacle obstacle2 = obstacles[obstacle1.next_];
+                ObstacleVertice obstacle1 = obstacles[node.obstacleIndex];
+                ObstacleVertice obstacle2 = obstacles[obstacle1.next_];
 
                 FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, agent.position_);
 
@@ -177,9 +177,9 @@ namespace RVO
 
             }
 
-            private void InsertObstacleNeighbor(Obstacle obstacle, NativeList<ObstacleNeighbor> obstacleNeighbors_, FixedInt rangeSq)
+            private void InsertObstacleNeighbor(ObstacleVertice obstacle, NativeList<ObstacleNeighbor> obstacleNeighbors_, FixedInt rangeSq)
             {
-                Obstacle nextObstacle = obstacles[obstacle.next_];
+                ObstacleVertice nextObstacle = obstacles[obstacle.next_];
 
                 FixedInt distSq = FixedCalculate.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, agent.position_);
 
@@ -657,11 +657,11 @@ namespace RVO
         }
 
 
-        private static void ComputeObstacleNeighbor(NativeList<Obstacle> obstacles, NativeList<ObstacleTreeNode> obstacleTree, ObstacleTreeNode node, Agent agent, ref FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
+        private static void ComputeObstacleNeighbor(NativeList<ObstacleVertice> obstacles, NativeList<ObstacleTreeNode> obstacleTree, ObstacleTreeNode node, Agent agent, ref FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
         {
             if (node.obstacleIndex == -1) return;
-            Obstacle obstacle1 = obstacles[node.obstacleIndex];
-            Obstacle obstacle2 = obstacles[obstacle1.next_];
+            ObstacleVertice obstacle1 = obstacles[node.obstacleIndex];
+            ObstacleVertice obstacle2 = obstacles[obstacle1.next_];
 
             FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, agent.position_);
 
@@ -705,9 +705,9 @@ namespace RVO
 
         }
 
-        private static void InsertObstacleNeighbor(Obstacle obstacle, NativeList<Obstacle> obstacles, NativeList<ObstacleNeighbor> obstacleNeighbors_, Agent agent, FixedInt rangeSq)
+        private static void InsertObstacleNeighbor(ObstacleVertice obstacle, NativeList<ObstacleVertice> obstacles, NativeList<ObstacleNeighbor> obstacleNeighbors_, Agent agent, FixedInt rangeSq)
         {
-            Obstacle nextObstacle = obstacles[obstacle.next_];
+            ObstacleVertice nextObstacle = obstacles[obstacle.next_];
 
             FixedInt distSq = FixedCalculate.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, agent.position_);
 
@@ -757,7 +757,7 @@ namespace RVO
 
         }
 
-        private static void AddObstacleLine(Agent agent, NativeList<Line> orcaLines_, NativeList<ObstacleNeighbor> obstacleNeighbors_, NativeList<Obstacle> obstacles)
+        private static void AddObstacleLine(Agent agent, NativeList<Line> orcaLines_, NativeList<ObstacleNeighbor> obstacleNeighbors_, NativeList<ObstacleVertice> obstacles)
         {
             FixedInt invTimeHorizonObst = 1 / agent.timeHorizonObst_;
             var radius_ = agent.radius_;
@@ -768,8 +768,8 @@ namespace RVO
             for (int i = 0; i < obstacleNeighbors_.Length; ++i)
             {
 
-                Obstacle obstacle1 = obstacleNeighbors_[i].obstacle;
-                Obstacle obstacle2 = obstacles[obstacle1.next_];
+                ObstacleVertice obstacle1 = obstacleNeighbors_[i].obstacle;
+                ObstacleVertice obstacle2 = obstacles[obstacle1.next_];
 
                 FixedVector2 relativePosition1 = obstacle1.point_ - agent.position_;
                 FixedVector2 relativePosition2 = obstacle2.point_ - agent.position_;
@@ -921,7 +921,7 @@ namespace RVO
                 * velocity projected on "foreign" leg, no constraint is added.
                 */
 
-                Obstacle leftNeighbor = obstacles[obstacle1.previous_];
+                ObstacleVertice leftNeighbor = obstacles[obstacle1.previous_];
 
                 bool isLeftLegForeign = false;
                 bool isRightLegForeign = false;

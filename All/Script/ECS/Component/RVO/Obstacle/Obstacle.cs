@@ -2,38 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
+using System;
 using FixedMath;
 
-public struct Obstacle : IComponentData
+public struct ObstacleVertice : IComponentData ,IEquatable<ObstacleVertice>
 {
     public int next_;
     public int previous_;
 
     public FixedVector2 direction_;
     public FixedVector2 point_;
-    public int id_;
+    public int obstacleId_;
+    public int verticeId_;
     public bool convex_;
 
-    public override bool Equals(object obj)
+    public bool Equals(ObstacleVertice other)
     {
-        return base.Equals(obj);
+        return obstacleId_ == other.obstacleId_;
     }
 
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-
-    public override string ToString()
-    {
-        return base.ToString();
-    }
-
-    public static bool operator ==(Obstacle a, Obstacle b)
+    public static bool operator ==(ObstacleVertice a, ObstacleVertice b)
     {
         return a.next_ == b.next_;
     }
-    public static bool operator !=(Obstacle a, Obstacle b)
+    public static bool operator !=(ObstacleVertice a, ObstacleVertice b)
     {
         return a.next_ != b.next_;
     }

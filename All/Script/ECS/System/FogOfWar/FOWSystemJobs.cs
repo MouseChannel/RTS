@@ -19,42 +19,19 @@ public partial class FOWSystem
     {
         [NativeDisableContainerSafetyRestriction]
         public NativeArray<Color32> mapBlurBuffer;
-        [ReadOnly][DeallocateOnJobCompletion] public NativeArray<Obstacle> obstacles_;
-        [ReadOnly][DeallocateOnJobCompletion] public NativeArray<ObstacleTreeNode> obstacleTree_;
+        [ReadOnly]  public NativeArray<ObstacleVertice> obstacles_;
+        [ReadOnly]  public NativeArray<ObstacleTreeNode> obstacleTree_;
         [ReadOnly] public ObstacleTreeNode obstacleTreeRoot;
 
         [ReadOnly] public FOWUnit fowUnit;
-        public UnsafeHashSet<int2>.ParallelWriter setParaWriter;
+        public UnsafeHashSet<int>.ParallelWriter setParaWriter;
 
 
-        public    void Execute()
+        public  void Execute()
         {
 
             int range = fowUnit.range;
-            // int rangeWidth = (range + 1) * 2 - 1;
-            // int field = rangeWidth * rangeWidth;
 
-
-            // NativeArray<Color32> colorBuffer = new NativeArray<Color32>(field, Allocator.Temp);
-            // NativeArray<Color32> blurBuffer = new NativeArray<Color32>(field, Allocator.Temp);
-
-
-            // for (int y = 0; y < rangeWidth; y++)
-            // {
-            //     for (int x = 0; x < rangeWidth; x++)
-            //     {
-            //         var index = GetRangeIndex(x, y, rangeWidth);
-            //         if (!CheckInRange(x - range, y - range, range))
-            //         {
-
-            //             colorBuffer[index] = ChangeColor(colorBuffer[index], 'a', 255);
-            //         }
-            //         else
-            //         {
-            //             colorBuffer[index] = ChangeColor(colorBuffer[index], 'a', 0);
-            //         }
-            //     }
-            // }
 
 
 
@@ -62,49 +39,44 @@ public partial class FOWSystem
 
 
             #region 获取障碍物
-            NativeList<Obstacle> obstacleNeighbors = new NativeList<Obstacle>(Allocator.Temp);
-            GetRangeObstacleVertices(fowUnit.position, obstacleTreeRoot, fowUnit.range * fowUnit.range *111, obstacleNeighbors);
-            if (obstacleNeighbors.Length > 0)
-            {
-                var lastObstacleVerticeIndex = obstacleNeighbors[obstacleNeighbors.Length - 1].next_;
-                obstacleNeighbors.Add(obstacles_[lastObstacleVerticeIndex]);
-            }
+            NativeList<ObstacleVertice> obstacleNeighbors = new NativeList<ObstacleVertice>(Allocator.Temp);
+            GetRangeObstacleVertices(fowUnit.position, obstacleTreeRoot, fowUnit.range * fowUnit.range, obstacleNeighbors);
 
-            // for (int i = 0; i < obstacleNeighbors.Length;i++){
-            //     Debug.Log(String.Format("{0}", obstacleNeighbors[i].point_));
+
             // }
 
-                #endregion
-
-
-                // for (int y = -range; y <= range; y++)
+                // for (int i = 0; i < obstacleNeighbors.Length; i++)
                 // {
-                //     for (int x = -range; x < range; x++)
-                //     {
-                //         if (!CheckInRange(x, y, range)) continue;
-                //         var currentGridPos = fowUnit.position + new FixedVector2(x, y);
-                //         var indexInFOWMap = GridSystem.GetGridIndexInFOW(currentGridPos);
-                //         if (CheckExposed(currentGridPos, obstacleNeighbors))
-                //         {
-
-                //             // if (mapBlurBuffer[indexInFOWMap].a > 0)
-                //             mapBlurBuffer[indexInFOWMap] = ChangeColor(mapBlurBuffer[indexInFOWMap], 'a', 0);
-                //         }
-
-                //         // mapBlurBuffer[indexInFOWMap] = ChangeColor(mapBlurBuffer[indexInFOWMap], 'a', 0);
-
-                //     }
+                //     Debug.Log(String.Format("{0} {1}  {2} {3}", obstacleNeighbors[i].point_, obstacleNeighbors[i].verticeId_, obstacleNeighbors[i].obstacleId_, obstacleNeighbors[i].direction_));
                 // }
 
 
+            #endregion
+            // TestGizmos.InitGizmos();
+
+            for (int i = -range; i <= range; i++)
+                for (int j = -range; j <= range; j++)
+                {
+                    if (!CheckInRange(i, j, range)) continue;
+                    var currentGridPos = fowUnit.position.ConvertToint2() + new int2(i, j);
+                    if (!CheckUnVisiable(currentGridPos, obstacleNeighbors))
+                    {
+                        var index = GridSystem.GetGridIndexInFOW(currentGridPos);
+                        // var index = GetIndexInMap(.ConvertToint2());
+                        setParaWriter.Add(index);
+                        // TestGizmos.SetGridUnvisiable(currentGridPos);
+
+                    }
+
+                }
 
 
 
 
-            // for (int i = 0; i < obstacleNeighbors.Length; i++)
-            // {
-            //     Debug.Log(String.Format("{0}", obstacleNeighbors[i].point_));
-            // }
+
+
+
+
 
             obstacleNeighbors.Dispose();
 
@@ -112,64 +84,77 @@ public partial class FOWSystem
 
 
 
+        }
 
-            #region 使探索过的区域变成半透明
-            // for (int i = 0; i < colorBuffer.Length; i++)
-            // {
-            //     Color32 c = colorBuffer[i];
-            //     if (c.r == 0)
-            //     {
+        private int GetIndexInMap(int2 pos)
+        {
 
-            //         blurBuffer[i] = ChangeColor(blurBuffer[i], 'a', c.b == 255 ?  120 :  255);
-            //     }
-            //     else
-            //     {
-            //         blurBuffer[i] = ChangeColor(blurBuffer[i], 'a', (byte)(255 - c.r));
-            //     }
-            // }
+            var index = fowUnit.position.ConvertToint2() + pos;
+            if (index.x >= 0 && index.x < ConfigData.gridWidth && index.y >= 0 && index.y < ConfigData.gridWidth)
+                return index.y * ConfigData.gridWidth + index.x;
+            return 0;
+        }
 
+        /// <summary>
+        /// return true, if the grid is unvisiable
+        /// </summary>
+        /// <param name="gridPosition"></param>
+        /// <param name="obstacleNeighbors"></param>
+        /// <returns></returns>
+        private bool CheckUnVisiable(FixedVector2 gridPosition, NativeList<ObstacleVertice> obstacleNeighbors)
+        {
+            //从后往前遍历
+            int from;
+            int to;
+            to = obstacleNeighbors.Length - 1;
+            from = obstacleNeighbors.Length;
+            while (to >=0 )
+            {
 
-
-            #endregion
-
-
-            // for (int i = 0; i < blurBuffer.Length; i++)
-            // {
-
-            //     var index = GetMapIndex(i, rangeWidth);
-
-            //     if (index != -1
-            //                 // && mapBlurBuffer[index].a > blurBuffer[i].a
-            //                 )
-            //     {
-            //         mapBlurBuffer[index] = colorBuffer[i];
-            //     }
-            // }
-
+                if (obstacleNeighbors[to].verticeId_ >= 0)
+                {
+                    to--;
+                    continue;
+                }
+                NativeSlice<ObstacleVertice> tempOnstacle = new NativeSlice<ObstacleVertice>(obstacleNeighbors, to + 1, from - to - 1);
 
 
-            // colorBuffer.Dispose();
-            // blurBuffer.Dispose();
+                if (!CheckSingleObstacleVisiable(gridPosition, tempOnstacle))
+                {
+                    return true;
+                }
+                from = to;
+
+                to-- ;
+
+            }
+            return false;
+
 
 
         }
 
-        private bool CheckExposed(FixedVector2 gridPosition, NativeList<Obstacle> obstacleNeighbors)
+        private bool CheckSingleObstacleVisiable(FixedVector2 gridPosition, NativeSlice<ObstacleVertice> tempOnstacle)
         {
-            int index = 0;
-            while(index < obstacleNeighbors.Length ){
 
-
-            }
-
-            for (int i = 0; i < obstacleNeighbors.Length - 1; i++)
+            for (int i = 0; i < tempOnstacle.Length ; i++)
             {
-                
-                NativeSlice<Obstacle> currentObstacleVertices = new NativeSlice<Obstacle>(obstacleNeighbors, 0, 4);
-                if (!CheckInsideTriangle(obstacleNeighbors[i].point_, gridPosition, obstacleNeighbors[i + 1].point_))
-                    return false;
+                if (CheckIntheSameLeftAsUnit(tempOnstacle[i].direction_, tempOnstacle[i].point_, gridPosition))
+                {
+                    return true;
+                }
             }
-            return true;
+            return false;
+        }
+        // private bool CheckIntheSameLeftAsUnit(FixedVector2 ObstacleVertice_a, FixedVector2 gridPos, FixedVector2 ObstacleVertice_b)
+        // {
+        //     return FixedCalculate.leftOf(ObstacleVertice_a, gridPos, ObstacleVertice_b).sign == FixedCalculate.leftOf(ObstacleVertice_a, fowUnit.position, ObstacleVertice_b).sign;
+
+        // }
+         private bool CheckIntheSameLeftAsUnit(FixedVector2 obstacleVerticeDir, FixedVector2 obstacleVerticePoint, FixedVector2 gridPos)
+        {
+            return FixedCalculate.det(obstacleVerticeDir, gridPos - obstacleVerticePoint).sign == FixedCalculate.det(obstacleVerticeDir, fowUnit.position - obstacleVerticePoint).sign;
+            // return FixedCalculate.leftOf(ObstacleVertice_a, gridPos, ObstacleVertice_b).sign == FixedCalculate.leftOf(ObstacleVertice_a, fowUnit.position, ObstacleVertice_b).sign;
 
         }
 
@@ -229,11 +214,11 @@ public partial class FOWSystem
         }
 
 
-        private void GetRangeObstacleVertices(FixedVector2 fOWUnitPosition, ObstacleTreeNode node, FixedInt rangeSq, NativeList<Obstacle> obstacleNeighbors)
+        private void GetRangeObstacleVertices(FixedVector2 fOWUnitPosition, ObstacleTreeNode node, FixedInt rangeSq, NativeList<ObstacleVertice> obstacleNeighbors)
         {
             if (node.obstacleIndex == -1) return;
-            Obstacle obstacle1 = obstacles_[node.obstacleIndex];
-            Obstacle obstacle2 = obstacles_[obstacle1.next_];
+            ObstacleVertice obstacle1 = obstacles_[node.obstacleIndex];
+            ObstacleVertice obstacle2 = obstacles_[obstacle1.next_];
 
             FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, fOWUnitPosition);
 
@@ -275,24 +260,42 @@ public partial class FOWSystem
 
         }
 
-        private void InsertObstacleNeighbor(FixedVector2 fOWUnitPosition, Obstacle obstacle, NativeList<Obstacle> obstacleNeighbors_, FixedInt rangeSq)
+        private  void InsertObstacleNeighbor(FixedVector2 fOWUnitPosition, ObstacleVertice obstacle, NativeList<ObstacleVertice> obstacleNeighbors_, FixedInt rangeSq)
         {
-            Obstacle nextObstacle = obstacles_[obstacle.next_];
+            ObstacleVertice nextObstacle = obstacles_[obstacle.next_];
 
             FixedInt distSq = FixedCalculate.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, fOWUnitPosition);
 
+
             if (distSq < rangeSq)
             {
-                obstacleNeighbors_.Add(obstacle);
+                if(obstacleNeighbors_.Contains(obstacle)){
+                   var index = obstacleNeighbors_.IndexOf(obstacle);
 
-                // int i = obstacleNeighbors_.Length - 1;
+                    obstacleNeighbors_.Add(new ObstacleVertice());
+                    for (int i = obstacleNeighbors_.Length - 1; i > index;i--){
+                        obstacleNeighbors_[i] = obstacleNeighbors_[i - 1];
+                    }
+                    obstacleNeighbors_[index] = obstacle;
+                }
+                else{
+                    obstacleNeighbors_.Add(new ObstacleVertice { verticeId_ = -2 });
+                    obstacleNeighbors_.Add(obstacle);
+                }
 
-                // while (i != 0 && distSq < obstacleNeighbors_[i - 1].distance)
+                        
+                
+
+                // if (obstacleNeighbors_.Length == 0 ||
+                //    obstacleNeighbors_[obstacleNeighbors_.Length - 1] != obstacle)
                 // {
-                //     obstacleNeighbors_[i] = obstacleNeighbors_[i - 1];
-                //     --i;
+                //     //用-2来分割不同的 obstacle块
+                //     obstacleNeighbors_.Add(new Obstacle { id_ = -2 });
+                //     obstacleNeighbors_.Add(obstacle);
                 // }
-                // obstacleNeighbors_[i] = new ObstacleNeighbor { distance = distSq, obstacle = obstacle };
+
+                // obstacleNeighbors_.Add(nextObstacle);
+
             }
 
         }

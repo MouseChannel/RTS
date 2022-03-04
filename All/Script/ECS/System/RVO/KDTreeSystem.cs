@@ -17,10 +17,10 @@ namespace RVO
         private int obstacleCount;
         public NativeList<Agent> agents_ = new NativeList<Agent>(Allocator.Persistent);
         public NativeList<AgentTreeNode> agentTree_ = new NativeList<AgentTreeNode>(Allocator.Persistent);
-        public NativeList<Obstacle> obstacles_ = new NativeList<Obstacle>(Allocator.Persistent);
+        public NativeList<ObstacleVertice> obstacles_ = new NativeList<ObstacleVertice>(Allocator.Persistent);
         public NativeList<ObstacleTreeNode> obstacleTree_ = new NativeList<ObstacleTreeNode>(Allocator.Persistent);
 
-        private NativeList<Obstacle> splitObstaclesDuringBuild = new NativeList<Obstacle>(Allocator.Persistent);
+        private NativeList<ObstacleVertice> splitObstaclesDuringBuild = new NativeList<ObstacleVertice>(Allocator.Persistent);
         public ObstacleTreeNode obstacleTreeRoot;
         protected override void OnDestroy()
         {
@@ -67,7 +67,7 @@ namespace RVO
             obstacles_.Clear();
             obstacleTree_.Clear();
 
-            Entities.ForEach((Entity entity, DynamicBuffer<ObstacleVertice> obstacleVertices) =>
+            Entities.ForEach((Entity entity, DynamicBuffer<PreObstacleVertice> obstacleVertices) =>
             {
                 ObstacleCollect(obstacles_, obstacleVertices);
             }).WithoutBurst().Run();
@@ -75,7 +75,7 @@ namespace RVO
  
 
             InitObstacleTree(obstacles_.Length);
-            NativeList<Obstacle> currentObstacles = new NativeList<Obstacle> (  Allocator.Temp);
+            NativeList<ObstacleVertice> currentObstacles = new NativeList<ObstacleVertice> (  Allocator.Temp);
             currentObstacles.AddRange(obstacles_);
             obstacleTreeRoot = BuildObstacleTreeRecursive(currentObstacles);
 
@@ -159,7 +159,7 @@ namespace RVO
 
         }
 
-        private void ObstacleCollect(NativeList<Obstacle> obstacles_, DynamicBuffer<ObstacleVertice> obstacleVertices)
+        private void ObstacleCollect(NativeList<ObstacleVertice> obstacles_, DynamicBuffer<PreObstacleVertice> obstacleVertices)
         {
             if (obstacleVertices.Length < 2)
             {
@@ -169,37 +169,39 @@ namespace RVO
             int obstacleNo = obstacles_.Length;
             for (int i = 0; i < obstacleVertices.Length; ++i)
             {
-                obstacles_.Add(new Obstacle
+                obstacles_.Add(new ObstacleVertice
                 {
-                    id_ = obstacles_.Length,
+                    verticeId_ = obstacles_.Length,
                     previous_ = -1,
-                    next_ = -1
+                    next_ = -1,
+                    obstacleId_ = obstacleNo,
+
                 });
             }
 
             for (int i = 0; i < obstacleVertices.Length; ++i)
             {
 
-                Obstacle obstacle = obstacles_[obstacles_.Length - obstacleVertices.Length + i];
+                ObstacleVertice obstacle = obstacles_[obstacles_.Length - obstacleVertices.Length + i];
                 obstacle.point_ = obstacleVertices[i].vertice;
 
                 if (i != 0)
                 {
 
-                    obstacle.previous_ = obstacle.id_ - 1;
+                    obstacle.previous_ = obstacle.verticeId_ - 1;
 
                     var temp = obstacles_[obstacle.previous_];
-                    temp.next_ = obstacle.id_;
+                    temp.next_ = obstacle.verticeId_;
                     obstacles_[obstacle.previous_] = temp;
 
                 }
 
                 if (i == obstacleVertices.Length - 1)
                 {
-                    obstacle.next_ = obstacles_[obstacleNo].id_;
+                    obstacle.next_ = obstacles_[obstacleNo].verticeId_;
 
                     var temp = obstacles_[obstacle.next_];
-                    temp.previous_ = obstacle.id_;
+                    temp.previous_ = obstacle.verticeId_;
                     obstacles_[obstacle.next_] = temp;
                     // obstacle.next_.previous_ = obstacle;
                 }
@@ -214,7 +216,7 @@ namespace RVO
                 {
                     obstacle.convex_ = (FixedCalculate.leftOf(obstacleVertices[(i == 0 ? obstacleVertices.Length - 1 : i - 1)].vertice, obstacleVertices[i].vertice, obstacleVertices[(i == obstacleVertices.Length - 1 ? 0 : i + 1)].vertice) >= 0);
                 }
-                obstacles_[obstacle.id_] = obstacle;
+                obstacles_[obstacle.verticeId_] = obstacle;
 
 
             }
@@ -236,7 +238,7 @@ namespace RVO
         }
 
  
-    private ObstacleTreeNode BuildObstacleTreeRecursive(NativeList<Obstacle> current)
+    private ObstacleTreeNode BuildObstacleTreeRecursive(NativeList<ObstacleVertice> current)
         {
             if (current.Length == 0) return new ObstacleTreeNode { obstacleIndex = -1 };
        
@@ -252,8 +254,8 @@ namespace RVO
                 int leftSize = 0;
                 int rightSize = 0;
 
-                Obstacle obstacleI1 = current[i];
-                Obstacle obstacleI2 = obstacles_[obstacleI1.next_];
+                ObstacleVertice obstacleI1 = current[i];
+                ObstacleVertice obstacleI2 = obstacles_[obstacleI1.next_];
 
                 /* Compute optimal split node. */
                 for (int j = 0; j < current.Length; ++j)
@@ -263,11 +265,11 @@ namespace RVO
                         continue;
                     }
 
-                    Obstacle obstacleJ1 = current[j];
+                    ObstacleVertice obstacleJ1 = current[j];
 
 
 
-                    Obstacle obstacleJ2 = obstacles_[obstacleJ1.next_];
+                    ObstacleVertice obstacleJ2 = obstacles_[obstacleJ1.next_];
 
                     FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
                     FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
@@ -305,28 +307,28 @@ namespace RVO
 
             {
                 /* Build split node. */
-                NativeList<Obstacle> leftObstacles = new NativeList<Obstacle>(Allocator.Temp);
+                NativeList<ObstacleVertice> leftObstacles = new NativeList<ObstacleVertice>(Allocator.Temp);
                 // IList<Obstacle> leftObstacles = new List<Obstacle>(minLeft);
 
                 for (int n = 0; n < minLeft; ++n)
                 {
-                    leftObstacles.Add(new Obstacle { id_ = -1 });
+                    leftObstacles.Add(new ObstacleVertice { verticeId_ = -1 });
                 }
 
-                NativeList<Obstacle> rightObstacles = new NativeList<Obstacle>(Allocator.Temp);
+                NativeList<ObstacleVertice> rightObstacles = new NativeList<ObstacleVertice>(Allocator.Temp);
                 // IList<Obstacle> rightObstacles = new List<Obstacle>(minRight);
 
                 for (int n = 0; n < minRight; ++n)
                 {
-                    rightObstacles.Add(new Obstacle { id_ = -1 });
+                    rightObstacles.Add(new ObstacleVertice { verticeId_ = -1 });
                 }
 
                 int leftCounter = 0;
                 int rightCounter = 0;
                 int i = optimalSplit;
 
-                Obstacle obstacleI1 = current[i];
-                Obstacle obstacleI2 = obstacles_[obstacleI1.next_];
+                ObstacleVertice obstacleI1 = current[i];
+                ObstacleVertice obstacleI2 = obstacles_[obstacleI1.next_];
 
                 for (int j = 0; j < current.Length; ++j)
                 {
@@ -335,8 +337,8 @@ namespace RVO
                         continue;
                     }
 
-                    Obstacle obstacleJ1 = current[j];
-                    Obstacle obstacleJ2 = obstacles_[obstacleJ1.next_];
+                    ObstacleVertice obstacleJ1 = current[j];
+                    ObstacleVertice obstacleJ2 = obstacles_[obstacleJ1.next_];
 
                     FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
                     FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
@@ -357,22 +359,22 @@ namespace RVO
 
                         FixedVector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
 
-                        Obstacle newObstacle = new Obstacle();
+                        ObstacleVertice newObstacle = new ObstacleVertice();
                         newObstacle.point_ = splitPoint;
-                        newObstacle.previous_ = obstacleJ1.id_;
-                        newObstacle.next_ = obstacleJ2.id_;
+                        newObstacle.previous_ = obstacleJ1.verticeId_;
+                        newObstacle.next_ = obstacleJ2.verticeId_;
                         newObstacle.convex_ = true;
                         newObstacle.direction_ = obstacleJ1.direction_;
 
-                        newObstacle.id_ = obstacles_.Length;
+                        newObstacle.verticeId_ = obstacles_.Length;
                        
 
                         // Simulator.Instance.obstacles_.Add(newObstacle);
                         obstacles_.Add(newObstacle);
                         obstacleTree_.Add(new ObstacleTreeNode());
 
-                        obstacleJ1.next_ = newObstacle.id_;
-                        obstacleJ2.previous_ = newObstacle.id_;
+                        obstacleJ1.next_ = newObstacle.verticeId_;
+                        obstacleJ2.previous_ = newObstacle.verticeId_;
 
                         if (j1LeftOfI > 0)
                         {
@@ -390,7 +392,7 @@ namespace RVO
 
                 }
 
-                node.obstacleIndex = obstacleI1.id_;
+                node.obstacleIndex = obstacleI1.verticeId_;
 
                 node.left_index = BuildObstacleTreeRecursive(leftObstacles ).obstacleIndex;
                 node.right_index = BuildObstacleTreeRecursive(rightObstacles ).obstacleIndex;

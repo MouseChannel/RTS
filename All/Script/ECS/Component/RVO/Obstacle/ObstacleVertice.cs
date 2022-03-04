@@ -7,9 +7,10 @@ using FixedMath;
 
 
 
-public struct ObstacleVertice : IBufferElementData
+public struct PreObstacleVertice : IBufferElementData
 {
     public FixedVector2 vertice;
+  
     // public int verticeCount;
 }
 

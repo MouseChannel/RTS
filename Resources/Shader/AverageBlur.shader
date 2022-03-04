@@ -6,7 +6,7 @@
 		
 		_LastTex ("LastTexture", 2D) = "black" {}	//主贴图
 		_BlurRadius("BlurRadius",float) = 1.3
-		_LerpRate("LerpRate",float) = 0.05
+		_LerpRate("LerpRate",float) = 0
 	}
 
 	SubShader

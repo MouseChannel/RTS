@@ -144,8 +144,8 @@ namespace RVO
         private void GetRangeObstacleVertices(Agent agent, ObstacleTreeNode node, FixedInt rangeSq, NativeList<ObstacleNeighbor> obstacleNeighbors)
         {
             if (node.obstacleIndex == -1) return;
-            Obstacle obstacle1 = obstacles_[node.obstacleIndex];
-            Obstacle obstacle2 = obstacles_[obstacle1.next_];
+            ObstacleVertice obstacle1 = obstacles_[node.obstacleIndex];
+            ObstacleVertice obstacle2 = obstacles_[obstacle1.next_];
 
             FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, agent.position_);
 
@@ -187,9 +187,9 @@ namespace RVO
 
         }
 
-        private void InsertObstacleNeighbor(Agent agent, Obstacle obstacle, NativeList<ObstacleNeighbor> obstacleNeighbors_, FixedInt rangeSq)
+        private void InsertObstacleNeighbor(Agent agent, ObstacleVertice obstacle, NativeList<ObstacleNeighbor> obstacleNeighbors_, FixedInt rangeSq)
         {
-            Obstacle nextObstacle = obstacles_[obstacle.next_];
+            ObstacleVertice nextObstacle = obstacles_[obstacle.next_];
 
             FixedInt distSq = FixedCalculate.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, agent.position_);
 
