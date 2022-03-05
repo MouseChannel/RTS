@@ -36,12 +36,18 @@ public partial class PathFindSystem
     }
 
     [BurstCompile]
-    private struct BuildPathGridCostJob : IJob 
+    private struct BuildPathGridCostJob : IJob
     {
-        
+
         private DynamicBuffer<PathPosition> pathPositionBuffer;
-        [DeallocateOnJobCompletion]
+        [ReadOnly]
         public NativeArray<GridNode> pathNodeArray;
+        // [NativeDisableContainerSafetyRestriction]
+        // [DeallocateOnJobCompletion]
+        // public NativeArray<GridNode> tempPathNodeArray;
+
+
+
         public int startNodeIndex;
         public int endNodeIndex;
 
@@ -62,23 +68,24 @@ public partial class PathFindSystem
 
 
 
-        public void Execute( )
+        public void Execute()
         {
+            NativeList<GridNode> tempPathNodeArray = new NativeList<GridNode>(Allocator.Temp);
 
 
-            BuildPathGridCost();
+            BuildPathGridCost(tempPathNodeArray);
 
-            CalculatePath();
+            CalculatePath(tempPathNodeArray);
             DeleteCollinear();
             RemoveCorner();
 
             if (pathPositionBuffer.Length > 0)
                 ecbPara.SetComponent<CurrentPathIndex>(indexInQuery, entity, new CurrentPathIndex { pathIndex = pathPositionBuffer.Length - 2 });
 
-
+            tempPathNodeArray.Dispose();
         }
 
-        private void BuildPathGridCost()
+        private void BuildPathGridCost(NativeList<GridNode> tempPathNodeArray)
         {
             GridNode startNode = pathNodeArray[startNodeIndex];
             GridNode endNode = pathNodeArray[endNodeIndex];
@@ -103,30 +110,35 @@ public partial class PathFindSystem
 
 
             startNode.gCost = 0;
-            startNode.CalculateFCost();
-            pathNodeArray[startNodeIndex] = startNode;
+
+            // pathNodeArray[startNodeIndex] = startNode;
 
 
-            NativeList<pair> openList = new NativeList<pair>(Allocator.Temp);
+            // NativeList<pair> openList = new NativeList<pair>(Allocator.Temp);
+            NativeList<GridNode> openList = new NativeList<GridNode>(Allocator.Temp);
 
-            NativeList<int> closedList = new NativeList<int>(Allocator.Temp);
+            NativeList<GridNode> closedList = new NativeList<GridNode>(Allocator.Temp);
 
-            openList.Add(new pair { index = startNodeIndex, cost = startNode.fCost });
+            // openList.Add(new pair { index = startNodeIndex, cost = startNode.fCost });
+            openList.Add(startNode);
+            tempPathNodeArray.Add(startNode);
 
             while (openList.Length > 0)
             {
-                int currentNodeIndex = PopLowestCostFNodeIndex(openList);
-                GridNode currentNode = pathNodeArray[currentNodeIndex];
+                // int currentNodeIndex = PopLowestCostFNodeIndex(openList);
+                var currentNode = PopLowestCostFNode(openList);
+                // GridNode currentNode = tempPathNodeArray[currentNodeIndex];
 
-                if (currentNodeIndex == endNodeIndex)
+                if (currentNode.index == endNodeIndex)
                 {
                     // Reached our destination!
+                    tempPathNodeArray.Add(currentNode);
                     break;
                 }
 
 
 
-                closedList.Add(currentNodeIndex);
+                closedList.Add(currentNode);
                 // List<int> aaaa = new List<int>();
 
 
@@ -143,16 +155,17 @@ public partial class PathFindSystem
                         // Neighbour not valid position
                         continue;
                     }
+                    var neighbourNode = pathNodeArray[CalculateIndex(neighbourPosition)];
 
-                    int neighbourNodeIndex = CalculateIndex(neighbourPosition);
+                    // int neighbourNodeIndex = CalculateIndex(neighbourPosition);
 
-                    if (closedList.Contains(neighbourNodeIndex))
+                    if (closedList.Contains(neighbourNode))
                     {
                         // Already searched this node
                         continue;
                     }
 
-                    GridNode neighbourNode = pathNodeArray[neighbourNodeIndex];
+                    // GridNode neighbourNode = tempPathNodeArray[neighbourNodeIndex];
                     if (!neighbourNode.isWalkable)
                     {
                         // Not walkable
@@ -165,17 +178,30 @@ public partial class PathFindSystem
                     int tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNodePosition, new int2(endNode.x, endNode.y));
                     if (tentativeGCost < neighbourNode.gCost)
                     {
-                        neighbourNode.cameFromNodeIndex = currentNodeIndex;
+
+                        neighbourNode.cameFromNodeIndex = tempPathNodeArray.IndexOf(currentNode);
                         neighbourNode.gCost = tentativeGCost;
-                        neighbourNode.CalculateFCost();
+                        // neighbourNode.CalculateFCost();
+                        //---
+                        // var newNode = new GridNode
+                        // {
+                        //     cameFromNodeIndex = currentNodeIndex,
+                        //     fCost = tentativeGCost,
 
-                        pathNodeArray[neighbourNodeIndex] = neighbourNode;
-                        var neighbourPair = new pair { index = neighbourNodeIndex, cost = neighbourNode.fCost };
+                        // };
 
-                        if (!openList.Contains(neighbourPair))
+                        //---
+
+                        // tempPathNodeArray[neighbourNodeIndex] = neighbourNode;
+                        // var neighbourPair = new pair { index = neighbourNodeIndex, cost = neighbourNode.fCost };
+
+                        if (!openList.Contains(neighbourNode))
                         {
 
-                            openList.Add(neighbourPair);
+                            openList.Add(neighbourNode);
+                            tempPathNodeArray.Add(neighbourNode);
+
+
                         }
                     }
 
@@ -189,10 +215,10 @@ public partial class PathFindSystem
         }
 
 
-        private void CalculatePath()
+        private void CalculatePath(NativeList<GridNode> tempPathNodeArray)
         {
             pathPositionBuffer = ecbPara.SetBuffer<PathPosition>(indexInQuery, entity);
-            var endNode = pathNodeArray[endNodeIndex];
+            var endNode = tempPathNodeArray[tempPathNodeArray.Length - 1];
             if (endNode.cameFromNodeIndex == -1)
             {
                 // Couldn't find a path!
@@ -208,7 +234,7 @@ public partial class PathFindSystem
                 GridNode currentNode = endNode;
                 while (currentNode.cameFromNodeIndex != -1)
                 {
-                    GridNode cameFromNode = pathNodeArray[currentNode.cameFromNodeIndex];
+                    GridNode cameFromNode = tempPathNodeArray[currentNode.cameFromNodeIndex];
                     pathPositionBuffer.Add(new PathPosition { position = new int2(cameFromNode.x, cameFromNode.y) });
                     currentNode = cameFromNode;
                 }
@@ -299,6 +325,16 @@ public partial class PathFindSystem
             openList.Sort();
 
             var result = openList[openList.Length - 1].index;
+            openList.RemoveAtSwapBack(openList.Length - 1);
+            return result;
+
+        }
+        private GridNode PopLowestCostFNode(NativeList<GridNode> openList)
+        {
+
+            openList.Sort();
+            //native容器不保证顺序
+            var result = openList[openList.Length - 1];
             openList.RemoveAtSwapBack(openList.Length - 1);
             return result;
 

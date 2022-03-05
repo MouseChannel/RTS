@@ -15,44 +15,40 @@ using FixedMath;
 public partial class FOWSystem
 {
     [BurstCompile]
-    public struct ComputeFog : IJob
+    public struct FreshJob : IJob
     {
         [NativeDisableContainerSafetyRestriction]
-        public NativeArray<Color32> mapBlurBuffer;
-        [ReadOnly]  public NativeArray<ObstacleVertice> obstacles_;
-        [ReadOnly]  public NativeArray<ObstacleTreeNode> obstacleTree_;
+        public NativeArray<Color32> blurBuffer;
+        [ReadOnly]
+        public NativeList<int> lastVisiableArea;
+        public void Execute()
+        {
+            foreach (var i in lastVisiableArea)
+            {
+
+                blurBuffer[i] = new Color32(0, 0, 0, 252);
+
+            }
+
+        }
+    }
+    [BurstCompile]
+    public struct ComputeFog : IJob
+    {
+        [ReadOnly] public NativeArray<ObstacleVertice> obstacles_;
+        [ReadOnly] public NativeArray<ObstacleTreeNode> obstacleTree_;
         [ReadOnly] public ObstacleTreeNode obstacleTreeRoot;
 
         [ReadOnly] public FOWUnit fowUnit;
         public UnsafeHashSet<int>.ParallelWriter setParaWriter;
 
 
-        public  void Execute()
+        public void Execute()
         {
 
             int range = fowUnit.range;
-
-
-
-
-
-
-
-            #region 获取障碍物
             NativeList<ObstacleVertice> obstacleNeighbors = new NativeList<ObstacleVertice>(Allocator.Temp);
             GetRangeObstacleVertices(fowUnit.position, obstacleTreeRoot, fowUnit.range * fowUnit.range, obstacleNeighbors);
-
-
-            // }
-
-                // for (int i = 0; i < obstacleNeighbors.Length; i++)
-                // {
-                //     Debug.Log(String.Format("{0} {1}  {2} {3}", obstacleNeighbors[i].point_, obstacleNeighbors[i].verticeId_, obstacleNeighbors[i].obstacleId_, obstacleNeighbors[i].direction_));
-                // }
-
-
-            #endregion
-            // TestGizmos.InitGizmos();
 
             for (int i = -range; i <= range; i++)
                 for (int j = -range; j <= range; j++)
@@ -62,38 +58,14 @@ public partial class FOWSystem
                     if (!CheckUnVisiable(currentGridPos, obstacleNeighbors))
                     {
                         var index = GridSystem.GetGridIndexInFOW(currentGridPos);
-                        // var index = GetIndexInMap(.ConvertToint2());
                         setParaWriter.Add(index);
-                        // TestGizmos.SetGridUnvisiable(currentGridPos);
-
                     }
-
                 }
-
-
-
-
-
-
-
-
-
             obstacleNeighbors.Dispose();
 
-
-
-
-
         }
 
-        private int GetIndexInMap(int2 pos)
-        {
 
-            var index = fowUnit.position.ConvertToint2() + pos;
-            if (index.x >= 0 && index.x < ConfigData.gridWidth && index.y >= 0 && index.y < ConfigData.gridWidth)
-                return index.y * ConfigData.gridWidth + index.x;
-            return 0;
-        }
 
         /// <summary>
         /// return true, if the grid is unvisiable
@@ -108,7 +80,7 @@ public partial class FOWSystem
             int to;
             to = obstacleNeighbors.Length - 1;
             from = obstacleNeighbors.Length;
-            while (to >=0 )
+            while (to >= 0)
             {
 
                 if (obstacleNeighbors[to].verticeId_ >= 0)
@@ -125,7 +97,7 @@ public partial class FOWSystem
                 }
                 from = to;
 
-                to-- ;
+                to--;
 
             }
             return false;
@@ -137,7 +109,7 @@ public partial class FOWSystem
         private bool CheckSingleObstacleVisiable(FixedVector2 gridPosition, NativeSlice<ObstacleVertice> tempOnstacle)
         {
 
-            for (int i = 0; i < tempOnstacle.Length ; i++)
+            for (int i = 0; i < tempOnstacle.Length; i++)
             {
                 if (CheckIntheSameLeftAsUnit(tempOnstacle[i].direction_, tempOnstacle[i].point_, gridPosition))
                 {
@@ -146,15 +118,10 @@ public partial class FOWSystem
             }
             return false;
         }
-        // private bool CheckIntheSameLeftAsUnit(FixedVector2 ObstacleVertice_a, FixedVector2 gridPos, FixedVector2 ObstacleVertice_b)
-        // {
-        //     return FixedCalculate.leftOf(ObstacleVertice_a, gridPos, ObstacleVertice_b).sign == FixedCalculate.leftOf(ObstacleVertice_a, fowUnit.position, ObstacleVertice_b).sign;
 
-        // }
-         private bool CheckIntheSameLeftAsUnit(FixedVector2 obstacleVerticeDir, FixedVector2 obstacleVerticePoint, FixedVector2 gridPos)
+        private bool CheckIntheSameLeftAsUnit(FixedVector2 obstacleVerticeDir, FixedVector2 obstacleVerticePoint, FixedVector2 gridPos)
         {
             return FixedCalculate.det(obstacleVerticeDir, gridPos - obstacleVerticePoint).sign == FixedCalculate.det(obstacleVerticeDir, fowUnit.position - obstacleVerticePoint).sign;
-            // return FixedCalculate.leftOf(ObstacleVertice_a, gridPos, ObstacleVertice_b).sign == FixedCalculate.leftOf(ObstacleVertice_a, fowUnit.position, ObstacleVertice_b).sign;
 
         }
 
@@ -167,30 +134,7 @@ public partial class FOWSystem
         /// <param name="range"></param>
         /// <returns></returns>
         public bool CheckInRange(int x, int y, int range) => x * x + y * y < range * range;
-        public int GetRangeIndex(int x, int y, int width) => y * width + x;
 
-        public int GetMapIndex(int index, int rangeWidth)
-        {
-            //暂时
-            int mapWidth = 100;
-
-            int startPos = GridSystem.GetGridIndexInFOW(fowUnit.position);
-            var y = startPos / mapWidth;
-            var x = startPos % mapWidth;
-
-            var yy = index / rangeWidth;
-            var xx = index % rangeWidth;
-
-            var resulty = y + yy - rangeWidth / 2;
-            var resultx = x + xx - rangeWidth / 2;
-
-
-            if (resultx < 0 || resultx >= mapWidth || resulty < 0 || resulty >= mapWidth)
-                return -1;
-
-
-            return resulty * mapWidth + resultx;
-        }
 
         public Color32 ChangeColor(Color32 before, char mark, int value)
         {
@@ -260,7 +204,7 @@ public partial class FOWSystem
 
         }
 
-        private  void InsertObstacleNeighbor(FixedVector2 fOWUnitPosition, ObstacleVertice obstacle, NativeList<ObstacleVertice> obstacleNeighbors_, FixedInt rangeSq)
+        private void InsertObstacleNeighbor(FixedVector2 fOWUnitPosition, ObstacleVertice obstacle, NativeList<ObstacleVertice> obstacleNeighbors_, FixedInt rangeSq)
         {
             ObstacleVertice nextObstacle = obstacles_[obstacle.next_];
 
@@ -269,32 +213,25 @@ public partial class FOWSystem
 
             if (distSq < rangeSq)
             {
-                if(obstacleNeighbors_.Contains(obstacle)){
-                   var index = obstacleNeighbors_.IndexOf(obstacle);
+                if (obstacleNeighbors_.Contains(obstacle))
+                {
+                    var index = obstacleNeighbors_.IndexOf(obstacle);
 
                     obstacleNeighbors_.Add(new ObstacleVertice());
-                    for (int i = obstacleNeighbors_.Length - 1; i > index;i--){
+                    for (int i = obstacleNeighbors_.Length - 1; i > index; i--)
+                    {
                         obstacleNeighbors_[i] = obstacleNeighbors_[i - 1];
                     }
                     obstacleNeighbors_[index] = obstacle;
                 }
-                else{
+                else
+                {
+                    //     //用-2来分割不同的 obstacle块
                     obstacleNeighbors_.Add(new ObstacleVertice { verticeId_ = -2 });
                     obstacleNeighbors_.Add(obstacle);
                 }
 
-                        
-                
 
-                // if (obstacleNeighbors_.Length == 0 ||
-                //    obstacleNeighbors_[obstacleNeighbors_.Length - 1] != obstacle)
-                // {
-                //     //用-2来分割不同的 obstacle块
-                //     obstacleNeighbors_.Add(new Obstacle { id_ = -2 });
-                //     obstacleNeighbors_.Add(obstacle);
-                // }
-
-                // obstacleNeighbors_.Add(nextObstacle);
 
             }
 
@@ -304,36 +241,6 @@ public partial class FOWSystem
 
 
 
-        /// <summary>
-        /// 
-        ///                                   B  _____________                                             
-        ///                                    *|             |                                
-        ///                                 *###|             |                               
-        ///                              *######|             |                              
-        ///                           *#########|_____________|                                          
-        ///                        * ######***** C                                        
-        ///                     *  * * * *                                                   
-        ///                   A                                                         
-        ///
-        /// 
-        ///     图中#表示阴影 ,计算三点 A B C 形成的三角形，之间的阴影  
-        /// ///     这里规定                                                                    
-        /// </summary>
-        /// <param name="A"></param>
-        /// <param name="B"></param>
-        /// <param name="C"></param>
-        private bool CheckInsideTriangle(FixedVector2 A, FixedVector2 B, FixedVector2 C)
-        {
-            return FixedCalculate.leftOf(A, B, C).sign == FixedCalculate.leftOf(A, fowUnit.position, C).sign
-                && FixedCalculate.leftOf(A, C, B).sign == FixedCalculate.leftOf(A, fowUnit.position, B).sign
-                && FixedCalculate.leftOf(B, A, C).sign == FixedCalculate.leftOf(B, fowUnit.position, C).sign;
-        }
-
-        private void CalculateLinerFunc(int2 A, int2 B, out float k, out float b)
-        {
-            k = (B.y - A.y) / (B.x - A.x);
-            b = A.y - k * A.x;
-        }
     }
 
 

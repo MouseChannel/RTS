@@ -25,7 +25,7 @@ public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
             maxSpeed_ = 6,
             velocity_ = new FixedVector2(0, 0),
             position_ = new FixedVector2(FightSystem.Instance.allMovedUnit.Count, FightSystem.Instance.allMovedUnit.Count),
-            // position_ = new FixedVector2(24, 14)
+            // position_ = new FixedVector2(24, 10)
         // faction_ = Root.Instance.id,
         // needCheckClosestEnemy_ = true
         // needCheckRangeNeighbor = true,

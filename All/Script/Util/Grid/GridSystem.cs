@@ -56,13 +56,13 @@ public class GridSystem : Singleton<GridSystem>
         ValidateGridPosition(ref x, ref y);
         return new int2(x, y);
     }
-    public int GetGridIndex(float3 worldPosition)
+    public  int GetGridIndex(float3 worldPosition)
     {
         FixedVector2 temp = new FixedVector2((FixedInt)worldPosition.x, (FixedInt)worldPosition.z);
         return GetGridIndex(temp);
     }
 
-    public static int GetGridIndex(FixedVector2 worldPosition)
+    public static  int GetGridIndex(FixedVector2 worldPosition)
     {
         var x = (worldPosition.X.round).RawInt;
         var y = (worldPosition.Y.round).RawInt;
@@ -71,8 +71,8 @@ public class GridSystem : Singleton<GridSystem>
     }
     public static int GetGridIndexInFOW(FixedVector2 worldPosition)
     {
-        var x = (worldPosition.X.round).RawInt + 50;
-        var y = (worldPosition.Y.round).RawInt + 50;
+        var x = (worldPosition.X.round).RawInt + ConfigData.gridWidth / 2;
+        var y = (worldPosition.Y.round).RawInt + ConfigData.gridWidth / 2;
         ValidateGridPosition(ref x, ref y);
         return y * ConfigData.gridWidth + x;
     }

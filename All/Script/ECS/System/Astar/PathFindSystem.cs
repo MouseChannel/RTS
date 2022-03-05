@@ -28,7 +28,8 @@ public partial class PathFindSystem : WorkSystem
 
         List<BuildPathGridCostJob> buildPathGridCostJobList = new List<BuildPathGridCostJob>();
 
-        NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
+        NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp );
+        // var jobWriter = jobHandleList.AsParallelWriter();
         NativeArray<GridNode> pathNodeArray = new NativeArray<GridNode>(GridSystem.Instance.GetWidth() * GridSystem.Instance.GetWidth(), Allocator.TempJob);
 
         NativeArray<GridNode>.Copy(GridSystem.Instance.GetGridArray(), pathNodeArray);
@@ -41,16 +42,17 @@ public partial class PathFindSystem : WorkSystem
 
         Entities.ForEach((Entity entity, int entityInQueryIndex, in PathFindParams pathfindParams, in Agent agent) =>
         {
-            NativeArray<GridNode> tmpPathNodeArray = new NativeArray<GridNode>(pathNodeArray, Allocator.TempJob);
+            // NativeArray<GridNode> tmpPathNodeArray = new NativeArray<GridNode>(pathNodeArray, Allocator.TempJob);
             // var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
-            var startPos = GridSystem.Instance.GetIndex(agent.position_);
+             
+             var startNodeIndex =  GridSystem.GetGridIndex(agent.position_);
             // gridSystem.GetIndex(agent.position_);
             BuildPathGridCostJob buildPathGridCostJob = new BuildPathGridCostJob
             {
 
 
-                pathNodeArray = tmpPathNodeArray,
-                startNodeIndex = startPos,
+                pathNodeArray = pathNodeArray,
+                startNodeIndex = startNodeIndex,
                 endNodeIndex = pathfindParams.endPosition,
                 entity = entity,
                 // pathPositionBuffer = pathPositionBuffer,
@@ -60,7 +62,7 @@ public partial class PathFindSystem : WorkSystem
 
             };
 
-            jobHandleList.Add(buildPathGridCostJob.Schedule());
+            jobHandleList.Add (buildPathGridCostJob.Schedule());
 
 
             ecb.RemoveComponent<PathFindParams>(entity);

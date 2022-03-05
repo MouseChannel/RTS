@@ -57,7 +57,7 @@ public class FightSystem : Singleton<FightSystem>
         foreach (var i in mes.SelectedUnit)
         {
             if (GridSystem.Instance.GetGridArray()[mes.EndPos].isWalkable)
-                entityManager.AddComponentData(allMovedUnit[i], new PathFindParams { endPosition = mes.EndPos });
+                entityManager.AddComponentData(allMovedUnit[i], new PathFindParams { startPosition = mes.StartPos, endPosition = mes.EndPos });
         }
 
     }
