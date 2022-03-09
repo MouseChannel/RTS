@@ -4,14 +4,13 @@ using UnityEngine;
 using Unity.Entities;
 using FixedMath;
 
-
-using RVO;
+ 
 public class ViewUnit : MonoBehaviour
 {
     [HideInInspector] public Entity entity;
     public UnityEngine.Vector2 poss;
     void Start(){
-        FightSystem.Instance.allGameobject.Add(this);
+        ResponseNetSystem.Instance.allGameobject.Add(this);
     }
 
 
@@ -27,7 +26,7 @@ public class ViewUnit : MonoBehaviour
         // Debug.Log(dir);
         transform.position = Vector3.Lerp(transform.position, new Vector3(pos.X.RawFloat, 0, pos.Y.RawFloat), Time.deltaTime * 4);
         if ( FixedCalculate.absSq(dir) > (FixedInt)0.001)
-            transform.forward = Vector3.Lerp(transform.forward, new Vector3(dir.X.RawFloat, 0, dir.Y.RawFloat), Time.deltaTime * 10);
+            transform.forward = Vector3.Lerp(transform.forward, new Vector3(dir.X.RawFloat, 0, dir.Y.RawFloat), Time.deltaTime * 20);
 
         
     }

@@ -42,7 +42,7 @@ public class PbTool : Singleton<PbTool>
 
     public static PbMessage MakeMove(float3 destinationPox, List<int> seletedUnits)
     {
-        var endIndex = GridSystem.Instance.GetGridIndex(destinationPox );
+        var endIndex = GridSystem.Instance.GetGridIndex(destinationPox);
         var sendFightMessage = new FightMessage
         {
             BattleCMD = FightMessage.Types.BattleCMD.Move,
@@ -59,7 +59,27 @@ public class PbTool : Singleton<PbTool>
         };
     }
 
+    public static PbMessage MakeInteract(int entityNo, List<int> seletedUnits)
+    {
+       
+        var sendFightMessage = new FightMessage
+        {
+            BattleCMD = FightMessage.Types.BattleCMD.Interact,
+            SelectedUnit = { seletedUnits },
+            InteractObject = entityNo
+        };
 
 
+        return new PbMessage
+        {
+            Cmd = PbMessage.Types.CMD.Room,
+            CmdRoom = PbMessage.Types.CmdRoom.FightOp,
+            SendFightMessage = sendFightMessage
+        };
+    }
 
+    public override void InitInstance()
+    {
+
+    }
 }

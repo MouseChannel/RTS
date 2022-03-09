@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Pb;
 using System.Threading;
+using Unity.Entities;
 
 public class LobbySystem : Singleton<LobbySystem>
 {
@@ -10,11 +11,12 @@ public class LobbySystem : Singleton<LobbySystem>
     private ConfirmWindow confirmWindow;
     private SelectWindow selectWindow;
     private LoadWindow loadWindow;
+   
 
     public override void InitInstance()
     {
 
-
+        
     }
 
     public void EnterLobbyWindow()
@@ -23,7 +25,7 @@ public class LobbySystem : Singleton<LobbySystem>
         //登录窗口
         // Resources.Load<LobbyWindow>("UI/UIMainWindow/LobbyWindow");
         ResourceService.Instance.LoadMainWindow<LobbyWindow>("UI/UIMainWindow/LobbyWindow", ref lobbyWindow);
- 
+
         Debug.Log("loadLobbt");
         // lobbyWindow.SetWindowState();
     }
@@ -44,7 +46,7 @@ public class LobbySystem : Singleton<LobbySystem>
     public void EnterLoadWindow()
     {
         ResourceService.Instance.LoadMainWindow<LoadWindow>("UI/UIMainWindow/LoadWindow", ref loadWindow);
-        ResourceService.Instance.AsyncLoadScene("FightScene", SceneLoadProgress, SceneLoadDone,sceneChangedComplete );
+        ResourceService.Instance.AsyncLoadScene("FightScene", SceneLoadProgress, SceneLoadDone, sceneChangedComplete);
 
         void SceneLoadProgress(float val)
         {
@@ -61,16 +63,17 @@ public class LobbySystem : Singleton<LobbySystem>
         {
             var mes = PbTool.Instance.MakeBattleStart();
 
-         
+
             NetService.Instance.SendMessage(mes);
 
 
         }
-        void sceneChangedComplete(){
-            FightSystem.Instance.InitFightScene();
+        void sceneChangedComplete()
+        {
+            ResponseNetSystem.Instance.InitFightScene();
         }
     }
-#region match
+    #region match
     public void ResponseMatch(PbMessage message)
     {
         switch (message.CmdMatch)
@@ -86,20 +89,20 @@ public class LobbySystem : Singleton<LobbySystem>
     }
     private void ResponseJoinMatch(PbMessage message)
     {
-       
+
         lobbyWindow.ResponseJoinMatch();
 
 
     }
     private void ResponseQuitMatch(PbMessage message)
     {
-       
+
 
         lobbyWindow.ResponseQuitMatch();
 
 
     }
-    
+
     #endregion
     public void ResponseRoom(PbMessage message)
     {
@@ -124,9 +127,9 @@ public class LobbySystem : Singleton<LobbySystem>
                 ResponseLoadData(message);
                 break;
             case PbMessage.Types.CmdRoom.FightStart:
-                FightSystem.Instance.ResponseFightStart();
+                ResponseNetSystem.Instance.ResponseFightStart();
                 break;
- 
+
 
         }
 
@@ -177,11 +180,11 @@ public class LobbySystem : Singleton<LobbySystem>
     {
         loadWindow.UpdateLoadPercent(message);
     }
-    
- 
- 
 
-  
+
+
+
+
 
 
 }

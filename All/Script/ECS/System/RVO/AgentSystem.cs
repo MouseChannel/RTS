@@ -8,81 +8,73 @@ using Unity.Transforms;
 using System;
 using UnityEngine.UI;
 
-namespace RVO
+
+
+
+public partial class AgentSystem : WorkSystem
 {
 
 
-    public partial class AgentSystem : WorkSystem
+
+    public override void Work()
     {
-        public int aas = 3;
+        if (!ShouldRunSystem()) return;
 
 
-        public override void Work()
+
+
+        #region  updateAgentJob
+        var kDTreeSystem = World.GetExistingSystem<KDTreeSystem>();
+        var agents_ = kDTreeSystem.agents_;
+        var agentTree_ = kDTreeSystem.agentTree_;
+        var obstacles_ = kDTreeSystem.obstacleVertices_;
+        var obstacleTree_ = kDTreeSystem.obstacleVerticesTree_;
+        var obstacleTreeRoot = kDTreeSystem.obstacleVerticesTreeRoot;
+
+        // Debug.Log(string.Format("{0}  ", DateTime.Now));
+
+
+
+        var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+        NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
+
+
+        Entities.ForEach((Entity entity, int entityInQueryIndex, in Agent agent) =>
         {
-
-            // Debug.Log(string.Format("{0}  ", DateTime.Now));
-            /// <summary>
-            /// Update three state
-            /// 1：update agent position
-            /// 2: (optional) update rangeNeighbor(heal stuff)
-            /// 3: (optional) update enemyUnit(auto attack)
-            /// </summary>
-            /// <typeparam name="UpdateAgentJob"></typeparam>
-            /// <returns></returns>
-
-            #region  updateAgentJob
-            var kDTreeSystem = World.GetExistingSystem<KDTreeSystem>();
-            var agents_ = kDTreeSystem.agents_;
-            var agentTree_ = kDTreeSystem.agentTree_;
-            var obstacles_ = kDTreeSystem.obstacles_;
-            var obstacleTree_ = kDTreeSystem.obstacleTree_;
-            var obstacleTreeRoot = kDTreeSystem.obstacleTreeRoot;
-
-            // Debug.Log(string.Format("{0}  ", DateTime.Now));
-
-
-
-            var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
-            NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
-
-
-            Entities.ForEach((Entity entity, int entityInQueryIndex, in Agent agent) =>
+            UpdateAgentJob updateAgentJob = new UpdateAgentJob
             {
-                UpdateAgentJob updateAgentJob = new UpdateAgentJob
-                {
-                    // newVelocity = newVelocity,
-                    // rangeNeighbors = rangeNeighbors,
-                    // enemyUnit = enemyUnit,
-                    entity = entity,
-                    agent = agent,
-                    agents = agents_,
-                    agentTree = agentTree_,
-                    obstacles = obstacles_,
-                    obstacleTree = obstacleTree_,
-                    obstacleTreeRoot = obstacleTreeRoot,
-                    indexInEntityQuery = entityInQueryIndex,
-                    ecbPara = ecbPara
+                // newVelocity = newVelocity,
+                // rangeNeighbors = rangeNeighbors,
+                // enemyUnit = enemyUnit,
+                entity = entity,
+                agent = agent,
+                agents = agents_,
+                agentTree = agentTree_,
+                obstacles = obstacles_,
+                obstacleTree = obstacleTree_,
+                obstacleTreeRoot = obstacleTreeRoot,
+                indexInEntityQuery = entityInQueryIndex,
+                ecbPara = ecbPara
 
-                };
+            };
 
 
 
 
-                jobHandleList.Add(updateAgentJob.Schedule());
+            jobHandleList.Add(updateAgentJob.Schedule());
 
-            }).WithoutBurst().Run();
-            JobHandle.CompleteAll(jobHandleList);
+        }).WithoutBurst().Run();
+        JobHandle.CompleteAll(jobHandleList);
 
-            #endregion
+        #endregion
 
-            jobHandleList.Dispose();
-  
-
-
-        }
-
+        jobHandleList.Dispose();
 
 
 
     }
+
+
+
+
 }

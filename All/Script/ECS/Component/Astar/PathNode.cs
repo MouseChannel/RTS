@@ -57,7 +57,4 @@ public struct GridNode: IComparable<GridNode>, IEquatable<GridNode>
 }
 
 
-public struct PathPosition : IBufferElementData
-{
-    public int2 position;
-}
+

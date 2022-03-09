@@ -19,12 +19,11 @@ public abstract class Singleton<T>
             return instance;
         }
     }
-    public virtual void InitInstance()
-    {
-    }
+    public abstract void InitInstance();
 
 
- 
+
+
 
 
 

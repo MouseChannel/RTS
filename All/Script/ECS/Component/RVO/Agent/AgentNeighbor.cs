@@ -4,13 +4,12 @@ using UnityEngine;
 using Unity.Entities;
 using FixedMath;
 
-namespace RVO{
 
 
-    public struct AgentNeighbor : IComponentData
-    {
-        public FixedInt distance;
-        public Agent agent;
-    
-    }
+public struct AgentNeighbor : IComponentData
+{
+    public FixedInt distance;
+    public Agent agent;
+
 }
+

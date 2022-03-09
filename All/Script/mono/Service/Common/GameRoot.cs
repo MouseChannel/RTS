@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Unity.Entities;
 
 public class GameRoot : SingletonMonoBehaviour<GameRoot>
 {
     public TipWindow tipWindow;
     public int roomCount = 3,factionCount = 3;
-    public event EventHandler  updateEvent;
+ 
  
   
     void Start()
@@ -20,7 +21,7 @@ public class GameRoot : SingletonMonoBehaviour<GameRoot>
     void Update()
     {
         NetService.Instance.Update();
-        // updateEvent?.Invoke(this, EventArgs.Empty);
+        
     }
  
     public void MyStartCoroutine(IEnumerator action){
@@ -51,6 +52,9 @@ public class GameRoot : SingletonMonoBehaviour<GameRoot>
         // tipWindow.AddTips(tips);
     }
 
+ 
+
 
 
 }
+ 

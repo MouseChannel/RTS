@@ -9,7 +9,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Burst;
 using System;
-using RVO;
+ 
 using FixedMath;
 
 public partial class FOWSystem
@@ -36,8 +36,8 @@ public partial class FOWSystem
     public struct ComputeFog : IJob
     {
         [ReadOnly] public NativeArray<ObstacleVertice> obstacles_;
-        [ReadOnly] public NativeArray<ObstacleTreeNode> obstacleTree_;
-        [ReadOnly] public ObstacleTreeNode obstacleTreeRoot;
+        [ReadOnly] public NativeArray<ObstacleVerticeTreeNode> obstacleTree_;
+        [ReadOnly] public ObstacleVerticeTreeNode obstacleTreeRoot;
 
         [ReadOnly] public FOWUnit fowUnit;
         public UnsafeHashSet<int>.ParallelWriter setParaWriter;
@@ -158,10 +158,10 @@ public partial class FOWSystem
         }
 
 
-        private void GetRangeObstacleVertices(FixedVector2 fOWUnitPosition, ObstacleTreeNode node, FixedInt rangeSq, NativeList<ObstacleVertice> obstacleNeighbors)
+        private void GetRangeObstacleVertices(FixedVector2 fOWUnitPosition, ObstacleVerticeTreeNode node, FixedInt rangeSq, NativeList<ObstacleVertice> obstacleNeighbors)
         {
-            if (node.obstacleIndex == -1) return;
-            ObstacleVertice obstacle1 = obstacles_[node.obstacleIndex];
+            if (node.obstacleVertice_Index == -1) return;
+            ObstacleVertice obstacle1 = obstacles_[node.obstacleVertice_Index];
             ObstacleVertice obstacle2 = obstacles_[obstacle1.next_];
 
             FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, fOWUnitPosition);

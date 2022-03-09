@@ -4,9 +4,16 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 
-public struct PathFindParams : IComponentData
+public struct PathFindCommand : IComponentData
 {
-    public int startPosition;
     public int endPosition;
     
+}
+public struct PathPosition : IBufferElementData
+{
+    public int2 position;
+}
+public struct CurrentPathIndex : IComponentData
+{
+   public int pathIndex;
 }

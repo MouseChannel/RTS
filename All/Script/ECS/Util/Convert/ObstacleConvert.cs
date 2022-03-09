@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using FixedMath;
-using RVO;
+ 
 using Unity.Mathematics;
 
 public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
 {
     [SerializeField] BoxCollider boxCollider;
+    
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
         float x = boxCollider.transform.position.x;
@@ -29,9 +30,10 @@ public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
         vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)maxZ)  });
         vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)minZ)  });
         vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)maxX, (FixedInt)minZ) });
-        // GameData.obstacleCount++;
-        // Debug.Log(boxCollider.size.x);
-        World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>().UpdateObstacleTree();
+        dstManager.AddComponentData<Obstacle>(entity, new Obstacle { position_ = new FixedVector2((FixedInt)x, (FixedInt)y), id_ = ResponseNetSystem.Instance.allObstacle.Count });
+        ResponseNetSystem.Instance.allObstacle.Add(entity);
+        World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>().AddNewObstacle();
+        Debug.Log( "闸弄爱我i"+   GridSystem.GetGridIndex(new FixedVector2((FixedInt)minX, (FixedInt)minZ)));
 
         #region SetPathFinding UnWalkable
         GridSystem.Instance.SetUnWalkableArea(new int2( (int)boxCollider.transform.position.x, (int)boxCollider.transform.position.z),

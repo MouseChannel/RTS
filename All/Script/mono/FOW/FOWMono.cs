@@ -11,15 +11,16 @@ public class FOWMono : MonoBehaviour
     {
         fOWSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
         material = GetComponent<Renderer>().material;
+        GetComponent<Transform>().localScale = new Vector3(ConfigData.gridWidth / 10, 1, ConfigData.gridWidth / 10);
     }
 
     // Update is called once per frame
     void Update()
     {
-         if (fOWSystem.FogTexture != null)
-            {
-             
-                material.SetTexture("_MainTex", fOWSystem.FogTexture);
-            }
+        if (fOWSystem.FogTexture != null)
+        {
+
+            material.SetTexture("_MainTex", fOWSystem.FogTexture);
+        }
     }
 }

@@ -9,11 +9,13 @@ using System.Threading.Tasks;
 
 public class NetService : Singleton<NetService>
 {
+     
     public static readonly string queue_lock = "queueLock";
     private static KCPNet<ClientSession> client;
     private Queue<PbMessage> messageQueue = null;
     public static Task<bool> checkTask;
-   
+ 
+
 
 
     public uint Sid
@@ -32,8 +34,8 @@ public class NetService : Singleton<NetService>
         client.StartClient(ip, 7777);
         checkTask = client.ConnectServer(200, 5000);
         messageQueue = new Queue<PbMessage>();
-        // Task.Run(StartWork);
-        // GameRoot.Instance.updateEvent += Update;
+        
+        
     }
     public void Init()
     {
@@ -151,10 +153,10 @@ public class NetService : Singleton<NetService>
                 break;
 
             case PbMessage.Types.CMD.Fight:
-                FightSystem.Instance.ResponseFightOp(message);
+                ResponseNetSystem.Instance.ResponseFightOp(message);
                 break;
             case PbMessage.Types.CMD.Chat:
-                FightSystem.Instance.ResponseFightOp(message);
+                ResponseNetSystem.Instance.ResponseFightOp(message);
                 break;
 
 

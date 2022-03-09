@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using Unity.Collections;
-using RVO;
+ 
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -81,9 +81,9 @@ public partial class FOWSystem : SystemBase
     private void CalculateFog()
     {
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
-        NativeArray<ObstacleVertice> obstacles_ = new NativeArray<ObstacleVertice>(kDTreeSystem.obstacles_, Allocator.TempJob);
-        NativeArray<ObstacleTreeNode> obstacleTree_ = new NativeArray<ObstacleTreeNode>(kDTreeSystem.obstacleTree_, Allocator.TempJob);
-        ObstacleTreeNode obstacleTreeRoot = kDTreeSystem.obstacleTreeRoot;
+        NativeArray<ObstacleVertice> obstacles_ = new NativeArray<ObstacleVertice>(kDTreeSystem.obstacleVertices_, Allocator.TempJob);
+        NativeArray<ObstacleVerticeTreeNode> obstacleTree_ = new NativeArray<ObstacleVerticeTreeNode>(kDTreeSystem.obstacleVerticesTree_, Allocator.TempJob);
+        ObstacleVerticeTreeNode obstacleTreeRoot = kDTreeSystem.obstacleVerticesTreeRoot;
 
 
         UnsafeHashSet<int> visiableArea = new UnsafeHashSet<int>(colorBuffer.Length, Allocator.TempJob);

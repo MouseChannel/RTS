@@ -263,7 +263,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &208100086
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -459,7 +459,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103733, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc790081a211f994f92586517990f228, type: 3}
@@ -1277,7 +1277,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103733, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc790081a211f994f92586517990f228, type: 3}
@@ -1691,7 +1691,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103733, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc790081a211f994f92586517990f228, type: 3}
@@ -2054,7 +2054,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!81 &963194226
 AudioListener:
   m_ObjectHideFlags: 0
@@ -2088,8 +2088,8 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 100
-  field of view: 71
-  orthographic: 1
+  field of view: 83
+  orthographic: 0
   orthographic size: 13.39
   m_Depth: -1
   m_CullingMask:
@@ -2113,13 +2113,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 16.1, y: 22.2, z: 3.63}
+  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalPosition: {x: 10.6, y: 15.6, z: -2.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2249,6 +2249,7 @@ GameObject:
   - component: {fileID: 1046140535}
   - component: {fileID: 1046140537}
   - component: {fileID: 1046140536}
+  - component: {fileID: 1046140538}
   m_Layer: 0
   m_Name: ObstascleEntity
   m_TagString: Untagged
@@ -2296,6 +2297,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boxCollider: {fileID: 1378851628}
+--- !u!114 &1046140538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046140534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc50bedff12469c47ad9e586d6757401, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resourceId: 1
+  resourcePositionIndex: 8200
+  stopId: 0
+  stopPositionIndex: 6672
 --- !u!1 &1071254100
 GameObject:
   m_ObjectHideFlags: 0
@@ -2603,7 +2620,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103733, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc790081a211f994f92586517990f228, type: 3}
@@ -2625,7 +2642,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1369383512
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2818,7 +2835,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1384251611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2911,7 +2928,7 @@ Camera:
   far clip plane: 100
   field of view: 71
   orthographic: 1
-  orthographic size: 14.6
+  orthographic size: 20.69
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2998,7 +3015,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103733, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc790081a211f994f92586517990f228, type: 3}
@@ -3454,7 +3471,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1657254583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3525,7 +3542,7 @@ Transform:
   m_GameObject: {fileID: 1657254582}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 1, z: 10}
+  m_LocalScale: {x: 30, y: 1, z: 30}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -3944,7 +3961,7 @@ GameObject:
   - component: {fileID: 1983500251}
   - component: {fileID: 1983500250}
   m_Layer: 0
-  m_Name: ObstascleEntity
+  m_Name: ObstascleEntity1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4188,7 +4205,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103721, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 23.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103721, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4196,7 +4213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103721, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2474633670857103721, guid: fc790081a211f994f92586517990f228, type: 3}
       propertyPath: m_LocalRotation.w

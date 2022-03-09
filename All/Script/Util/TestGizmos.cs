@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using FixedMath;
 
-public class TestGizmos : SingletonMonoBehaviour<TestGizmos>
+public class TestGizmos : MonoBehaviour
 {
     // Start is called before the first frame update
     private static GridNode[] gridArray;
