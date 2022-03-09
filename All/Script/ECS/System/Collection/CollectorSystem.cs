@@ -35,12 +35,12 @@ public partial class CollectorSystem : WorkSystem
                     
                     collector = collector,
                     collectorPosition = agent.position_,
-                    
+                
                     resourceEntity = GetEntity(collector.resource.resourceId),
-                    resourcePositionIndex = collector.resource.resourcePositionIndex,
+                 
                     
                     stopEntity = GetEntity(collector.resource.stopId),
-                    stopPositionIndex =  collector.resource.stopPositionIndex,
+               
                     ecbPara = ecbPara,
                     entityInQueryIndex = entityInQueryIndex
 

@@ -16,16 +16,19 @@ public partial class CollectorSystem
         public Entity entity;
         public FixedVector2 collectorPosition;
         public Collector collector;
+        public ResourceComponent resource;
         public Entity resourceEntity;
         public Entity stopEntity;
-        public int resourcePositionIndex;
-        public int stopPositionIndex;
+        private int resourcePositionIndex;
+        private int stopPositionIndex;
 
         [NativeDisableContainerSafetyRestriction]
         public EntityCommandBuffer.ParallelWriter ecbPara;
         public int entityInQueryIndex;
         public void Execute()
         {
+            resourcePositionIndex = collector.resource.resourcePositionIndex;
+            stopPositionIndex = collector.resource.stopPositionIndex;
 
 
             switch (collector.collectorState)
@@ -73,7 +76,7 @@ public partial class CollectorSystem
             }
             //Animation
 
-            if (GridSystem.GetGridIndex(collectorPosition) == resourcePositionIndex)
+            if (GridSystem.GetGridIndex(collectorPosition) ==  resourcePositionIndex)
             {
                 ChangeCollectorState(CollectorState.working);
             }
@@ -114,7 +117,7 @@ public partial class CollectorSystem
     
             if (stopEntity != Entity.Null)
             {
-                if (GridSystem.GetGridIndex(collectorPosition) == stopPositionIndex)
+                if (GridSystem.GetGridIndex(collectorPosition) ==  stopPositionIndex)
                 {
                     ChangeCollectorState(CollectorState.idle);
                 }
