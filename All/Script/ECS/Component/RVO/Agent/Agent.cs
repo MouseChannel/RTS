@@ -14,6 +14,7 @@ public struct Agent : IComponentData
     public bool reachDestination;
     public FixedVector2 position_;
     public FixedVector2 prefVelocity_;
+    public FixedVector2 faceTo_;
     public FixedVector2 velocity_;
     public int id_;
     public int maxNeighbors_;

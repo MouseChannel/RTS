@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 
-public struct PathFindCommand : IComponentData
+public struct PathFindParam : IComponentData
 {
     public int endPosition;
     

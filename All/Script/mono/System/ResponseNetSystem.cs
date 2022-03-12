@@ -6,42 +6,43 @@ using System;
 using Unity.Mathematics;
 using UnityEngine.UI;
 using Unity.Entities;
- 
-public class ResponseNetSystem :  Singleton<ResponseNetSystem>
+
+public   class ResponseNetSystem : ServiceSystem
+// Singleton<ResponseNetSystem>
 {
 
     // private ResponseCommandSystem responseCommandSystem;
-    private EntityManager entityManager;
+
     public List<WorkSystem> workList = new List<WorkSystem>();
     public List<Entity> allMovedUnit = new List<Entity>();
     public List<Entity> allObstacle = new List<Entity>();
     public List<ViewUnit> allGameobject = new List<ViewUnit>();
-    private Transform frame;
+
     int frameId = 0;
-    private Text id;
+
 
     public void InitFightScene()
     {
-        // var s = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<SelectionSystem>();
-        // s.GetMainCamera();
 
-        var fow = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
+
+
+        var fow = World.GetOrCreateSystem<FOWSystem>();
         fow.InitFOW();
-        var kDTreeSystem =  World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>();
-        // kDTreeSystem.UpdateObstacleTree();
+        var kDTreeSystem = World.GetOrCreateSystem<KDTreeSystem>();
+
     }
 
-    public override void InitInstance()
+    protected override void OnCreate()
     {
-        // responseCommandSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<ResponseCommandSystem>();
-        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        // responseCommandSystem = World.GetOrCreateSystem<ResponseCommandSystem>();
 
 
-        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<CollectorSystem>());
-        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<PathFindSystem>());
-        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KeepWalkingSystem>());
-        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>());
-        workList.Add(World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<AgentSystem>());
+        workList.Add(World.GetOrCreateSystem<CommandSystem>());
+        workList.Add(World.GetOrCreateSystem<CollectorSystem>());
+        workList.Add(World.GetOrCreateSystem<PathFindSystem>());
+        workList.Add(World.GetOrCreateSystem<KeepWalkingSystem>());
+        workList.Add(World.GetOrCreateSystem<KDTreeSystem>());
+        workList.Add(World.GetOrCreateSystem<AgentSystem>());
 
 
     }
@@ -57,23 +58,50 @@ public class ResponseNetSystem :  Singleton<ResponseNetSystem>
     {
 
 
+
         foreach (var i in mes.SelectedUnit)
         {
+            var entity = allMovedUnit[i];
+            Debug.Log(entity);
+            // ChangeInhabitantState(entity, InhabitantState.Idle);
+
+
             if (GridSystem.Instance.GetGridArray()[mes.EndPos].isWalkable)
-                entityManager.AddComponentData(allMovedUnit[i], new PathFindCommand {   endPosition = mes.EndPos });
+              EntityManager.AddComponentData(entity, new HasCommand { type = CommandType.move, commandData = mes.EndPos});
+
+                // EntityManager.AddComponentData(entity, new PathFindParam { endPosition = mes.EndPos });
         }
 
     }
     public void ResponseInteractCommand(FightMessage mes)
     {
-        var collectCommand = allObstacle[mes.InteractObject];
 
-        var resourceComponent = entityManager.GetComponentData<ResourceComponent>(collectCommand);
+        // var interactEntity = allObstacle[mes.InteractObject];
+
+        // var resourceComponent = EntityManager.GetComponentData<ResourceComponent>(interactEntity);
 
         foreach (var i in mes.SelectedUnit)
         {
-            Debug.Log("Add");
-            entityManager.AddComponentData(allMovedUnit[i], new CollectCommand {  resource = resourceComponent });
+            var entity = allMovedUnit[i];
+            // ChangeInhabitantState(entity, InhabitantState.Collect);
+            
+
+              EntityManager.AddComponentData(allMovedUnit[i], new HasCommand { type = CommandType.collect, commandData = mes.InteractObject  });
+
+            // EntityManager.AddComponentData(allMovedUnit[i], new CollectCommand {  resourceNo = mes.InteractObject, resource = resourceComponent });
+        }
+
+    }
+    public void ResponseFightCommand(FightMessage mes)
+    {
+        var fightEntity = allMovedUnit[mes.EnemyUnit];
+
+
+
+        foreach (var i in mes.SelectedUnit)
+        {
+            Debug.Log("fight");
+            EntityManager.AddComponentData(allMovedUnit[i], new HasCommand { type = CommandType.fight, commandData = mes.EnemyUnit });
         }
 
     }
@@ -98,6 +126,9 @@ public class ResponseNetSystem :  Singleton<ResponseNetSystem>
                 case FightMessage.Types.BattleCMD.Interact:
                     ResponseInteractCommand(i);
                     break;
+                case FightMessage.Types.BattleCMD.Fight:
+                    ResponseFightCommand(i);
+                    break;
 
             }
         }
@@ -110,9 +141,8 @@ public class ResponseNetSystem :  Singleton<ResponseNetSystem>
 
     }
 
+    protected override void OnUpdate()
+    {
 
-
-
-
-
+    }
 }

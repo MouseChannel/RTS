@@ -70,7 +70,7 @@ public class LobbySystem : Singleton<LobbySystem>
         }
         void sceneChangedComplete()
         {
-            ResponseNetSystem.Instance.InitFightScene();
+            GetSystem<ResponseNetSystem>().InitFightScene();
         }
     }
     #region match
@@ -127,7 +127,7 @@ public class LobbySystem : Singleton<LobbySystem>
                 ResponseLoadData(message);
                 break;
             case PbMessage.Types.CmdRoom.FightStart:
-                ResponseNetSystem.Instance.ResponseFightStart();
+                GetSystem<ResponseNetSystem>().ResponseFightStart();
                 break;
 
 

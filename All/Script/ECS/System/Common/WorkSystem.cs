@@ -10,16 +10,27 @@ public abstract class WorkSystem : SystemBase
     // protected EndSimulationEntityCommandBufferSystem 
     protected EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
     // protected BeginPresentationEntityCommandBufferSystem beginPresentationEntityCommandBufferSystem;
+    protected EntityCommandBuffer.ParallelWriter ecbPara
+    {
+        get
+        {
+
+            return World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>().CreateCommandBuffer().AsParallelWriter();
+
+        }
+    }
+
 
     protected override void OnCreate()
     {
 
         endSimulationEntityCommandBufferSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
-        // beginPresentationEntityCommandBufferSystem = World.GetExistingSystem<BeginPresentationEntityCommandBufferSystem>();
-        // World.GetOrCreateSystem<ResponseCommandSystem>().workList.Add(this);
-        // FightSystem.Instance.workList.Add(this);
     }
     // public virtual void Init(){}
+    protected T GetSystem<T>() where T : SystemBase
+    {
+        return World.GetOrCreateSystem<T>();
+    }
 
 
 

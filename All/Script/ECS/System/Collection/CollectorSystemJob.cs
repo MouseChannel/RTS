@@ -16,19 +16,17 @@ public partial class CollectorSystem
         public Entity entity;
         public FixedVector2 collectorPosition;
         public Collector collector;
-        public ResourceComponent resource;
-        public Entity resourceEntity;
-        public Entity stopEntity;
-        private int resourcePositionIndex;
-        private int stopPositionIndex;
+ 
+ 
+        public int resourcePositionIndex;
+        public int stopPositionIndex;
 
         [NativeDisableContainerSafetyRestriction]
         public EntityCommandBuffer.ParallelWriter ecbPara;
         public int entityInQueryIndex;
         public void Execute()
         {
-            resourcePositionIndex = collector.resource.resourcePositionIndex;
-            stopPositionIndex = collector.resource.stopPositionIndex;
+ 
 
 
             switch (collector.collectorState)
@@ -55,7 +53,7 @@ public partial class CollectorSystem
         private void Case_Idle()
         {
         
-            if (resourceEntity != Entity.Null)
+            if (resourcePositionIndex != -1)
             {
                 ChangeCollectorState(CollectorState.goToResource);
             }
@@ -68,7 +66,7 @@ public partial class CollectorSystem
         private void Case_GoToResource()
         {
            
-            if (resourceEntity == Entity.Null)
+            if (resourcePositionIndex == -1)
             {
                 ChangeCollectorState(CollectorState.idle);
 
@@ -85,7 +83,7 @@ public partial class CollectorSystem
         private void Case_Working()
         {
           
-            if (resourceEntity == Entity.Null)
+            if (resourcePositionIndex == -1)
             {
                 if (collector.currentResourceStore < 20)
                 {
@@ -115,7 +113,7 @@ public partial class CollectorSystem
         private void Case_BackToStop()
         {
     
-            if (stopEntity != Entity.Null)
+            if (stopPositionIndex != -1)
             {
                 if (GridSystem.GetGridIndex(collectorPosition) ==  stopPositionIndex)
                 {
@@ -125,7 +123,7 @@ public partial class CollectorSystem
             else
             {
                 GetMainFortId(out int fortId);
-                collector.resource.stopId = fortId;
+               
 
                 AddToEcbQueue();
             }
@@ -154,7 +152,7 @@ public partial class CollectorSystem
 
                     break;
                 case CollectorState.goToResource:
-                    ecbPara.AddComponent<PathFindCommand>(entityInQueryIndex, entity, new PathFindCommand { endPosition = resourcePositionIndex });
+                    ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = resourcePositionIndex });
 
                     break;
                 case CollectorState.working:
@@ -162,7 +160,7 @@ public partial class CollectorSystem
                     break;
                 case CollectorState.backToStop:
 
-                    ecbPara.AddComponent<PathFindCommand>(entityInQueryIndex, entity, new PathFindCommand { endPosition = stopPositionIndex });
+                    ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = stopPositionIndex });
 
 
                     break;

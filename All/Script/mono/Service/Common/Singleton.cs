@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Entities;
 using UnityEngine;
 
 public abstract class Singleton<T>
@@ -19,6 +20,11 @@ public abstract class Singleton<T>
             return instance;
         }
     }
+
+    protected Q GetSystem<Q>() where Q: SystemBase{
+        return World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Q>();
+    }
+
     public abstract void InitInstance();
 
 

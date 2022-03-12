@@ -153,10 +153,10 @@ public class NetService : Singleton<NetService>
                 break;
 
             case PbMessage.Types.CMD.Fight:
-                ResponseNetSystem.Instance.ResponseFightOp(message);
+                GetSystem<ResponseNetSystem>().ResponseFightOp(message);
                 break;
             case PbMessage.Types.CMD.Chat:
-                ResponseNetSystem.Instance.ResponseFightOp(message);
+                GetSystem<ResponseNetSystem>().ResponseFightOp(message);
                 break;
 
 

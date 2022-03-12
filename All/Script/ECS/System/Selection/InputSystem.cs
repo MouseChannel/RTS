@@ -7,7 +7,7 @@ using FixedMath;
 
 using System;
 
-public class InputSystem : SystemBase
+public class InputSystem : ServiceSystem
 {
     private Camera mainCamera;
     public bool IsDragging = false;
@@ -15,11 +15,11 @@ public class InputSystem : SystemBase
     private RectTransform selectionBoxRect;
     private KDTreeSystem kDTreeSystem;
     public List<int> selectedUnits = new List<int>();
-    public Vector3 hitpoint;
-    public float radiuus;
+
+    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
     protected override void OnCreate()
     {
-        // DontDestroyOnLoad(this);
+        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         kDTreeSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>();
     }
     // private void OnDestroy()
@@ -86,7 +86,7 @@ public class InputSystem : SystemBase
                 if (obstacleNo != -1)
                 {
                     Debug.Log(obstacleNo);
-                    var obs = ResponseNetSystem.Instance.allObstacle[obstacleNo];
+                    var obs =GetSystem<ResponseNetSystem>().allObstacle[obstacleNo];
                     if (HasComponent<ResourceComponent>(obs))
                     {
                         NetService.Instance.SendMessage(PbTool.MakeInteract(obstacleNo, selectedUnits));
@@ -94,6 +94,8 @@ public class InputSystem : SystemBase
                 }
                 else
                 {
+
+
                     NetService.Instance.SendMessage(PbTool.MakeMove(hit.point, selectedUnits));
                 }
 

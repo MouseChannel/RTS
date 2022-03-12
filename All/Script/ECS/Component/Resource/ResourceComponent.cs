@@ -9,9 +9,9 @@ public struct ResourceComponent : IComponentData
 {
     
     public FixedVector2 position;
-    public int resourceId;
+    public int resourceNo;
     public int resourcePositionIndex;
-    public int stopId;
+    public int stopNo;
     public int stopPositionIndex;
 
 }

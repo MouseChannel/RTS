@@ -6,7 +6,7 @@ using FixedMath;
  
 using Unity.Mathematics;
 
-public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
+public class ObstacleConvert : MonoSystem, IConvertGameObjectToEntity
 {
     [SerializeField] BoxCollider boxCollider;
     
@@ -30,14 +30,14 @@ public class ObstacleConvert : MonoBehaviour, IConvertGameObjectToEntity
         vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)maxZ)  });
         vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)minZ)  });
         vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)maxX, (FixedInt)minZ) });
-        dstManager.AddComponentData<Obstacle>(entity, new Obstacle { position_ = new FixedVector2((FixedInt)x, (FixedInt)y), id_ = ResponseNetSystem.Instance.allObstacle.Count });
-        ResponseNetSystem.Instance.allObstacle.Add(entity);
+        dstManager.AddComponentData<Obstacle>(entity, new Obstacle { position_ = new FixedVector2((FixedInt)x, (FixedInt)y), id_ = GetSystem<ResponseNetSystem>().allObstacle.Count });
+        GetSystem<ResponseNetSystem>().allObstacle.Add(entity);
         World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>().AddNewObstacle();
-        Debug.Log( "闸弄爱我i"+   GridSystem.GetGridIndex(new FixedVector2((FixedInt)minX, (FixedInt)minZ)));
+        Debug.Log( "绕太阳会让他为"+   GridSystem.GetGridIndex(new FixedVector2((FixedInt)minX, (FixedInt)minZ)));
 
         #region SetPathFinding UnWalkable
-        GridSystem.Instance.SetUnWalkableArea(new int2( (int)boxCollider.transform.position.x, (int)boxCollider.transform.position.z),
-                                                (FixedInt)(boxCollider.transform.lossyScale.x / 2),4);
+        // GridSystem.Instance.SetUnWalkableArea(new int2( (int)boxCollider.transform.position.x, (int)boxCollider.transform.position.z),
+        //                                         (FixedInt)(boxCollider.transform.lossyScale.x / 2),4);
 
 
         #endregion

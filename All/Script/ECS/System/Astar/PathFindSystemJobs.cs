@@ -83,7 +83,7 @@ public partial class PathFindSystem
                 ecbPara.SetComponent<CurrentPathIndex>(indexInQuery, entity, new CurrentPathIndex { pathIndex = pathPositionBuffer.Length - 2 });
 
             tempPathNodeArray.Dispose();
-            ecbPara.RemoveComponent<PathFindCommand>(indexInQuery, entity);
+            ecbPara.RemoveComponent<PathFindParam>(indexInQuery, entity);
         }
 
         private void BuildPathGridCost(NativeList<GridNode> tempPathNodeArray)

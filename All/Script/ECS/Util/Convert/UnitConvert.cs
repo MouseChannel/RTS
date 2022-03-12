@@ -5,7 +5,7 @@ using Unity.Entities;
 using FixedMath;
  
  
-public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
+public class UnitConvert : MonoSystem, IConvertGameObjectToEntity
 {
      
   
@@ -17,7 +17,7 @@ public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
         // responseCommandSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<ResponseCommandSystem>();
         dstManager.AddComponentData<Agent>(entity, new Agent
         {
-            id_ = ResponseNetSystem.Instance.allMovedUnit.Count,
+            id_ = GetSystem<ResponseNetSystem>().allMovedUnit.Count,
             neighborDist_ = 5,
             maxNeighbors_ = 10,
             timeHorizon_ = 1,
@@ -25,7 +25,7 @@ public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
             radius_ = ((FixedInt)1) >> 1,
             maxSpeed_ = 6,
             velocity_ = new FixedVector2(0, 0),
-            position_ = new FixedVector2(ResponseNetSystem.Instance.allMovedUnit.Count, ResponseNetSystem.Instance.allMovedUnit.Count),
+            position_ = new FixedVector2(GetSystem<ResponseNetSystem>().allMovedUnit.Count, GetSystem<ResponseNetSystem>().allMovedUnit.Count),
             // position_ = new FixedVector2(24, 10)
         // faction_ = Root.Instance.id,
         // needCheckClosestEnemy_ = true
@@ -39,13 +39,13 @@ public class UnitConvert : MonoBehaviour, IConvertGameObjectToEntity
         dstManager.AddComponent<FOWUnit>(entity);
         
         dstManager.SetComponentData<FOWUnit>(entity, new FOWUnit { });
-        dstManager.AddComponent<Inhabitant>(entity);
+        dstManager.AddComponent<InhabitantComponent>(entity);
 
         dstManager.AddComponent<Collector>(entity);
         // dstManager.AddComponent<UnitTag>(entity);
         // dstManager.SetComponentData<UnitTag>(entity, new UnitTag{id = Root.Instance.id,faction = 1});
 
-        ResponseNetSystem.Instance.allMovedUnit.Add(entity);
+        GetSystem<ResponseNetSystem>().allMovedUnit.Add(entity);
 
 
         

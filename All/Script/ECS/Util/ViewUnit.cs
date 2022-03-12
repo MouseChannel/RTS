@@ -5,12 +5,12 @@ using Unity.Entities;
 using FixedMath;
 
  
-public class ViewUnit : MonoBehaviour
+public class ViewUnit : MonoSystem
 {
     [HideInInspector] public Entity entity;
     public UnityEngine.Vector2 poss;
     void Start(){
-        ResponseNetSystem.Instance.allGameobject.Add(this);
+        GetSystem<ResponseNetSystem>().allGameobject.Add(this);
     }
 
 

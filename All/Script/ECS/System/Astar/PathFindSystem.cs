@@ -6,7 +6,7 @@ using Unity.Entities;
 using Unity.Collections;
 using Unity.Mathematics;
 using System;
- 
+
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs;
@@ -22,7 +22,7 @@ public partial class PathFindSystem : WorkSystem
     public override void Work()
     {
 
-        if(!ShouldRunSystem()) return;
+        if (!ShouldRunSystem()) return;
         int gridWidth = GridSystem.Instance.GetWidth();
         int gridHeight = GridSystem.Instance.GetWidth();
         int2 gridSize = new int2(gridWidth, gridHeight);
@@ -30,25 +30,22 @@ public partial class PathFindSystem : WorkSystem
 
         List<BuildPathGridCostJob> buildPathGridCostJobList = new List<BuildPathGridCostJob>();
 
-        NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp );
+        NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
         // var jobWriter = jobHandleList.AsParallelWriter();
         NativeArray<GridNode> pathNodeArray = new NativeArray<GridNode>(GridSystem.Instance.GetWidth() * GridSystem.Instance.GetWidth(), Allocator.TempJob);
 
         NativeArray<GridNode>.Copy(GridSystem.Instance.GetGridArray(), pathNodeArray);
 
 
-        
+
         var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
         // DynamicBuffer<PathPosition> pathPositionBuffer,
         // var gridSystem = GridSystem.Instance;
 
-        Entities.ForEach((Entity entity, int entityInQueryIndex, in PathFindCommand pathfindParams, in Agent agent) =>
+        Entities.ForEach((Entity entity, int entityInQueryIndex,  in PathFindParam pathfindParams,  in Agent agent) =>
         {
-            // NativeArray<GridNode> tmpPathNodeArray = new NativeArray<GridNode>(pathNodeArray, Allocator.TempJob);
-            // var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
-             
-             var startNodeIndex =  GridSystem.GetGridIndex(agent.position_);
-            // gridSystem.GetIndex(agent.position_);
+            
+            var startNodeIndex = GridSystem.GetGridIndex(agent.position_);
             BuildPathGridCostJob buildPathGridCostJob = new BuildPathGridCostJob
             {
 
@@ -64,7 +61,7 @@ public partial class PathFindSystem : WorkSystem
 
             };
 
-            jobHandleList.Add (buildPathGridCostJob.Schedule());
+            jobHandleList.Add(buildPathGridCostJob.Schedule());
 
 
             // ecb.RemoveComponent<PathFindParams>(entity);
@@ -80,7 +77,7 @@ public partial class PathFindSystem : WorkSystem
         pathNodeArray.Dispose();
         jobHandleList.Dispose();
 
-    
+
 
     }
 

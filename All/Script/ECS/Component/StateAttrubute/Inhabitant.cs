@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
+using FixedMath;
 
 
 
@@ -12,7 +13,8 @@ public enum InhabitantState
     Collect = 2,
     Build = 3
 }
-public struct Inhabitant : IComponentData
+public struct InhabitantComponent : IComponentData
 {
     public InhabitantState state;
+ 
 }
