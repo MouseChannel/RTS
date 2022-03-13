@@ -7,7 +7,7 @@ using FixedMath;
 
 public enum CollectorState
 {
-     
+
     idle = 0,
     goToResource = 1,
     working = 2,
@@ -16,13 +16,9 @@ public enum CollectorState
 
 }
 
-public struct Collector  : IComponentData
+public struct Collector : IComponentData
 {
 
     public CollectorState collectorState;
-    // public int resourceNo;
-    // public ResourceComponent resource;
-
-
     public int currentResourceStore;
 }

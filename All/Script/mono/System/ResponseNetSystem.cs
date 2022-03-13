@@ -6,8 +6,9 @@ using System;
 using Unity.Mathematics;
 using UnityEngine.UI;
 using Unity.Entities;
+using FixedMath;
 
-public   class ResponseNetSystem : ServiceSystem
+public class ResponseNetSystem : ServiceSystem
 // Singleton<ResponseNetSystem>
 {
 
@@ -39,6 +40,7 @@ public   class ResponseNetSystem : ServiceSystem
 
         workList.Add(World.GetOrCreateSystem<CommandSystem>());
         workList.Add(World.GetOrCreateSystem<CollectorSystem>());
+        workList.Add(World.GetOrCreateSystem<FightSystem>());
         workList.Add(World.GetOrCreateSystem<PathFindSystem>());
         workList.Add(World.GetOrCreateSystem<KeepWalkingSystem>());
         workList.Add(World.GetOrCreateSystem<KDTreeSystem>());
@@ -67,9 +69,9 @@ public   class ResponseNetSystem : ServiceSystem
 
 
             if (GridSystem.Instance.GetGridArray()[mes.EndPos].isWalkable)
-              EntityManager.AddComponentData(entity, new HasCommand { type = CommandType.move, commandData = mes.EndPos});
+                EntityManager.AddComponentData(entity, new HasCommand { type = CommandType.move, commandData = mes.EndPos });
 
-                // EntityManager.AddComponentData(entity, new PathFindParam { endPosition = mes.EndPos });
+            // EntityManager.AddComponentData(entity, new PathFindParam { endPosition = mes.EndPos });
         }
 
     }
@@ -84,9 +86,9 @@ public   class ResponseNetSystem : ServiceSystem
         {
             var entity = allMovedUnit[i];
             // ChangeInhabitantState(entity, InhabitantState.Collect);
-            
 
-              EntityManager.AddComponentData(allMovedUnit[i], new HasCommand { type = CommandType.collect, commandData = mes.InteractObject  });
+
+            EntityManager.AddComponentData(allMovedUnit[i], new HasCommand { type = CommandType.collect, commandData = mes.InteractObject });
 
             // EntityManager.AddComponentData(allMovedUnit[i], new CollectCommand {  resourceNo = mes.InteractObject, resource = resourceComponent });
         }
@@ -145,4 +147,63 @@ public   class ResponseNetSystem : ServiceSystem
     {
 
     }
+
+
+    public Entity GetObstacleEntity(int entityNo)
+    {
+        return allObstacle[entityNo];
+    }
+
+
+    public int GetObstacleEntityPositionIndex(int entityNo)
+    {
+        int posIndex = -1;
+        var entity = allObstacle[entityNo];
+        if (entity != Entity.Null)
+        {
+            var pos = GetComponent<Obstacle>(entity).position_;
+            posIndex = GridSystem.GetGridIndex(pos);
+
+        }
+        return posIndex;
+    }
+    public FixedVector2 GetObstacleEntityPosition(int entityNo)
+    {
+        FixedVector2 pos = FixedVector2.inVaild;
+
+        var entity = allObstacle[entityNo];
+        if (entity != Entity.Null)
+        {
+            pos = GetComponent<Obstacle>(entity).position_;
+        }
+        return pos;
+    }
+    public Entity GetUnitEntity(int entityNo)
+    {
+        return allMovedUnit[entityNo];
+    }
+    public FixedVector2 GetUnitEntityPosition(int entityNo)
+    {
+        FixedVector2 pos = FixedVector2.inVaild;
+
+        var entity = allMovedUnit[entityNo];
+        if (entity != Entity.Null)
+        {
+            pos = GetComponent<Agent>(entity).position_;
+        }
+        return pos;
+    }
+    public int GetUnitEntityPositionIndex(int entityNo)
+    {
+        int posIndex = -1;
+        var entity = allMovedUnit[entityNo];
+        if (entity != Entity.Null)
+        {
+            var pos = GetComponent<Agent>(entity).position_;
+            posIndex = GridSystem.GetGridIndex(pos);
+
+        }
+        return posIndex;
+    }
+
 }

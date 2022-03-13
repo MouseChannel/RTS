@@ -18,15 +18,23 @@ public partial class CollectorSystem
         public Collector collector;
  
  
-        public int resourcePositionIndex;
-        public int stopPositionIndex;
+        public FixedVector2 resourcePosition ;
+        public FixedVector2 stopPosition;
 
         [NativeDisableContainerSafetyRestriction]
         public EntityCommandBuffer.ParallelWriter ecbPara;
         public int entityInQueryIndex;
+
+
+        private int collectorPositionIndex;
+        private int resourcePositionIndex;
+        private int stopPositionIndex;
         public void Execute()
         {
- 
+            collectorPositionIndex = GridSystem.GetGridIndex(collectorPosition);
+            resourcePositionIndex = GridSystem.GetGridIndex(resourcePosition);
+            stopPositionIndex = GridSystem.GetGridIndex(stopPosition);
+
 
 
             switch (collector.collectorState)
@@ -53,7 +61,7 @@ public partial class CollectorSystem
         private void Case_Idle()
         {
         
-            if (resourcePositionIndex != -1)
+            if (resourcePosition != FixedVector2.inVaild)
             {
                 ChangeCollectorState(CollectorState.goToResource);
             }
@@ -66,7 +74,7 @@ public partial class CollectorSystem
         private void Case_GoToResource()
         {
            
-            if (resourcePositionIndex == -1)
+            if (resourcePosition  == FixedVector2.inVaild)
             {
                 ChangeCollectorState(CollectorState.idle);
 
@@ -74,7 +82,7 @@ public partial class CollectorSystem
             }
             //Animation
 
-            if (GridSystem.GetGridIndex(collectorPosition) ==  resourcePositionIndex)
+            if (collectorPositionIndex == resourcePositionIndex)
             {
                 ChangeCollectorState(CollectorState.working);
             }
@@ -83,7 +91,7 @@ public partial class CollectorSystem
         private void Case_Working()
         {
           
-            if (resourcePositionIndex == -1)
+            if (resourcePosition  == FixedVector2.inVaild)
             {
                 if (collector.currentResourceStore < 20)
                 {
@@ -113,9 +121,9 @@ public partial class CollectorSystem
         private void Case_BackToStop()
         {
     
-            if (stopPositionIndex != -1)
+            if (stopPosition  != FixedVector2.inVaild)
             {
-                if (GridSystem.GetGridIndex(collectorPosition) ==  stopPositionIndex)
+                if (collectorPositionIndex ==  stopPositionIndex)
                 {
                     ChangeCollectorState(CollectorState.idle);
                 }

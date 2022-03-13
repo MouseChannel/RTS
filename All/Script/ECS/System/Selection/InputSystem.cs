@@ -76,9 +76,10 @@ public class InputSystem : ServiceSystem
 
 
                 FixedVector2 position = new FixedVector2((FixedInt)hit.point.x, (FixedInt)hit.point.z);
-                FixedInt distance = FixedInt.half * 2;
+                FixedInt distance = FixedInt.one;
                 int obstacleNo = -1;
-                distance = FixedInt.half * 2;
+
+
                 kDTreeSystem.GetClosestObstacle(position, ref distance, ref obstacleNo, 0);
 
 
@@ -86,19 +87,26 @@ public class InputSystem : ServiceSystem
                 if (obstacleNo != -1)
                 {
                     Debug.Log(obstacleNo);
-                    var obs =GetSystem<ResponseNetSystem>().allObstacle[obstacleNo];
-                    if (HasComponent<ResourceComponent>(obs))
+                    var obsEntity = GetSystem<ResponseNetSystem>().GetObstacleEntity(obstacleNo);
+                    if (HasComponent<ResourceComponent>(obsEntity))
                     {
                         NetService.Instance.SendMessage(PbTool.MakeInteract(obstacleNo, selectedUnits));
                     }
+                    return;
                 }
-                else
+                int agentNo = -1;
+                kDTreeSystem.GetClosestAgent(position, ref distance, ref agentNo, 0);
+                if (agentNo != -1)
                 {
+                    var agentEntity = GetSystem<ResponseNetSystem>().GetUnitEntity(agentNo);
+                    if (HasComponent<InhabitantComponent>(agentEntity))
+                    {
+                        NetService.Instance.SendMessage(PbTool.MakeFight(agentNo, selectedUnits));
+                    }
+                    return;
 
-
-                    NetService.Instance.SendMessage(PbTool.MakeMove(hit.point, selectedUnits));
                 }
-
+                NetService.Instance.SendMessage(PbTool.MakeMove(hit.point, selectedUnits));
 
             }
         }

@@ -9,16 +9,18 @@ using Unity.Jobs;
 
 public partial class CollectorSystem : WorkSystem
 {
+    private ResponseNetSystem responseNetSystem;
     public override void Work()
     {
+        responseNetSystem = GetSystem<ResponseNetSystem>();
 
-        var ecb = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
- 
+
+
 
 
         var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
-        Entities.ForEach((Entity entity, int entityInQueryIndex, in DoingCollect collectCommand, in Agent agent, in Collector collector) =>
+        Entities.ForEach((Entity entity, int entityInQueryIndex, in DoingCollect doingCollect, in Agent agent, in Collector collector) =>
         {
             
 
@@ -28,8 +30,8 @@ public partial class CollectorSystem : WorkSystem
                 collector = collector,
                 collectorPosition = agent.position_,
 
-                resourcePositionIndex = GetResourcePositionIndex(collectCommand.resourceNo),
-                stopPositionIndex = GetStopPositionIndex(collectCommand.resourceNo),
+                resourcePosition = responseNetSystem.GetObstacleEntityPosition(doingCollect.resourceNo),
+                stopPosition = GetStopPosition(doingCollect.resourceNo),
 
                 ecbPara = ecbPara,
                 entityInQueryIndex = entityInQueryIndex
@@ -44,44 +46,35 @@ public partial class CollectorSystem : WorkSystem
         }).WithoutBurst().Run();
 
         JobHandle.CompleteAll(jobList);
+        jobList.Dispose();
 
     }
 
 
-    private int GetObstaclePositionIndex(int id)
-    {
-        // var pos = ResponseNetSystem.Instance.allObstacle[id].
-        return 1;
-    }
-    private int GetResourcePositionIndex(int id)
-    {
-        var resourceEntity = GetSystem<ResponseNetSystem>().allObstacle[id];
-        var posIndex = -1;
-        if (resourceEntity != Entity.Null)
-        {
-            posIndex = GetComponent<ResourceComponent>(resourceEntity).resourcePositionIndex;
 
-        }
-        return posIndex;
+    // private int GetResourcePositionIndex(int id)
+    // {
+    //     var resourceEntity = responseNetSystem.GetObstacleEntity(id);
+    //     var posIndex = -1;
+    //     if (resourceEntity != Entity.Null)
+    //     {
+    //         posIndex = GetComponent<ResourceComponent>(resourceEntity).resourcePositionIndex;
 
-    }
-    private int GetStopPositionIndex(int resourceId)
+    //     }
+    //     return posIndex;
+    // }
+    private FixedVector2 GetStopPosition(int resourceId)
     {
-        var resourceEntity = GetSystem<ResponseNetSystem>().allObstacle[resourceId];
-
-        var posIndex = -1;
+        
+        var resourceEntity = responseNetSystem.GetObstacleEntity(resourceId);
+        var pos = FixedVector2.inVaild;
         if (resourceEntity != Entity.Null)
         {
             var stopNo = GetComponent<ResourceComponent>(resourceEntity).stopNo;
-            var stopEntity = GetSystem<ResponseNetSystem>().allObstacle[stopNo];
-            if (stopEntity != Entity.Null)
-            {
-                posIndex = GetComponent<ResourceComponent>(stopEntity).stopPositionIndex;
-            }
-
+            pos = responseNetSystem.GetObstacleEntityPosition(stopNo);
         }
 
-        return posIndex;
+        return pos;
     }
 
 

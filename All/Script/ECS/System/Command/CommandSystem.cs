@@ -36,7 +36,7 @@ public class CommandSystem : WorkSystem
     {
         public Entity entity;
         [ReadOnly] public HasCommand hasCommand;
-        [ReadOnly] public InhabitantComponent inhabitantComponent;
+        public InhabitantComponent inhabitantComponent;
         public int entityInQueryIndex;
         [NativeDisableContainerSafetyRestriction]
         public EntityCommandBuffer.ParallelWriter ecbPara;

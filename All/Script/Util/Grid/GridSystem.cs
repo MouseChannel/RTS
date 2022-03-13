@@ -64,6 +64,10 @@ public class GridSystem : Singleton<GridSystem>
 
     public static  int GetGridIndex(FixedVector2 worldPosition)
     {
+        if (worldPosition ==FixedVector2.inVaild){
+            return FixedInt.inVaild.RawInt;
+        }
+        
         var x = (worldPosition.X.round).RawInt;
         var y = (worldPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);

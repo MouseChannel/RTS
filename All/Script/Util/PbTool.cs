@@ -61,12 +61,29 @@ public class PbTool : Singleton<PbTool>
 
     public static PbMessage MakeInteract(int entityNo, List<int> seletedUnits)
     {
-       
+
         var sendFightMessage = new FightMessage
         {
             BattleCMD = FightMessage.Types.BattleCMD.Interact,
             SelectedUnit = { seletedUnits },
             InteractObject = entityNo
+        };
+
+
+        return new PbMessage
+        {
+            Cmd = PbMessage.Types.CMD.Room,
+            CmdRoom = PbMessage.Types.CmdRoom.FightOp,
+            SendFightMessage = sendFightMessage
+        };
+    }
+    public static PbMessage MakeFight(int entityNo, List<int> seletedUnits)
+    {
+        var sendFightMessage = new FightMessage
+        {
+            BattleCMD = FightMessage.Types.BattleCMD.Fight,
+            SelectedUnit = { seletedUnits },
+            EnemyUnit = entityNo
         };
 
 

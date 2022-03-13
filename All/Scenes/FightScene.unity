@@ -2309,9 +2309,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9075a3de3a060a14a93577d0413180bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceNo: 1
+  resourceNo: 0
   resourcePositionIndex: 8200
-  stopNo: 0
+  stopNo: 1
   stopPositionIndex: 6672
 --- !u!1 &1071254100
 GameObject:

@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FixedMath</name>
+    </assembly>
+    <members>
+        <member name="M:FixedMath.FixedArgs.ConvertToViewAngle">
+            <summary>
+            转化为视图层的角度，不可再参与运算
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:FixedMath.FixedCalculate.sqr(FixedMath.FixedInt)">
+            <summary>
+            求平方
+            </summary>
+            <param name="a"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FixedMath.FixedCalculate.Sqrt(FixedMath.FixedInt,System.Int32)">
+            <summary>
+            牛顿迭代法求平方根
+            </summary>
+            <param name="a">传入值</param>
+            <param name="interatorCount">迭代次数</param>
+            <returns></returns>
+        </member>
+        <member name="P:FixedMath.FixedInt.inVaild">
+            <summary>
+            以 -1 来便是非法值
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:FixedMath.FixedInt.RawFloat">
+            <summary>
+            转化回原始大小的数字，不能再参与运算了
+            </summary>
+            <value></value>
+        </member>
+        <member name="M:FixedMath.FixedVector2.ConvertViewVector2">
+            <summary>
+            将确定性数转化成表现层数，不可再参与运算
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:FixedMath.FixedVector2.inVaild">
+            <summary>
+            用（-1，-1）作为invaild标志
+            </summary>
+            <value></value>
+        </member>
+        <member name="M:FixedMath.FixedVector2.Det(FixedMath.FixedVector2,FixedMath.FixedVector2)">
+            <summary>
+            返回行列式的值
+            </summary>
+            <param name="a"></param>
+            <param name="b"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FixedMath.FixedVector2.DistSqPointLineSegment(FixedMath.FixedVector2,FixedMath.FixedVector2,FixedMath.FixedVector2)">
+            <summary>
+            Computes the squared distance from a line segment with the  specified endpoints to a specified point.
+            </summary>
+            <param name="vector1">The first endpoint of the line segment.</param>
+            <param name="vector2">The second endpoint of the line segment.</param>
+            <param name="vector3">The point to which the squared distance is to be calculated.</param>
+            <returns>The squared distance from the line segment to the point.</returns>
+        </member>
+        <member name="M:FixedMath.FixedVector3.ConvertViewVector3">
+            <summary>
+            将确定性数转化成表现层数，不可再参与运算
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:FixedMath.FixedVector3.Cross(FixedMath.FixedVector3,FixedMath.FixedVector3)">
+            <summary>
+            向量叉乘，返回同时垂直两向量的向量
+            </summary>
+            <param name="a"></param>
+            <param name="b"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

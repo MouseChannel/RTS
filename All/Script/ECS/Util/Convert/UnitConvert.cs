@@ -42,6 +42,7 @@ public class UnitConvert : MonoSystem, IConvertGameObjectToEntity
         dstManager.AddComponent<InhabitantComponent>(entity);
 
         dstManager.AddComponent<Collector>(entity);
+        dstManager.AddComponent<Fighter>(entity);
         // dstManager.AddComponent<UnitTag>(entity);
         // dstManager.SetComponentData<UnitTag>(entity, new UnitTag{id = Root.Instance.id,faction = 1});
 

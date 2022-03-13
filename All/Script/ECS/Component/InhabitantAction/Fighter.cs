@@ -5,15 +5,15 @@ using Unity.Entities;
 
 
 public enum FighterState{
-    notFightng = 0,
-    idle = 1,
-    chaseEnemy = 2,
-    fight = 3
+    
+    idle = 0,
+    chaseEnemy = 1,
+    fight = 2
 
 }
 
 public struct Fighter : IComponentData
 {
     public FighterState state;
-    // public int
+    public int beforeEnemyPositionIndex;
 }
