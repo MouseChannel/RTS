@@ -11,7 +11,7 @@ using FixedMath;
 public partial class FightSystem
 {
     [BurstCompile]
-    public struct FightJob : IJob
+    public struct FightJob : IStateBaseJob
     {
         public Entity entity;
         public int entityInQueryIndex;
@@ -29,16 +29,16 @@ public partial class FightSystem
             fighterPositionIndex = GridSystem.GetGridIndex(fighterPosition);
             enemyPositionIndex = GridSystem.GetGridIndex(enemyPosition);
 
-            Debug.Log(string.Format("{0}  {1}", fighterPositionIndex, enemyPositionIndex));
+            // Debug.Log(string.Format("{0}  {1}", fighterPositionIndex, enemyPositionIndex));
             switch (fighter.state)
             {
-                case FighterState.idle:
+                case DoingTaskState.idle:
                     Case_Idle();
                     break;
-                case FighterState.chaseEnemy:
+                case DoingTaskState.goToDestination:
                     Case_ChaseEnemy();
                     break;
-                case FighterState.fight:
+                case DoingTaskState.working:
                     Case_Fight();
                     break;
             }
@@ -49,7 +49,7 @@ public partial class FightSystem
         {
             if (enemyPositionIndex != FixedInt.inVaild)
             {
-                ChangeFighterState(FighterState.chaseEnemy);
+                ChangeState(DoingTaskState.goToDestination);
             }
 
         }
@@ -57,19 +57,25 @@ public partial class FightSystem
         {
             if (enemyPositionIndex == FixedInt.inVaild)
             {
-                ChangeFighterState(FighterState.idle);
+                ChangeState(DoingTaskState.idle);
                 return;
             }
             if (InAround())
             {
-                ChangeFighterState(FighterState.fight);
+                ChangeState(DoingTaskState.working);
             }
             else if (fighter.beforeEnemyPositionIndex != enemyPositionIndex)
             {
                 fighter.beforeEnemyPositionIndex = enemyPositionIndex;
-                AddToEcbQueue();
-                ecbPara.AddComponent<PathFindParam>(enemyPositionIndex, entity, new PathFindParam { endPosition = enemyPositionIndex });
+                EcbSetComponent(fighter);
+                EcbAddComponent(new PathFindParam
+                {
+                    endPosition = enemyPositionIndex
+                });
 
+               
+
+   
             }
 
         }
@@ -77,55 +83,21 @@ public partial class FightSystem
         {
             if (enemyPositionIndex == FixedInt.inVaild)
             {
-                ChangeFighterState(FighterState.idle);
+                ChangeState(DoingTaskState.idle);
                 return;
             }
             if (!InAround())
             {
-                ChangeFighterState(FighterState.chaseEnemy);
+                ChangeState(DoingTaskState.goToDestination);
             }
 
         }
 
-        private void ChangeFighterState(FighterState newState)
-        {
-            ExitState(fighter.state);
-            EnterState(newState);
-            fighter.state = newState;
-            AddToEcbQueue();
 
 
 
-        }
-        private void EnterState(FighterState newState)
-        {
-            switch (newState)
-            {
-                case FighterState.idle:
-                    break;
-                case FighterState.chaseEnemy:
-                    // ecbPara.AddComponent<PathFindParam>(enemyPositionIndex, entity, new PathFindParam { endPosition = enemyPositionIndex });
-                    break;
-                case FighterState.fight:
-                    ecbPara.SetComponent<CurrentPathIndex>(enemyPositionIndex, entity, new CurrentPathIndex { pathIndex = -1 });
-                    break;
-            }
-        }
 
-        private void ExitState(FighterState currentState)
-        {
-            switch (currentState)
-            {
-                case FighterState.idle:
-                    break;
-                case FighterState.chaseEnemy:
-                    break;
-                case FighterState.fight:
-
-                    break;
-            }
-        }
-        private   bool InAround()
+        private bool InAround()
         {
             int a = fighterPositionIndex;
             int b = enemyPositionIndex;
@@ -138,10 +110,85 @@ public partial class FightSystem
             }
             return false;
         }
-        private void AddToEcbQueue() => ecbPara.SetComponent<Fighter>(enemyPositionIndex, entity, fighter);
 
 
 
+
+
+        public void EnterState(DoingTaskState newState)
+        {
+            switch (newState)
+            {
+                case DoingTaskState.idle:
+                    break;
+                case DoingTaskState.goToDestination:
+                    break;
+                case DoingTaskState.working:
+                    EcbSetComponent(new CurrentPathIndex
+                    {
+                        pathIndex = -1
+                    });
+                    
+
+
+                    break;
+            }
+        }
+
+        public void ExitState(DoingTaskState currentState)
+        {
+            switch (currentState)
+            {
+                case DoingTaskState.idle:
+                    break;
+                case DoingTaskState.goToDestination:
+                    break;
+                case DoingTaskState.working:
+
+                    break;
+            }
+        }
+
+        public void ChangeState(DoingTaskState newState)
+        {
+            ExitState(fighter.state);
+            EnterState(newState);
+
+            fighter.state = newState;
+            EcbSetComponent(fighter);
+
+           
+        }
+
+        public EntityCommandBuffer.ParallelWriter GetEcbPara()
+        {
+            return ecbPara;
+        }
+
+        public int GetEntityInQueryIndex()
+        {
+            return enemyPositionIndex;
+        }
+
+        public Entity GetEntity()
+        {
+            return entity;
+        }
+
+        public void EcbSetComponent<T>(T component) where T : struct, IComponentData
+        {
+            ecbPara.SetComponent<T>(entityInQueryIndex, entity, component);
+        }
+
+        public void EcbAddComponent<T>(T component) where T : struct, IComponentData
+        {
+            ecbPara.AddComponent<T>(entityInQueryIndex, entity, component);
+        }
+
+        public void EcbRemoveComponent<T>(T component) where T : struct, IComponentData
+        {
+            ecbPara.RemoveComponent<T>(entityInQueryIndex, entity);
+        }
     }
 
 

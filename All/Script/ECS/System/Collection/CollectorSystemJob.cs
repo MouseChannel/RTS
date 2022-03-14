@@ -11,14 +11,14 @@ using Unity.Collections.LowLevel.Unsafe;
 public partial class CollectorSystem
 {
     [BurstCompile]
-    public struct CollectorJob : IJob
+    public struct CollectorJob : IStateBaseJob
     {
         public Entity entity;
         public FixedVector2 collectorPosition;
         public Collector collector;
- 
- 
-        public FixedVector2 resourcePosition ;
+
+
+        public FixedVector2 resourcePosition;
         public FixedVector2 stopPosition;
 
         [NativeDisableContainerSafetyRestriction]
@@ -37,20 +37,22 @@ public partial class CollectorSystem
 
 
 
-            switch (collector.collectorState)
+            switch (collector.state)
             {
-                case CollectorState.idle:
+                case DoingTaskState.idle:
                     Case_Idle();
                     break;
-                case CollectorState.goToResource:
-                    Case_GoToResource();
+                case DoingTaskState.goToDestination:
+                    Case_GoToDestination();
                     break;
-                case CollectorState.working:
+                case DoingTaskState.working:
                     Case_Working();
                     break;
-                case CollectorState.backToStop:
-                    Case_BackToStop();
+                case DoingTaskState.goToSecondDestination:
+                    Case_GoToSecondDestination();
                     break;
+
+
 
             }
         }
@@ -60,10 +62,10 @@ public partial class CollectorSystem
 
         private void Case_Idle()
         {
-        
+
             if (resourcePosition != FixedVector2.inVaild)
             {
-                ChangeCollectorState(CollectorState.goToResource);
+                ChangeState(DoingTaskState.goToDestination);
             }
             else
             {
@@ -71,12 +73,12 @@ public partial class CollectorSystem
             }
 
         }
-        private void Case_GoToResource()
+        private void Case_GoToDestination()
         {
-           
-            if (resourcePosition  == FixedVector2.inVaild)
+
+            if (resourcePosition == FixedVector2.inVaild)
             {
-                ChangeCollectorState(CollectorState.idle);
+                ChangeState(DoingTaskState.idle);
 
                 return;
             }
@@ -84,33 +86,35 @@ public partial class CollectorSystem
 
             if (collectorPositionIndex == resourcePositionIndex)
             {
-                ChangeCollectorState(CollectorState.working);
+                ChangeState(DoingTaskState.working);
             }
 
         }
         private void Case_Working()
         {
-          
-            if (resourcePosition  == FixedVector2.inVaild)
+
+            if (resourcePosition == FixedVector2.inVaild)
             {
                 if (collector.currentResourceStore < 20)
                 {
-                    ChangeCollectorState(CollectorState.idle);
+                    ChangeState(DoingTaskState.idle);
                 }
                 else
                 {
-                    ChangeCollectorState(CollectorState.backToStop);
+                    ChangeState(DoingTaskState.goToSecondDestination);
                 }
                 return;
             }
             if (collector.currentResourceStore > 200)
             {
-                ChangeCollectorState(CollectorState.backToStop);
+                ChangeState(DoingTaskState.goToSecondDestination);
             }
             else
             {
+ 
                 collector.currentResourceStore++;
-                AddToEcbQueue();
+                EcbSetComponent(collector);
+             
             }
 
 
@@ -118,83 +122,125 @@ public partial class CollectorSystem
 
 
         }
-        private void Case_BackToStop()
+        private void Case_GoToSecondDestination()
         {
-    
-            if (stopPosition  != FixedVector2.inVaild)
+
+            if (stopPosition != FixedVector2.inVaild)
             {
-                if (collectorPositionIndex ==  stopPositionIndex)
+                if (collectorPositionIndex == stopPositionIndex)
                 {
-                    ChangeCollectorState(CollectorState.idle);
+                    ChangeState(DoingTaskState.idle);
                 }
             }
             else
             {
                 GetMainFortId(out int fortId);
-               
 
-                AddToEcbQueue();
+
+                // EcbSetComponent();
             }
 
         }
 
-        private void ChangeCollectorState(CollectorState targetState)
+
+
+        public void EnterState(DoingTaskState newState)
         {
-            //animation todo
-            ExitState(collector.collectorState);
-
-            EnterState(targetState);
-            collector.collectorState = targetState;
-            AddToEcbQueue();
-
-        }
-        private void AddToEcbQueue() => ecbPara.SetComponent<Collector>(entityInQueryIndex, entity, collector);
-
-
-
-        private void EnterState(CollectorState state)
-        {
-            switch (state)
+            switch (newState)
             {
-                case CollectorState.idle:
+                case DoingTaskState.idle:
 
                     break;
-                case CollectorState.goToResource:
-                    ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = resourcePositionIndex });
+                case DoingTaskState.goToDestination:
+                    EcbAddComponent(new PathFindParam
+                    {
+                        endPosition = resourcePositionIndex
+                    });
+                    
+
+
+
+
 
                     break;
-                case CollectorState.working:
+                case DoingTaskState.working:
 
                     break;
-                case CollectorState.backToStop:
+                case DoingTaskState.goToSecondDestination:
+                    EcbAddComponent(new PathFindParam
+                    {
+                        endPosition = stopPositionIndex
+                    });
+                     
 
-                    ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = stopPositionIndex });
+                    // ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = stopPositionIndex });
 
 
                     break;
             }
         }
-        private void ExitState(CollectorState state)
+
+        public void ExitState(DoingTaskState currentState)
         {
-            switch (state)
+            switch (currentState)
             {
-                case CollectorState.idle:
+                case DoingTaskState.idle:
 
                     break;
-                case CollectorState.goToResource:
+                case DoingTaskState.goToDestination:
 
                     break;
-                case CollectorState.working:
+                case DoingTaskState.working:
 
                     break;
-                case CollectorState.backToStop:
+                case DoingTaskState.goToSecondDestination:
                     collector.currentResourceStore = 0;
                     break;
             }
-
         }
 
+        public void ChangeState(DoingTaskState newState)
+        {
+            //animation todo
+            ExitState(collector.state);
 
+            EnterState(newState);
+            collector.state = newState;
+           
+            EcbSetComponent(collector);
+        }
+
+ 
+
+        public EntityCommandBuffer.ParallelWriter GetEcbPara()
+        {
+            return ecbPara;
+        }
+
+        public int GetEntityInQueryIndex()
+        {
+            return entityInQueryIndex;
+        }
+
+        public Entity GetEntity()
+        {
+            return entity;
+        }
+
+        public void EcbSetComponent<T>(T component) where T : struct, IComponentData
+        {
+             ecbPara.SetComponent<T>(entityInQueryIndex, entity, component);
+        }
+
+        public void EcbAddComponent<T>(T component) where T : struct, IComponentData
+        {
+           ecbPara.AddComponent<T>(entityInQueryIndex, entity, component);
+        }
+
+        public void EcbRemoveComponent<T>(T component) where T : struct, IComponentData
+        {
+           ecbPara.RemoveComponent<T>(entityInQueryIndex, entity);
+        }
     }
 
     public static void GetMainFortId(out int fortId)

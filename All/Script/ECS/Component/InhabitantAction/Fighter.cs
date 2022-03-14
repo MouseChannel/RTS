@@ -2,18 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
+using System;
 
 
-public enum FighterState{
-    
+
+public enum DoingTaskState
+{
+
     idle = 0,
-    chaseEnemy = 1,
-    fight = 2
+    goToDestination = 1,
+    working = 2,
+    goToSecondDestination = 3
+
 
 }
 
 public struct Fighter : IComponentData
 {
-    public FighterState state;
+    public DoingTaskState state;
     public int beforeEnemyPositionIndex;
 }

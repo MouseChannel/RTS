@@ -5,20 +5,21 @@ using Unity.Entities;
 using FixedMath;
 
 
-public enum CollectorState
-{
+// public enum DoingTaskState
+// {
 
-    idle = 0,
-    goToResource = 1,
-    working = 2,
-    backToStop = 3,
+//     idle = 0,
+//     goToDestination = 1,
+//     working = 2,
+//     backToStop = 3,
 
 
-}
+// }
 
 public struct Collector : IComponentData
 {
 
-    public CollectorState collectorState;
+    public DoingTaskState state;
     public int currentResourceStore;
+    
 }
