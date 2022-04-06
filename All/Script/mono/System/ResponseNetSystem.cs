@@ -9,7 +9,6 @@ using Unity.Entities;
 using FixedMath;
 
 public class ResponseNetSystem : ServiceSystem
-// Singleton<ResponseNetSystem>
 {
 
     // private ResponseCommandSystem responseCommandSystem;
@@ -69,7 +68,7 @@ public class ResponseNetSystem : ServiceSystem
 
 
             if (GridSystem.Instance.GetGridArray()[mes.EndPos].isWalkable)
-                EntityManager.AddComponentData(entity, new HasCommand { type = CommandType.move, commandData = mes.EndPos });
+                EntityManager.AddComponentData(entity, new HasCommandState { type = CommandType.move, commandData = mes.EndPos });
 
             // EntityManager.AddComponentData(entity, new PathFindParam { endPosition = mes.EndPos });
         }
@@ -88,7 +87,7 @@ public class ResponseNetSystem : ServiceSystem
             // ChangeInhabitantState(entity, InhabitantState.Collect);
 
 
-            EntityManager.AddComponentData(allMovedUnit[i], new HasCommand { type = CommandType.collect, commandData = mes.InteractObject });
+            EntityManager.AddComponentData(allMovedUnit[i], new HasCommandState { type = CommandType.collect, commandData = mes.InteractObject });
 
             // EntityManager.AddComponentData(allMovedUnit[i], new CollectCommand {  resourceNo = mes.InteractObject, resource = resourceComponent });
         }
@@ -103,7 +102,7 @@ public class ResponseNetSystem : ServiceSystem
         foreach (var i in mes.SelectedUnit)
         {
             Debug.Log("fight");
-            EntityManager.AddComponentData(allMovedUnit[i], new HasCommand { type = CommandType.fight, commandData = mes.EnemyUnit });
+            EntityManager.AddComponentData(allMovedUnit[i], new HasCommandState { type = CommandType.fight, commandData = mes.EnemyUnit });
         }
 
     }

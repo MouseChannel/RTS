@@ -9,56 +9,66 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Burst;
 using System;
- 
+
 using FixedMath;
 
 public partial class FOWSystem
 {
     [BurstCompile]
-    public struct FreshJob : IJob
+    public struct FreshJobParallel : IJobParallelFor
     {
         [NativeDisableContainerSafetyRestriction]
         public NativeArray<Color32> blurBuffer;
         [ReadOnly]
-        public NativeList<int> lastVisiableArea;
-        public void Execute()
+        public UnsafeList<int> lastVisiableArea;
+        public void Execute(int index)
         {
-            foreach (var i in lastVisiableArea)
-            {
+            blurBuffer[lastVisiableArea[index]] = new Color32(0, 0, 0, 222);
+            // foreach (var i in lastVisiableArea)
+            // {
 
-                blurBuffer[i] = new Color32(0, 0, 0, 252);
+            //     blurBuffer[i] = new Color32(0, 0, 0, 252);
 
-            }
+            // }
 
         }
     }
+
+
     [BurstCompile]
-    public struct ComputeFog : IJob
+    public struct ComputeFogJob : IJob
     {
         [ReadOnly] public NativeArray<ObstacleVertice> obstacles_;
         [ReadOnly] public NativeArray<ObstacleVerticeTreeNode> obstacleTree_;
         [ReadOnly] public ObstacleVerticeTreeNode obstacleTreeRoot;
 
         [ReadOnly] public FOWUnit fowUnit;
+
         public UnsafeHashSet<int>.ParallelWriter setParaWriter;
+
 
 
         public void Execute()
         {
 
+
             int range = fowUnit.range;
             NativeList<ObstacleVertice> obstacleNeighbors = new NativeList<ObstacleVertice>(Allocator.Temp);
+
             GetRangeObstacleVertices(fowUnit.position, obstacleTreeRoot, fowUnit.range * fowUnit.range, obstacleNeighbors);
+            NativeArray<int> unitDirsSign = new NativeArray<int>(obstacleNeighbors.Length, Allocator.Temp);
+            CalculateUnitDirs(obstacleNeighbors, unitDirsSign);
 
             for (int i = -range; i <= range; i++)
                 for (int j = -range; j <= range; j++)
                 {
                     if (!CheckInRange(i, j, range)) continue;
                     var currentGridPos = fowUnit.position.ConvertToint2() + new int2(i, j);
-                    if (!CheckUnVisiable(currentGridPos, obstacleNeighbors))
+                    if (!CheckUnVisiable(currentGridPos, obstacleNeighbors, unitDirsSign))
                     {
                         var index = GridSystem.GetGridIndexInFOW(currentGridPos);
                         setParaWriter.Add(index);
+                        // blurBuffer[index] = new Color32(0, 0, 0, 0);
                     }
                 }
             obstacleNeighbors.Dispose();
@@ -73,13 +83,15 @@ public partial class FOWSystem
         /// <param name="gridPosition"></param>
         /// <param name="obstacleNeighbors"></param>
         /// <returns></returns>
-        private bool CheckUnVisiable(FixedVector2 gridPosition, NativeList<ObstacleVertice> obstacleNeighbors)
+        private bool CheckUnVisiable(FixedVector2 gridPosition, NativeList<ObstacleVertice> obstacleNeighbors, NativeArray<int> unitDirsSign)
         {
             //从后往前遍历
             int from;
             int to;
             to = obstacleNeighbors.Length - 1;
             from = obstacleNeighbors.Length;
+
+
             while (to >= 0)
             {
 
@@ -89,9 +101,9 @@ public partial class FOWSystem
                     continue;
                 }
                 NativeSlice<ObstacleVertice> tempOnstacle = new NativeSlice<ObstacleVertice>(obstacleNeighbors, to + 1, from - to - 1);
+                NativeSlice<int> tempSign = new NativeSlice<int>(unitDirsSign, to + 1, from - to - 1);
 
-
-                if (!CheckSingleObstacleVisiable(gridPosition, tempOnstacle))
+                if (!CheckSingleObstacleVisiable(gridPosition, tempOnstacle, tempSign))
                 {
                     return true;
                 }
@@ -106,23 +118,35 @@ public partial class FOWSystem
 
         }
 
-        private bool CheckSingleObstacleVisiable(FixedVector2 gridPosition, NativeSlice<ObstacleVertice> tempOnstacle)
+        private bool CheckSingleObstacleVisiable(FixedVector2 gridPosition, NativeSlice<ObstacleVertice> tempOnstacle, NativeSlice<int> tempSign)
         {
-
             for (int i = 0; i < tempOnstacle.Length; i++)
             {
-                if (CheckIntheSameLeftAsUnit(tempOnstacle[i].direction_, tempOnstacle[i].point_, gridPosition))
+
+                if (CheckIntheSameLeftAsUnit(tempOnstacle[i].direction_, tempOnstacle[i].point_, gridPosition, tempSign[i]))
                 {
                     return true;
                 }
             }
             return false;
         }
-
-        private bool CheckIntheSameLeftAsUnit(FixedVector2 obstacleVerticeDir, FixedVector2 obstacleVerticePoint, FixedVector2 gridPos)
+        private void CalculateUnitDirs(NativeList<ObstacleVertice> obstacleNeighbors, NativeArray<int> unitDirsSign)
         {
-            return FixedCalculate.det(obstacleVerticeDir, gridPos - obstacleVerticePoint).sign == FixedCalculate.det(obstacleVerticeDir, fowUnit.position - obstacleVerticePoint).sign;
+            for (int i = 0; i < obstacleNeighbors.Length; i++)
+            {
+                unitDirsSign[i] = FixedCalculate.det(obstacleNeighbors[i].direction_, fowUnit.position - obstacleNeighbors[i].point_).sign;
+       
 
+            }
+        }
+
+        private bool CheckIntheSameLeftAsUnit(FixedVector2 obstacleVerticeDir, FixedVector2 obstacleVerticePoint, FixedVector2 gridPos, int sign)
+        {
+            var currentGridDir = gridPos - obstacleVerticePoint;
+    
+
+            return FixedCalculate.det(obstacleVerticeDir, currentGridDir).sign == sign;
+ 
         }
 
 
@@ -250,6 +274,33 @@ public partial class FOWSystem
 
 
 
+
+
+
+    [BurstCompile]
+    private struct SetFogPixelJobParallel : IJobParallelFor
+    {
+
+        public UnsafeList<int>.ParallelWriter lastVisiableArea;
+        [DeallocateOnJobCompletion]
+        public NativeArray<int> visiableAreaArr;
+
+        [NativeDisableContainerSafetyRestriction]
+        public NativeArray<Color32> blurBuffer;
+
+
+
+        public void Execute(int index)
+        {
+
+
+
+            lastVisiableArea.AddNoResize(visiableAreaArr[index]);
+
+            blurBuffer[visiableAreaArr[index]] = new Color32(0, 0, 0, 0);
+
+        }
+    }
 
 
 

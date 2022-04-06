@@ -14,7 +14,7 @@ public class GridSystem : Singleton<GridSystem>
 
     private int cellSize;
 
-    private GridNode[] gridArray;
+    public static GridNode[] gridArray;
     private FixedVector3 originPosition;
 
     public override void InitInstance()
@@ -72,6 +72,10 @@ public class GridSystem : Singleton<GridSystem>
         var y = (worldPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);
         return y * ConfigData.gridWidth + x;
+    }
+    public static void SetGrid(int y,int x){
+        GridSystem.gridArray[y * 512 +x].giz = true;
+
     }
     public static int GetGridIndexInFOW(FixedVector2 worldPosition)
     {

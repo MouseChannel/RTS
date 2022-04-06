@@ -11,6 +11,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs;
 using UnityEngine.UI;
+using UnityEngine.Profiling;
 
 [DisableAutoCreation]
 public partial class PathFindSystem : WorkSystem
@@ -32,8 +33,9 @@ public partial class PathFindSystem : WorkSystem
 
         NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
         // var jobWriter = jobHandleList.AsParallelWriter();
+        Profiler.BeginSample("MyPathTest");
         NativeArray<GridNode> pathNodeArray = new NativeArray<GridNode>(GridSystem.Instance.GetWidth() * GridSystem.Instance.GetWidth(), Allocator.TempJob);
-
+        Profiler.EndSample();
         NativeArray<GridNode>.Copy(GridSystem.Instance.GetGridArray(), pathNodeArray);
 
 
@@ -42,26 +44,35 @@ public partial class PathFindSystem : WorkSystem
         // DynamicBuffer<PathPosition> pathPositionBuffer,
         // var gridSystem = GridSystem.Instance;
 
-        Entities.ForEach((Entity entity, int entityInQueryIndex,  in PathFindParam pathfindParams,  in Agent agent) =>
+        Entities.ForEach((Entity entity, int entityInQueryIndex, in PathFindParam pathfindParams, in Agent agent) =>
         {
-            
+
             var startNodeIndex = GridSystem.GetGridIndex(agent.position_);
-            BuildPathGridCostJob buildPathGridCostJob = new BuildPathGridCostJob
+          
+            if (startNodeIndex != pathfindParams.endPosition)
             {
+                BuildPathGridCostJob buildPathGridCostJob = new BuildPathGridCostJob
+                {
 
 
-                pathNodeArray = pathNodeArray,
-                startNodeIndex = startNodeIndex,
-                endNodeIndex = pathfindParams.endPosition,
-                entity = entity,
-                // pathPositionBuffer = pathPositionBuffer,
-                indexInQuery = entityInQueryIndex,
-                ecbPara = ecbPara
+                    pathNodeArray = pathNodeArray,
+                    startNodeIndex = startNodeIndex,
+                    endNodeIndex = pathfindParams.endPosition,
+                    entity = entity,
+                    // pathPositionBuffer = pathPositionBuffer,
+                    indexInQuery = entityInQueryIndex,
+                    ecbPara = ecbPara,
+                
                 // ecb.AsParallelWriter()
 
             };
+                // buildPathGridCostJob.Run();
+                // TestGiz(ttt);
+           
 
-            jobHandleList.Add(buildPathGridCostJob.Schedule());
+                jobHandleList.Add(buildPathGridCostJob.Schedule());
+
+            }
 
 
             // ecb.RemoveComponent<PathFindParams>(entity);
@@ -80,6 +91,15 @@ public partial class PathFindSystem : WorkSystem
 
 
     }
+    private void TestGiz(NativeList<GridNode> tempPathNodeArray)
+        {
+             Debug.Log(string.Format("{0}",tempPathNodeArray.Length));
+            for (int i = 0; i < tempPathNodeArray.Length;i++){
+                GridSystem.SetGrid(tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512);
+                // Debug.Log(string.Format("{0} {1}",tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512));
+            }
+               
+        }
 
 
 

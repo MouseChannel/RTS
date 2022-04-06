@@ -4,12 +4,113 @@ using UnityEngine;
 using Unity.Entities;
 using FixedMath;
 using Unity.Collections;
-
+using UnityEngine.Profiling;
+using Unity.Jobs;
 
 public partial class KDTreeSystem
 {
+    /// <summary>
+    /// 每个逻辑帧运行， Agent的位置需要即时更新
+    /// </summary>
+    public override void Work()
+    {
 
 
+        #region Build Agent Tree
+
+        agents_.Clear();
+        agentTree_.Clear();
+
+  
+
+        Entities.ForEach((Entity entity, in Agent agent) =>
+        {
+            agents_.Add(agent);
+            agentTree_.Add(new AgentTreeNode { });
+            agentTree_.Add(new AgentTreeNode { });
+
+        }).WithoutBurst().Run();
+
+       
+        // BuildAgentTree(0, agents_.Length, 0);
+        new BuildAgentTreeJob
+        {
+            agents_ = agents_,
+            agentTree_ = agentTree_
+        }.Run();
+
+ 
+
+
+
+
+
+        #endregion
+
+
+    }
+   
+   
+    /// <summary>
+    /// <para> 更新Obstacle_KDTree</para> 
+    /// <para> 一般在 <see cref = "AddNewObstacle"/> 内调用   </para> 
+    /// </summary>
+    private void UpdateObstacleTree()
+    {
+
+        obstacles_.Clear();
+        obstacleTree_.Clear();
+
+
+
+        Entities.ForEach((Entity entity, in Obstacle obstacle) =>
+        {
+            obstacles_.Add(obstacle);
+            obstacleTree_.Add(new ObstacleTreeNode { });
+            obstacleTree_.Add(new ObstacleTreeNode { });
+
+        }).WithoutBurst().Run();
+
+
+
+        BuildObstacleTree(0, obstacles_.Length, 0);
+
+    }
+   
+   
+   
+    /// <summary>
+    /// <para> 更新ObstacleVertice_KDTree</para> 
+    /// <para> 一般在 <see cref = "AddNewObstacle"/> 内调用   </para> 
+    /// </summary>
+    private void UpdateObstacleVerticeTree()
+    {
+        obstacleVertices_.Clear();
+        obstacleVerticesTree_.Clear();
+
+        Entities.ForEach((Entity entity, DynamicBuffer<PreObstacleVertice> obstacleVertices) =>
+        {
+            ObstacleVerticeCollect(obstacleVertices_, obstacleVertices);
+        }).WithoutBurst().Run();
+
+
+
+
+
+        InitObstacleVerticeTree(obstacleVertices_.Length);
+        NativeList<ObstacleVertice> currentObstacleVertices = new NativeList<ObstacleVertice>(Allocator.Temp);
+        currentObstacleVertices.AddRange(obstacleVertices_);
+        obstacleVerticesTreeRoot = BuildObstacleVerticeTreeRecursive(currentObstacleVertices);
+
+
+        currentObstacleVertices.Dispose();
+
+
+    }
+
+    /// <summary>
+    /// 场景内增加障碍物是调用
+    /// </summary>
     public void AddNewObstacle()
     {
         UpdateObstacleVerticeTree();
@@ -20,7 +121,14 @@ public partial class KDTreeSystem
 
 
     #region  selection
-    public void GetClosestAgent(FixedVector2 position, ref FixedInt rangeSq, ref int agentNo, int node)
+    /// <summary>
+    /// 根据输入坐标，在AgentKDTree上查找最近的Agent
+    /// </summary>
+    /// <param name="position">输入坐标</param>
+    /// <param name="rangeSq">最小检查范围</param>
+    /// <param name="agentNo">离输入坐标最近的AgentNo</param>
+    /// <param name="node">从KD树的该下标开始搜索</param>
+    public void GetClosestAgent(FixedVector2 position, ref FixedInt rangeSq, ref int agentNo, int node = 0)
     {
 
 
@@ -73,7 +181,7 @@ public partial class KDTreeSystem
     }
 
     /// <summary>
-    /// 
+    /// 查找范围内的Agent
     /// </summary>
     /// <param name="position"></param>
     /// <param name="areaRect">xmin, xmax,ymin,  ymax</param>
@@ -127,6 +235,7 @@ public partial class KDTreeSystem
 
     }
 
+ 
     private void InsertAreaAgents(Agent agent, Vector4 areaRect, List<int> areaAgents)
     {
 
@@ -150,7 +259,7 @@ public partial class KDTreeSystem
 
 
 
-    private   void GetRangeObstacleVertices(Agent agent, ObstacleVerticeTreeNode node, FixedInt rangeSq, NativeList<ObstacleVerticeNeighbor> obstacleNeighbors)
+    private void GetRangeObstacleVertices(Agent agent, ObstacleVerticeTreeNode node, FixedInt rangeSq, NativeList<ObstacleVerticeNeighbor> obstacleNeighbors)
     {
         if (node.obstacleVertice_Index == -1) return;
         ObstacleVertice obstacle1 = obstacleVertices_[node.obstacleVertice_Index];

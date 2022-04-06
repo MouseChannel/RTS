@@ -14,13 +14,14 @@ public partial class FightSystem : WorkSystem
        
         responseNetSystem = GetSystem<ResponseNetSystem>();
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
-        Entities.ForEach((Entity entity, int entityInQueryIndex, in DoingFight doingFight, in Agent agent, in Fighter fighter ) =>
+        Entities.WithAll<FighterTag>()
+                .ForEach((Entity entity, int entityInQueryIndex, in DoingFight doingFight, in Agent agent,  in InhabitantComponent inhabitantComponent  ) =>
         {
             FightJob fightJob = new FightJob
             {
                 entity = entity,
                 entityInQueryIndex = entityInQueryIndex,
-                fighter = fighter,
+                inhabitantComponent = inhabitantComponent,
                 fighterPosition  = agent.position_,
                 enemyPosition =  responseNetSystem.GetUnitEntityPosition(doingFight.enemyNo),
 

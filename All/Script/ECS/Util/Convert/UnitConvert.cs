@@ -25,7 +25,7 @@ public class UnitConvert : MonoSystem, IConvertGameObjectToEntity
             radius_ = ((FixedInt)1) >> 1,
             maxSpeed_ = 6,
             velocity_ = new FixedVector2(0, 0),
-            position_ = new FixedVector2(GetSystem<ResponseNetSystem>().allMovedUnit.Count, GetSystem<ResponseNetSystem>().allMovedUnit.Count),
+            position_ = new FixedVector2(GetSystem<ResponseNetSystem>().allMovedUnit.Count + 11, GetSystem<ResponseNetSystem>().allMovedUnit.Count+ 11),
             // position_ = new FixedVector2(24, 10)
         // faction_ = Root.Instance.id,
         // needCheckClosestEnemy_ = true
@@ -41,8 +41,8 @@ public class UnitConvert : MonoSystem, IConvertGameObjectToEntity
         dstManager.SetComponentData<FOWUnit>(entity, new FOWUnit { });
         dstManager.AddComponent<InhabitantComponent>(entity);
 
-        dstManager.AddComponent<Collector>(entity);
-        dstManager.AddComponent<Fighter>(entity);
+        dstManager.AddComponent<CollectorTag>(entity);
+        dstManager.AddComponent<FighterTag>(entity);
         // dstManager.AddComponent<UnitTag>(entity);
         // dstManager.SetComponentData<UnitTag>(entity, new UnitTag{id = Root.Instance.id,faction = 1});
 

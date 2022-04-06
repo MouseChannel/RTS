@@ -17,7 +17,7 @@ using Unity.Collections.LowLevel.Unsafe;
 /// <summary>
 /// 连接A* 和 RVO
 /// </summary>
-public class KeepWalkingSystem : WorkSystem
+public   partial class KeepWalkingSystem : WorkSystem
 {
 
 

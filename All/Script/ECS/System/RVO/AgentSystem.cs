@@ -7,9 +7,7 @@ using Unity.Jobs;
 using Unity.Transforms;
 using System;
 using UnityEngine.UI;
-
-
-
+using UnityEngine.Profiling;
 
 public partial class AgentSystem : WorkSystem
 {
@@ -24,6 +22,7 @@ public partial class AgentSystem : WorkSystem
 
 
         #region  updateAgentJob
+        Profiler.BeginSample("AgentStart");
         var kDTreeSystem = World.GetExistingSystem<KDTreeSystem>();
         var agents_ = kDTreeSystem.agents_;
         var agentTree_ = kDTreeSystem.agentTree_;
@@ -38,7 +37,7 @@ public partial class AgentSystem : WorkSystem
         var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
         NativeList<JobHandle> jobHandleList = new NativeList<JobHandle>(Allocator.Temp);
 
-
+        Profiler.EndSample();
         Entities.ForEach((Entity entity, int entityInQueryIndex, in Agent agent) =>
         {
             UpdateAgentJob updateAgentJob = new UpdateAgentJob

@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using Unity.Collections;
- 
+
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using FixedMath;
 using System;
+using UnityEngine.Profiling;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 
 public partial class FOWSystem : SystemBase
 {
-    public NativeArray<Color32> colorBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
+    public NativeArray<UInt32> colorBuffer = new NativeArray<UInt32>(GridSystem.Instance.GetLength() / 32, Allocator.Persistent);
     public NativeArray<Color32> blurBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
-    public NativeList<int> lastVisiableArea = new NativeList<int> ( Allocator.Persistent);
+    public UnsafeList<int> lastVisiableArea = new UnsafeList<int>(GridSystem.Instance.GetLength(), Allocator.Persistent);
     public Material blurMat;
     private Texture2D texBuffer;
     private RenderTexture renderBuffer;
@@ -66,14 +67,6 @@ public partial class FOWSystem : SystemBase
         texBuffer.Apply();
         Graphics.Blit(texBuffer, curTexture, blurMat, 0);
 
-        // Graphics.Blit(texBuffer, renderBuffer, blurMat, 0);
-        // // for (int i = 0; i < 1; i++)
-        // // {
-        // Graphics.Blit(renderBuffer, renderBuffer2, blurMat, 0);
-        // Graphics.Blit(renderBuffer2, renderBuffer, blurMat, 0);
-        // // }
-        // Graphics.Blit(renderBuffer, nextTexture);
-
 
 
     }
@@ -88,35 +81,49 @@ public partial class FOWSystem : SystemBase
 
         UnsafeHashSet<int> visiableArea = new UnsafeHashSet<int>(colorBuffer.Length, Allocator.TempJob);
         var setParaWriter = visiableArea.AsParallelWriter();
+
+        NativeList<FOWUnit> fogUnits = new NativeList<FOWUnit>(Allocator.Temp);
         Entities.ForEach((in FOWUnit fogUnit) =>
         {
-            ComputeFog computeFog = new ComputeFog
+            ComputeFogJob computeFogJob = new ComputeFogJob
             {
-    
+
                 fowUnit = fogUnit,
                 obstacles_ = obstacles_,
                 obstacleTree_ = obstacleTree_,
                 obstacleTreeRoot = obstacleTreeRoot,
-                setParaWriter = setParaWriter
+                setParaWriter = setParaWriter,
+
+
 
 
             };
-            // computeFog.Run();
-            jobList.Add(computeFog.Schedule());
 
-           
+      
+
+            jobList.Add(computeFogJob.Schedule());
+
+
+            fogUnits.Add(fogUnit);
+
+
 
         }).WithoutBurst().Run();
         JobHandle.CompleteAll(jobList);
+  
+ 
 
- 
         lastVisiableArea.Clear();
- 
-        foreach (var j in visiableArea)
+
+        // var visiableAreaArr = visiableArea.ToNativeArray(Allocator.TempJob);
+        var setParallelWriter = lastVisiableArea.AsParallelWriter();
+        new SetFogPixelJobParallel
         {
-            lastVisiableArea.Add(j);
-            blurBuffer[j] = new Color32(0, 0, 0, 0);
-        }
+            lastVisiableArea = setParallelWriter,
+            visiableAreaArr = visiableArea.ToNativeArray(Allocator.TempJob),
+            blurBuffer = blurBuffer
+        }.Schedule(visiableArea.Count(), 32).Complete();
+ 
         obstacles_.Dispose();
         obstacleTree_.Dispose();
 
@@ -126,11 +133,7 @@ public partial class FOWSystem : SystemBase
 
     }
 
-    //----------
-
-
-
-    //------------
+  
 
     public void InitFOW()
     {
@@ -150,26 +153,25 @@ public partial class FOWSystem : SystemBase
         curTexture = RenderTexture.GetTemporary((int)(mapWidth * 1.5f), (int)(mapHeight * 1.5f), 0);
         for (int i = 0; i < blurBuffer.Length; i++)
         {
-            blurBuffer[i] = new Color32(0, 0, 0, 255);
+            blurBuffer[i] = new Color32(0, 0, 0, 222);
 
         }
 
-        Debug.Log("InitFog");
+
     }
 
     private void FreshFog()
     {
-        FreshJob freshJob = new FreshJob
+
+        FreshJobParallel freshJobParallel = new FreshJobParallel
         {
             blurBuffer = blurBuffer,
             lastVisiableArea = lastVisiableArea
         };
-        freshJob.Run();
+        freshJobParallel.Schedule(lastVisiableArea.Length, 32).Complete();
 
-        // foreach(var i in lastVisiableArea){
-        //     blurBuffer[i] = new Color32(0, 0, 0, 252);
-        // }
     }
+
 
 
 

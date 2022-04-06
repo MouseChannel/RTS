@@ -16,12 +16,13 @@ public struct GridNode: IComparable<GridNode>, IEquatable<GridNode>
 
     public int gCost;
     public int hCost;
-    public int fCost
-    {
-        get => gCost + hCost;
-    }
+    public int fCost;
+    // {
+    //     get => gCost + hCost;
+    // }
 
     public bool isWalkable;
+    public bool giz;
 
     public int cameFromNodeIndex;
     // public void CalculateFCost(){
@@ -48,6 +49,7 @@ public struct GridNode: IComparable<GridNode>, IEquatable<GridNode>
     public int CompareTo(GridNode other)
     {
         return other.fCost - fCost;
+        //  return other.fCost - fCost;
     }
 
     public bool Equals(GridNode other)

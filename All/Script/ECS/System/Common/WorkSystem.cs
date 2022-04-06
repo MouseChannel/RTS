@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Entities;
 
 // [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-public abstract class WorkSystem : SystemBase
+public abstract partial class WorkSystem : SystemBase
 {
     public abstract void Work();
     // protected EndSimulationEntityCommandBufferSystem 
@@ -14,6 +14,7 @@ public abstract class WorkSystem : SystemBase
     {
         get
         {
+           
 
             return World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>().CreateCommandBuffer().AsParallelWriter();
 

@@ -6,6 +6,7 @@ using Unity.Entities;
 using FixedMath;
 
 using System;
+using UnityEngine.Profiling;
 
 public class InputSystem : ServiceSystem
 {
@@ -95,7 +96,7 @@ public class InputSystem : ServiceSystem
                     return;
                 }
                 int agentNo = -1;
-                kDTreeSystem.GetClosestAgent(position, ref distance, ref agentNo, 0);
+                kDTreeSystem.GetClosestAgent(position, ref distance, ref agentNo);
                 if (agentNo != -1)
                 {
                     var agentEntity = GetSystem<ResponseNetSystem>().GetUnitEntity(agentNo);
@@ -189,7 +190,7 @@ public class InputSystem : ServiceSystem
             FixedInt distance = FixedInt.half * 2;
 
             int agentNo = -1;
-            kDTreeSystem.GetClosestAgent(position, ref distance, ref agentNo, 0);
+            kDTreeSystem.GetClosestAgent(position, ref distance, ref agentNo);
             if (agentNo != -1)
             {
                 selectedUnits.Add(agentNo);
@@ -212,6 +213,7 @@ public class InputSystem : ServiceSystem
 
     private void SelectMultipleUnit()
     {
+        Profiler.BeginSample("MultSelect");
 
         IsDragging = false;
         Vector4 areaRect = ModifyRect();
@@ -228,6 +230,7 @@ public class InputSystem : ServiceSystem
         {
             selectedUnits.Add(i);
         }
+        Profiler.EndSample();
 
 
     }

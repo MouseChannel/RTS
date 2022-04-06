@@ -1,33 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using FixedMath;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
 public partial class KDTreeSystem
 {
 
-    private void UpdateObstacleTree()
-    {
+    public NativeList<Obstacle> obstacles_ = new NativeList<Obstacle>(Allocator.Persistent);
 
-        obstacles_.Clear();
-        obstacleTree_.Clear();
+    public NativeList<ObstacleTreeNode> obstacleTree_ = new NativeList<ObstacleTreeNode>(Allocator.Persistent);
 
-
-
-        Entities.ForEach((Entity entity, in Obstacle obstacle) =>
-        {
-            obstacles_.Add(obstacle);
-            obstacleTree_.Add(new ObstacleTreeNode { });
-            obstacleTree_.Add(new ObstacleTreeNode { });
-
-        }).WithoutBurst().Run();
-
-
-
-        BuildObstacleTree(0, obstacles_.Length, 0);
-
-    }
 
 
     private void BuildObstacleTree(int begin, int end, int node)

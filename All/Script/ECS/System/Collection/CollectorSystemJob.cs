@@ -11,11 +11,12 @@ using Unity.Collections.LowLevel.Unsafe;
 public partial class CollectorSystem
 {
     [BurstCompile]
-    public struct CollectorJob : IStateBaseJob
+    public   struct CollectorJob : IStateBaseJob
     {
         public Entity entity;
         public FixedVector2 collectorPosition;
-        public Collector collector;
+        // public Collector inhabitantComponent;
+        public InhabitantComponent inhabitantComponent;
 
 
         public FixedVector2 resourcePosition;
@@ -29,15 +30,18 @@ public partial class CollectorSystem
         private int collectorPositionIndex;
         private int resourcePositionIndex;
         private int stopPositionIndex;
+        
+        private int currentResourceStore;
         public void Execute()
         {
             collectorPositionIndex = GridSystem.GetGridIndex(collectorPosition);
             resourcePositionIndex = GridSystem.GetGridIndex(resourcePosition);
             stopPositionIndex = GridSystem.GetGridIndex(stopPosition);
+            currentResourceStore = inhabitantComponent.firstValue;
 
 
 
-            switch (collector.state)
+            switch (inhabitantComponent.taskState)
             {
                 case DoingTaskState.idle:
                     Case_Idle();
@@ -95,7 +99,7 @@ public partial class CollectorSystem
 
             if (resourcePosition == FixedVector2.inVaild)
             {
-                if (collector.currentResourceStore < 20)
+                if (currentResourceStore < 20)
                 {
                     ChangeState(DoingTaskState.idle);
                 }
@@ -105,15 +109,16 @@ public partial class CollectorSystem
                 }
                 return;
             }
-            if (collector.currentResourceStore > 200)
+            if (currentResourceStore > 200)
             {
                 ChangeState(DoingTaskState.goToSecondDestination);
             }
             else
             {
  
-                collector.currentResourceStore++;
-                EcbSetComponent(collector);
+                currentResourceStore++;
+                inhabitantComponent.firstValue = currentResourceStore;
+                EcbSetComponent(inhabitantComponent);
              
             }
 
@@ -194,7 +199,7 @@ public partial class CollectorSystem
 
                     break;
                 case DoingTaskState.goToSecondDestination:
-                    collector.currentResourceStore = 0;
+                    inhabitantComponent.firstValue = 0;
                     break;
             }
         }
@@ -202,30 +207,17 @@ public partial class CollectorSystem
         public void ChangeState(DoingTaskState newState)
         {
             //animation todo
-            ExitState(collector.state);
+            ExitState(inhabitantComponent.taskState);
 
             EnterState(newState);
-            collector.state = newState;
+            inhabitantComponent.taskState = newState;
            
-            EcbSetComponent(collector);
+            EcbSetComponent(inhabitantComponent);
         }
 
  
 
-        public EntityCommandBuffer.ParallelWriter GetEcbPara()
-        {
-            return ecbPara;
-        }
-
-        public int GetEntityInQueryIndex()
-        {
-            return entityInQueryIndex;
-        }
-
-        public Entity GetEntity()
-        {
-            return entity;
-        }
+ 
 
         public void EcbSetComponent<T>(T component) where T : struct, IComponentData
         {

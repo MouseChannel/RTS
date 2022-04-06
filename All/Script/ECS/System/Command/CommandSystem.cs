@@ -6,19 +6,19 @@ using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
 using Unity.Burst;
-public class CommandSystem : WorkSystem
+public partial class CommandSystem : WorkSystem
 {
 
     public override void Work()
     {
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
-        Entities.ForEach((Entity entity, int entityInQueryIndex, in HasCommand hasCommand, in InhabitantComponent inhabitantComponent) =>
+        Entities.ForEach((Entity entity, int entityInQueryIndex, in HasCommandState hasCommandState, in InhabitantComponent inhabitantComponent) =>
         {
 
             CommandJob commandJob = new CommandJob
             {
                 entity = entity,
-                hasCommand = hasCommand,
+                hasCommandState = hasCommandState,
                 inhabitantComponent = inhabitantComponent,
                 entityInQueryIndex = entityInQueryIndex,
                 ecbPara = ecbPara
@@ -35,7 +35,7 @@ public class CommandSystem : WorkSystem
     public struct CommandJob : IJob
     {
         public Entity entity;
-        [ReadOnly] public HasCommand hasCommand;
+        [ReadOnly] public HasCommandState hasCommandState;
         public InhabitantComponent inhabitantComponent;
         public int entityInQueryIndex;
         [NativeDisableContainerSafetyRestriction]
@@ -44,69 +44,72 @@ public class CommandSystem : WorkSystem
 
         public void Execute()
         {
-            ecbPara.RemoveComponent<HasCommand>(entityInQueryIndex, entity);
-            switch (hasCommand.type)
+            ecbPara.RemoveComponent<HasCommandState>(entityInQueryIndex, entity);
+            switch (hasCommandState.type)
             {
                 case CommandType.move:
-                    ChangeInhabitantState(InhabitantState.Idle);
-                    ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = hasCommand.commandData });
+                    int endPosition = hasCommandState.commandData;
+                    ChangeInhabitantTaskType(InhabitantTaskType.Idle);
+                    ecbPara.AddComponent<PathFindParam>(entityInQueryIndex, entity, new PathFindParam { endPosition = endPosition });
 
                     break;
                 case CommandType.collect:
-                    ChangeInhabitantState(InhabitantState.Collect);
+                    ChangeInhabitantTaskType(InhabitantTaskType.Collect);
                     break;
                 case CommandType.fight:
-                    ChangeInhabitantState(InhabitantState.Fight);
+                    ChangeInhabitantTaskType(InhabitantTaskType.Fight);
                     break;
             }
+            ecbPara.SetComponent<InhabitantComponent>(entityInQueryIndex, entity, inhabitantComponent);
+
 
         }
 
 
-        public void ChangeInhabitantState(InhabitantState newState)
+        public void ChangeInhabitantTaskType(InhabitantTaskType newState)
         {
             // var entity = allMovedUnit[entityNo];
 
-            ExitInhabitantState(inhabitantComponent.state);
-            inhabitantComponent.state = newState;
+            ExitInhabitantState(inhabitantComponent.taskType);
+            inhabitantComponent.taskType = newState;
+            inhabitantComponent.taskState = DoingTaskState.idle;
             EnterInhabitantState(newState);
 
-            ecbPara.SetComponent<InhabitantComponent>(entityInQueryIndex, entity, inhabitantComponent);
 
         }
 
-        private void EnterInhabitantState(InhabitantState newState)
+        private void EnterInhabitantState(InhabitantTaskType newState)
         {
             switch (newState)
             {
-                case InhabitantState.Idle:
+                case InhabitantTaskType.Idle:
                     break;
-                case InhabitantState.Build:
+                case InhabitantTaskType.Build:
                     break;
-                case InhabitantState.Fight:
-                    ecbPara.SetComponent<Fighter>(entityInQueryIndex, entity, new Fighter { });
-                    ecbPara.AddComponent<DoingFight>(entityInQueryIndex, entity, new DoingFight { enemyNo = hasCommand.commandData });
+                case InhabitantTaskType.Fight:
+                    // ecbPara.SetComponent<Fighter>(entityInQueryIndex, entity, new Fighter { });
+                    ecbPara.AddComponent<DoingFight>(entityInQueryIndex, entity, new DoingFight { enemyNo = hasCommandState.commandData });
 
                     break;
-                case InhabitantState.Collect:
+                case InhabitantTaskType.Collect:
 
-                    ecbPara.SetComponent<Collector>(entityInQueryIndex, entity, new Collector { });
-                    ecbPara.AddComponent<DoingCollect>(entityInQueryIndex, entity, new DoingCollect { resourceNo = hasCommand.commandData });
+                    // ecbPara.SetComponent<Collector>(entityInQueryIndex, entity, new Collector { });
+                    ecbPara.AddComponent<DoingCollect>(entityInQueryIndex, entity, new DoingCollect { resourceNo = hasCommandState.commandData });
                     break;
             }
         }
-        private void ExitInhabitantState(InhabitantState oldState)
+        private void ExitInhabitantState(InhabitantTaskType oldState)
         {
             switch (oldState)
             {
-                case InhabitantState.Idle:
+                case InhabitantTaskType.Idle:
                     break;
-                case InhabitantState.Build:
+                case InhabitantTaskType.Build:
                     break;
-                case InhabitantState.Fight:
+                case InhabitantTaskType.Fight:
                     ecbPara.RemoveComponent<DoingFight>(entityInQueryIndex, entity);
                     break;
-                case InhabitantState.Collect:
+                case InhabitantTaskType.Collect:
                     ecbPara.RemoveComponent<DoingCollect>(entityInQueryIndex, entity);
 
                     break;

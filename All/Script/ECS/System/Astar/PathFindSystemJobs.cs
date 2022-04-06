@@ -9,6 +9,7 @@ using Unity.Jobs;
 using FixedMath;
 using System;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine.Profiling;
 
 public partial class PathFindSystem
 {
@@ -66,30 +67,57 @@ public partial class PathFindSystem
 
 
 
+        public float time;
 
+        // NativeList<GridNode> tempPathNodeArray = new NativeList<GridNode>(Allocator.Temp);
 
         public void Execute()
         {
             NativeList<GridNode> tempPathNodeArray = new NativeList<GridNode>(Allocator.Temp);
+            NativeList<PathPosition> currentPathArray = new NativeList<PathPosition>(Allocator.Temp);
 
+            NativeArray<GridNode> pathNodeArr = new NativeArray<GridNode>(pathNodeArray, Allocator.Temp);
 
-            BuildPathGridCost(tempPathNodeArray);
+            BuildPathGridCost(tempPathNodeArray, pathNodeArr);
+            // TestGiz(tempPathNodeArray);
 
-            CalculatePath(tempPathNodeArray);
-            DeleteCollinear();
-            RemoveCorner();
+            // // Profiler.BeginSample("BuildTest");
+            CalculatePath(tempPathNodeArray, currentPathArray, pathNodeArr);
+            // Profiler.EndSample();
+            DeleteCollinear(currentPathArray);
+            RemoveCorner(currentPathArray);
 
-            if (pathPositionBuffer.Length > 0)
+            if (currentPathArray.Length > 0)
+            {
+                pathPositionBuffer = ecbPara.SetBuffer<PathPosition>(indexInQuery, entity);
+                pathPositionBuffer.CopyFrom(currentPathArray);
                 ecbPara.SetComponent<CurrentPathIndex>(indexInQuery, entity, new CurrentPathIndex { pathIndex = pathPositionBuffer.Length - 2 });
+            }
+            //     ecbPara.SetComponent<CurrentPathIndex>(indexInQuery, entity, new CurrentPathIndex { pathIndex = pathPositionBuffer.Length - 2 });
 
             tempPathNodeArray.Dispose();
+            currentPathArray.Dispose();
+            pathNodeArr.Dispose();
             ecbPara.RemoveComponent<PathFindParam>(indexInQuery, entity);
+
+        }
+        private void TestGiz(NativeList<GridNode> tempPathNodeArray)
+        {
+            Debug.Log(string.Format("{0}", tempPathNodeArray.Length));
+            for (int i = 0; i < tempPathNodeArray.Length; i++)
+            {
+                GridSystem.SetGrid(tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512);
+                // Debug.Log(string.Format("{0} {1}",tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512));
+            }
+
         }
 
-        private void BuildPathGridCost(NativeList<GridNode> tempPathNodeArray)
+
+
+        private void BuildPathGridCost(NativeList<GridNode> tempPathNodeArray, NativeArray<GridNode> pathNodeArr)
         {
-            GridNode startNode = pathNodeArray[startNodeIndex];
-            GridNode endNode = pathNodeArray[endNodeIndex];
+            GridNode startNode = pathNodeArr[startNodeIndex];
+            GridNode endNode = pathNodeArr[endNodeIndex];
 
 
 
@@ -156,7 +184,7 @@ public partial class PathFindSystem
                         // Neighbour not valid position
                         continue;
                     }
-                    var neighbourNode = pathNodeArray[CalculateIndex(neighbourPosition)];
+                    var neighbourNode = pathNodeArr[CalculateIndex(neighbourPosition)];
 
                     // int neighbourNodeIndex = CalculateIndex(neighbourPosition);
 
@@ -176,13 +204,16 @@ public partial class PathFindSystem
 
                     int2 currentNodePosition = new int2(currentNode.x, currentNode.y);
 
-                    int tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNodePosition, new int2(endNode.x, endNode.y));
+                    int tentativeGCost = currentNode.gCost + CalculateDistanceCost(neighbourPosition, currentNodePosition);
                     if (tentativeGCost < neighbourNode.gCost)
                     {
 
-                        neighbourNode.cameFromNodeIndex = tempPathNodeArray.IndexOf(currentNode);
+                        // neighbourNode.cameFromNodeIndex = tempPathNodeArray.IndexOf(currentNode);
+                        neighbourNode.cameFromNodeIndex = CalculateIndex(currentNodePosition);
                         neighbourNode.gCost = tentativeGCost;
-                        // neighbourNode.CalculateFCost();
+                        neighbourNode.hCost = CalculateDistanceCost(neighbourPosition, new int2(endNode.x, endNode.y));
+                        neighbourNode.fCost = neighbourNode.gCost + neighbourNode.hCost;
+
                         //---
                         // var newNode = new GridNode
                         // {
@@ -192,7 +223,8 @@ public partial class PathFindSystem
                         // };
 
                         //---
-
+                        var neighbourNodeIndex = CalculateIndex(neighbourPosition);
+                        pathNodeArr[neighbourNodeIndex] = neighbourNode;
                         // tempPathNodeArray[neighbourNodeIndex] = neighbourNode;
                         // var neighbourPair = new pair { index = neighbourNodeIndex, cost = neighbourNode.fCost };
 
@@ -216,9 +248,9 @@ public partial class PathFindSystem
         }
 
 
-        private void CalculatePath(NativeList<GridNode> tempPathNodeArray)
+        private void CalculatePath(NativeList<GridNode> tempPathNodeArray, NativeList<PathPosition> currentPathArray, NativeArray<GridNode> pathNodeArr)
         {
-            pathPositionBuffer = ecbPara.SetBuffer<PathPosition>(indexInQuery, entity);
+            // pathPositionBuffer = ecbPara.SetBuffer<PathPosition>(indexInQuery, entity);
             var endNode = tempPathNodeArray[tempPathNodeArray.Length - 1];
             if (endNode.cameFromNodeIndex == -1)
             {
@@ -228,15 +260,16 @@ public partial class PathFindSystem
             else
             {
                 // Found a path
+                currentPathArray.Add(new PathPosition { position = new int2(endNode.x, endNode.y) });
 
-
-                pathPositionBuffer.Add(new PathPosition { position = new int2(endNode.x, endNode.y) });
+                // pathPositionBuffer.Add(new PathPosition { position = new int2(endNode.x, endNode.y) });
 
                 GridNode currentNode = endNode;
                 while (currentNode.cameFromNodeIndex != -1)
                 {
-                    GridNode cameFromNode = tempPathNodeArray[currentNode.cameFromNodeIndex];
-                    pathPositionBuffer.Add(new PathPosition { position = new int2(cameFromNode.x, cameFromNode.y) });
+                    GridNode cameFromNode = pathNodeArr[currentNode.cameFromNodeIndex];
+                    currentPathArray.Add(new PathPosition { position = new int2(cameFromNode.x, cameFromNode.y) });
+                    // pathPositionBuffer.Add(new PathPosition { position = new int2(cameFromNode.x, cameFromNode.y) });
                     currentNode = cameFromNode;
                 }
             }
@@ -251,56 +284,59 @@ public partial class PathFindSystem
         {
             return position.y * gridWidth + position.x;
         }
-        private void DeleteCollinear()
+        private void DeleteCollinear(NativeList<PathPosition> currentPathArray)
         {
             NativeList<PathPosition> newPath = new NativeList<PathPosition>(Allocator.Temp);
 
             //除去共线的点
-            if (pathPositionBuffer.Length <= 1) return;
-            newPath.Add(pathPositionBuffer[0]);
-            int2 dir = pathPositionBuffer[1].position - pathPositionBuffer[0].position;
+            if (currentPathArray.Length <= 1) return;
+            newPath.Add(currentPathArray[0]);
+            int2 dir = currentPathArray[1].position - currentPathArray[0].position;
 
-            for (int i = 1; i < pathPositionBuffer.Length; i++)
+            for (int i = 1; i < currentPathArray.Length; i++)
             {
-                int2 currentDir = pathPositionBuffer[i].position - pathPositionBuffer[i - 1].position;
+                int2 currentDir = currentPathArray[i].position - currentPathArray[i - 1].position;
 
                 if (currentDir.x != dir.x || currentDir.y != dir.y)
                 {
 
-                    newPath.Add(pathPositionBuffer[i - 1]);
+                    newPath.Add(currentPathArray[i - 1]);
                     dir = currentDir;
                 }
             }
-            newPath.Add(pathPositionBuffer[pathPositionBuffer.Length - 1]);
-            pathPositionBuffer.CopyFrom(newPath);
+            newPath.Add(currentPathArray[currentPathArray.Length - 1]);
+            currentPathArray.Clear();
+            currentPathArray.AddRange(newPath);
+
+            // pathPositionBuffer.CopyFrom(newPath);
 
 
             newPath.Dispose();
 
         }
 
-        private void RemoveCorner()
+        private void RemoveCorner(NativeList<PathPosition> currentPathArray)
         {
 
 
 
             NativeList<PathPosition> newPath = new NativeList<PathPosition>(Allocator.Temp);
-            newPath.Add(pathPositionBuffer[0]);
+            newPath.Add(currentPathArray[0]);
             int i = 0;
             int j = 2;
-            while (j < pathPositionBuffer.Length)
+            while (j < currentPathArray.Length)
             {
 
                 if (IsExistBarrier(
-                                    pathPositionBuffer[i].position,
-                                    pathPositionBuffer[j].position))
+                                    currentPathArray[i].position,
+                                    currentPathArray[j].position))
                 {
-                    // Debug.Log(string.Format("exist barrier {0} {1} ||||{2} {3}",pathPositionBuffer[i].position.x,
-                    //                                                             pathPositionBuffer[i].position.y,
-                    //                                                             pathPositionBuffer[j].position.x,
-                    //                                                             pathPositionBuffer[j].position.y)  );
-                    newPath.Add(pathPositionBuffer[j - 1]);
-                    // Debug.Log(string.Format("Add {0} {1}", pathPositionBuffer[j - 1].position.x, pathPositionBuffer[j - 1].position.y));
+                    // Debug.Log(string.Format("exist barrier {0} {1} ||||{2} {3}",currentPathArray[i].position.x,
+                    //                                                             currentPathArray[i].position.y,
+                    //                                                             currentPathArray[j].position.x,
+                    //                                                             currentPathArray[j].position.y)  );
+                    newPath.Add(currentPathArray[j - 1]);
+                    // Debug.Log(string.Format("Add {0} {1}", currentPathArray[j - 1].position.x, currentPathArray[j - 1].position.y));
                     i = j - 1;
 
                 }
@@ -309,9 +345,11 @@ public partial class PathFindSystem
                     j++;
                 }
             }
-            newPath.Add(pathPositionBuffer[pathPositionBuffer.Length - 1]);
+            newPath.Add(currentPathArray[currentPathArray.Length - 1]);
+            currentPathArray.Clear();
+            currentPathArray.AddRange(newPath);
 
-            pathPositionBuffer.CopyFrom(newPath);
+            // pathPositionBuffer.CopyFrom(newPath);
 
 
 
@@ -336,7 +374,11 @@ public partial class PathFindSystem
             openList.Sort();
             //native容器不保证顺序
             var result = openList[openList.Length - 1];
+
+
             openList.RemoveAtSwapBack(openList.Length - 1);
+
+
             return result;
 
         }
@@ -356,6 +398,7 @@ public partial class PathFindSystem
             int xDistance = math.abs(aPosition.x - bPosition.x);
             int yDistance = math.abs(aPosition.y - bPosition.y);
             int remaining = math.abs(xDistance - yDistance);
+            // return xDistance + yDistance;
 
             return MOVE_DIAGONAL_COST * math.min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
         }

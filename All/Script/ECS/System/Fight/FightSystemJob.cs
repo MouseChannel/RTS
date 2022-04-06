@@ -15,7 +15,8 @@ public partial class FightSystem
     {
         public Entity entity;
         public int entityInQueryIndex;
-        public Fighter fighter;
+        // public Fighter inhabitantComponent;
+        public InhabitantComponent inhabitantComponent;
         public FixedVector2 fighterPosition;
         public FixedVector2 enemyPosition;
 
@@ -23,14 +24,16 @@ public partial class FightSystem
         public EntityCommandBuffer.ParallelWriter ecbPara;
         private int fighterPositionIndex;
         private int enemyPositionIndex;
+        private int beforeEnemyPositionIndex;
 
         public void Execute()
         {
             fighterPositionIndex = GridSystem.GetGridIndex(fighterPosition);
             enemyPositionIndex = GridSystem.GetGridIndex(enemyPosition);
+            beforeEnemyPositionIndex = inhabitantComponent.firstValue;
 
             // Debug.Log(string.Format("{0}  {1}", fighterPositionIndex, enemyPositionIndex));
-            switch (fighter.state)
+            switch (inhabitantComponent.taskState)
             {
                 case DoingTaskState.idle:
                     Case_Idle();
@@ -64,18 +67,18 @@ public partial class FightSystem
             {
                 ChangeState(DoingTaskState.working);
             }
-            else if (fighter.beforeEnemyPositionIndex != enemyPositionIndex)
+            else if (beforeEnemyPositionIndex != enemyPositionIndex)
             {
-                fighter.beforeEnemyPositionIndex = enemyPositionIndex;
-                EcbSetComponent(fighter);
+                inhabitantComponent.firstValue = enemyPositionIndex;
+                EcbSetComponent(inhabitantComponent);
                 EcbAddComponent(new PathFindParam
                 {
                     endPosition = enemyPositionIndex
                 });
 
-               
 
-   
+
+
             }
 
         }
@@ -128,7 +131,7 @@ public partial class FightSystem
                     {
                         pathIndex = -1
                     });
-                    
+
 
 
                     break;
@@ -151,29 +154,16 @@ public partial class FightSystem
 
         public void ChangeState(DoingTaskState newState)
         {
-            ExitState(fighter.state);
+            ExitState(inhabitantComponent.taskState);
             EnterState(newState);
 
-            fighter.state = newState;
-            EcbSetComponent(fighter);
+            inhabitantComponent.taskState = newState;
+            EcbSetComponent(inhabitantComponent);
 
-           
+
         }
 
-        public EntityCommandBuffer.ParallelWriter GetEcbPara()
-        {
-            return ecbPara;
-        }
 
-        public int GetEntityInQueryIndex()
-        {
-            return enemyPositionIndex;
-        }
-
-        public Entity GetEntity()
-        {
-            return entity;
-        }
 
         public void EcbSetComponent<T>(T component) where T : struct, IComponentData
         {

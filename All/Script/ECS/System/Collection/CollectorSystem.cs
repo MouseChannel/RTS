@@ -20,14 +20,15 @@ public partial class CollectorSystem : WorkSystem
 
         var ecbPara = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
-        Entities.ForEach((Entity entity, int entityInQueryIndex, in DoingCollect doingCollect, in Agent agent, in Collector collector) =>
+        Entities.WithAll<CollectorTag>()
+                .ForEach((Entity entity, int entityInQueryIndex, in DoingCollect doingCollect, in Agent agent, in InhabitantComponent inhabitantComponent) =>
         {
             
 
             CollectorJob collectorJob = new CollectorJob
             {
                 entity = entity,
-                collector = collector,
+                inhabitantComponent = inhabitantComponent,
                 collectorPosition = agent.position_,
 
                 resourcePosition = responseNetSystem.GetObstacleEntityPosition(doingCollect.resourceNo),

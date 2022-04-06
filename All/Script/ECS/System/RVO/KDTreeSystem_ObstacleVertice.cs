@@ -7,29 +7,13 @@ using UnityEngine;
 
 public partial class KDTreeSystem
 {
+    public NativeList<ObstacleVertice> obstacleVertices_ = new NativeList<ObstacleVertice>(Allocator.Persistent);
+    public NativeList<ObstacleVerticeTreeNode> obstacleVerticesTree_ = new NativeList<ObstacleVerticeTreeNode>(Allocator.Persistent);
 
-    private void UpdateObstacleVerticeTree()
-    {
-        obstacleVertices_.Clear();
-        obstacleVerticesTree_.Clear();
-
-        Entities.ForEach((Entity entity, DynamicBuffer<PreObstacleVertice> obstacleVertices) =>
-        {
-            ObstacleVerticeCollect(obstacleVertices_, obstacleVertices);
-        }).WithoutBurst().Run();
+    public ObstacleVerticeTreeNode obstacleVerticesTreeRoot;
 
 
 
-        InitObstacleVerticeTree(obstacleVertices_.Length);
-        NativeList<ObstacleVertice> currentObstacleVertices = new NativeList<ObstacleVertice>(Allocator.Temp);
-        currentObstacleVertices.AddRange(obstacleVertices_);
-        obstacleVerticesTreeRoot = BuildObstacleVerticeTreeRecursive(currentObstacleVertices);
-
-
-        currentObstacleVertices.Dispose();
-
-
-    }
     private void ObstacleVerticeCollect(NativeList<ObstacleVertice> obstacleVertices_, DynamicBuffer<PreObstacleVertice> preObstacleVertices)
     {
         if (preObstacleVertices.Length < 2)
