@@ -7,6 +7,7 @@ using System;
 using Unity.Collections;
 using Unity.Jobs;
 
+[UpdateInGroup(typeof(TaskGroup))]
 public partial class CollectorSystem : WorkSystem
 {
     private ResponseNetSystem responseNetSystem;
@@ -23,7 +24,7 @@ public partial class CollectorSystem : WorkSystem
         Entities.WithAll<CollectorTag>()
                 .ForEach((Entity entity, int entityInQueryIndex, in DoingCollect doingCollect, in Agent agent, in InhabitantComponent inhabitantComponent) =>
         {
-            
+
 
             CollectorJob collectorJob = new CollectorJob
             {
@@ -66,7 +67,7 @@ public partial class CollectorSystem : WorkSystem
     // }
     private FixedVector2 GetStopPosition(int resourceId)
     {
-        
+
         var resourceEntity = responseNetSystem.GetObstacleEntity(resourceId);
         var pos = FixedVector2.inVaild;
         if (resourceEntity != Entity.Null)

@@ -12,12 +12,15 @@ using System;
 using UnityEngine.Profiling;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+[DisableAutoCreation]
 
 public partial class FOWSystem : SystemBase
 {
-    public NativeArray<UInt32> colorBuffer = new NativeArray<UInt32>(GridSystem.Instance.GetLength() / 32, Allocator.Persistent);
-    public NativeArray<Color32> blurBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
-    public UnsafeList<int> lastVisiableArea = new UnsafeList<int>(GridSystem.Instance.GetLength(), Allocator.Persistent);
+    // public NativeArray<UInt32> colorBuffer = new NativeArray<UInt32>(GridSystem.Instance.GetLength() / 32, Allocator.Persistent);
+    public NativeArray<Color32> blurBuffer;
+    //  = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
+    public UnsafeList<int> lastVisiableArea;
+    // = new UnsafeList<int>(GridSystem.Instance.GetLength(), Allocator.Persistent);
     public Material blurMat;
     private Texture2D texBuffer;
     private RenderTexture renderBuffer;
@@ -41,12 +44,14 @@ public partial class FOWSystem : SystemBase
 
     protected override void OnCreate()
     {
+        blurBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
+        lastVisiableArea = new UnsafeList<int>(GridSystem.Instance.GetLength(), Allocator.Persistent);
         World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = 0.5f;
         kDTreeSystem = World.GetOrCreateSystem<KDTreeSystem>();
     }
     protected override void OnDestroy()
     {
-        colorBuffer.Dispose();
+        // colorBuffer.Dispose();
         blurBuffer.Dispose();
         lastVisiableArea.Dispose();
 
@@ -79,7 +84,7 @@ public partial class FOWSystem : SystemBase
         ObstacleVerticeTreeNode obstacleTreeRoot = kDTreeSystem.obstacleVerticesTreeRoot;
 
 
-        UnsafeHashSet<int> visiableArea = new UnsafeHashSet<int>(colorBuffer.Length, Allocator.TempJob);
+        UnsafeHashSet<int> visiableArea = new UnsafeHashSet<int>(blurBuffer.Length, Allocator.TempJob);
         var setParaWriter = visiableArea.AsParallelWriter();
 
         NativeList<FOWUnit> fogUnits = new NativeList<FOWUnit>(Allocator.Temp);

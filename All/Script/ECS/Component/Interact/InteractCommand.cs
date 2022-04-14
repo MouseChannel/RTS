@@ -9,7 +9,7 @@ public enum CommandType{
     fight = 2,
 }
 
-public struct HasCommandState : ISystemStateComponentData{
+public struct HasCommandState : IComponentData{
 
     public int commandData;
     public CommandType type;

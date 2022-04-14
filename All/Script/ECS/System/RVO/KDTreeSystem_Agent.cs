@@ -12,8 +12,8 @@ using Unity.Jobs;
 
 
 
-[DisableAutoCreation]
-public partial class KDTreeSystem : WorkSystem
+
+public partial class KDTreeSystem  
 {
 
     private const int MAX_LEAF_SIZE = 10;

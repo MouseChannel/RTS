@@ -18,7 +18,7 @@ public struct _AnimInfo : IComponentData
 {
     public float4 Value;
 }
-[MaterialProperty("_AnimScalar", MaterialPropertyFormat.Float4)]
+[MaterialProperty("_AnimScalar", MaterialPropertyFormat.Float3)]
 public struct _AnimScalar : IComponentData
 {
     public float3 Value;

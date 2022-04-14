@@ -5,32 +5,33 @@ using Unity.Entities;
 using Unity.Collections;
 using Unity.Jobs;
 
+// [UpdateInGroup(typeof(TaskGroup))]
 public partial class FightSystem : WorkSystem
 {
     private ResponseNetSystem responseNetSystem;
-     
-    public override   void Work()
+
+    public override void Work()
     {
-       
+
         responseNetSystem = GetSystem<ResponseNetSystem>();
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
         Entities.WithAll<FighterTag>()
-                .ForEach((Entity entity, int entityInQueryIndex, in DoingFight doingFight, in Agent agent,  in InhabitantComponent inhabitantComponent  ) =>
+                .ForEach((Entity entity, int entityInQueryIndex, in DoingFight doingFight, in Agent agent, in InhabitantComponent inhabitantComponent) =>
         {
             FightJob fightJob = new FightJob
             {
                 entity = entity,
                 entityInQueryIndex = entityInQueryIndex,
                 inhabitantComponent = inhabitantComponent,
-                fighterPosition  = agent.position_,
-                enemyPosition =  responseNetSystem.GetUnitEntityPosition(doingFight.enemyNo),
+                fighterPosition = agent.position_,
+                enemyPosition = responseNetSystem.GetUnitEntityPosition(doingFight.enemyNo),
 
                 // enemyPosition
                 ecbPara = ecbPara,
-                
 
 
-            
+
+
 
 
             };

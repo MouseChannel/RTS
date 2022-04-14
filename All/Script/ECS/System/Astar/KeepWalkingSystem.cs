@@ -11,20 +11,23 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
 
-[DisableAutoCreation]
+// [UpdateInGroup(typeof(CommandGroup))]
+// [UpdateAfter(typeof(PathFindSystem))]
 
-
+ 
 /// <summary>
 /// 连接A* 和 RVO
 /// </summary>
-public   partial class KeepWalkingSystem : WorkSystem
+public partial class KeepWalkingSystem : WorkSystem
 {
 
 
+    
     public override void Work()
     {
 
-        Entities.ForEach((Entity entity, int entityInQueryIndex, DynamicBuffer<PathPosition> pathPositionBuffer, ref Agent agent, ref CurrentPathIndex currentPathIndex) =>
+        Entities.WithAll<InhabitantComponent>()
+                .ForEach((DynamicBuffer<PathPosition> pathPositionBuffer, ref Agent agent, ref CurrentPathIndex currentPathIndex) =>
         {
 
 
@@ -52,10 +55,11 @@ public   partial class KeepWalkingSystem : WorkSystem
 
 
             }
-            else if(!agent.reachDestination)
+            else if (!agent.reachDestination)
             {
                 agent.reachDestination = true;
                 agent.prefVelocity_ = new FixedVector2(0, 0);
+               
             }
 
 

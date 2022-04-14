@@ -17,7 +17,8 @@ public class UnitConvert : MonoSystem, IConvertGameObjectToEntity
         // responseCommandSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<ResponseCommandSystem>();
         dstManager.AddComponentData<Agent>(entity, new Agent
         {
-            id_ = GetSystem<ResponseNetSystem>().allMovedUnit.Count,
+            entity = entity,
+            id_ = GetSystem<ResponseNetSystem>().allMovedUnit.Length,
             neighborDist_ = 5,
             maxNeighbors_ = 10,
             timeHorizon_ = 1,
@@ -25,7 +26,7 @@ public class UnitConvert : MonoSystem, IConvertGameObjectToEntity
             radius_ = ((FixedInt)1) >> 1,
             maxSpeed_ = 6,
             velocity_ = new FixedVector2(0, 0),
-            position_ = new FixedVector2(GetSystem<ResponseNetSystem>().allMovedUnit.Count + 11, GetSystem<ResponseNetSystem>().allMovedUnit.Count+ 11),
+            position_ = new FixedVector2(GetSystem<ResponseNetSystem>().allMovedUnit.Length + 11, GetSystem<ResponseNetSystem>().allMovedUnit.Length+ 11),
             // position_ = new FixedVector2(24, 10)
         // faction_ = Root.Instance.id,
         // needCheckClosestEnemy_ = true

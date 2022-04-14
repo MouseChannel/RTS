@@ -4,7 +4,9 @@ using UnityEngine;
 using Unity.Entities;
 
 // [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+[DisableAutoCreation]
 public abstract partial class WorkSystem : SystemBase
+
 {
     public abstract void Work();
     // protected EndSimulationEntityCommandBufferSystem 
@@ -26,6 +28,7 @@ public abstract partial class WorkSystem : SystemBase
     {
 
         endSimulationEntityCommandBufferSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
+        // RequireSingletonForUpdate<NetFrameUpdateTag>();
     }
     // public virtual void Init(){}
     protected T GetSystem<T>() where T : SystemBase

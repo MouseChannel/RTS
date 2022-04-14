@@ -6,11 +6,16 @@ using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
 using Unity.Burst;
+[UpdateInGroup(typeof(InitializationSystemGroup))]
+[UpdateAfter(typeof(ResponseNetSystem))]
+
 public partial class CommandSystem : WorkSystem
 {
 
     public override void Work()
     {
+        if (!ShouldRunSystem()) return;
+       
         NativeList<JobHandle> jobList = new NativeList<JobHandle>(Allocator.Temp);
         Entities.ForEach((Entity entity, int entityInQueryIndex, in HasCommandState hasCommandState, in InhabitantComponent inhabitantComponent) =>
         {

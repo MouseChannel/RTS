@@ -10,7 +10,7 @@ public class TestGizmos : MonoBehaviour
     private static GridNode[] gridArray;
     void Start()
     {
-        gridArray = GridSystem.gridArray;
+        // gridArray = GridSystem.gridArray;
 
     }
 
@@ -26,14 +26,14 @@ public class TestGizmos : MonoBehaviour
         gridArray[pos.y *100 + pos.x].isWalkable = false;
     }
     void Update(){
-        if(Input.GetMouseButtonDown(1)){
-            for (int i = 0; i < 100;i++)
-                for (int j = 0; j < 100; j++)
-                {
-                    var index = GridSystem.GetGridIndex(new FixedVector2(i, j));
-                    gridArray[index].giz = false;
-                }
-        }
+        // if(Input.GetMouseButtonDown(1)){
+        //     for (int i = 0; i < 100;i++)
+        //         for (int j = 0; j < 100; j++)
+        //         {
+        //             var index = GridSystem.GetGridIndex(new FixedVector2(i, j));
+        //             gridArray[index].giz = false;
+        //         }
+        // }
     }
     void OnDrawGizmos(){
          Gizmos.color = Color.green;

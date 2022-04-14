@@ -11,6 +11,7 @@ using Unity.Entities;
 
 public struct Agent : IComponentData
 {
+    public Entity entity;
     public bool reachDestination;
     public FixedVector2 position_;
     public FixedVector2 prefVelocity_;

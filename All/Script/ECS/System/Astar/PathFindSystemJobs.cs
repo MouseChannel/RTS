@@ -53,6 +53,9 @@ public partial class PathFindSystem
         public int endNodeIndex;
 
         public Entity entity;
+        public int gridWidth;
+        public int MOVE_DIAGONAL_COST;
+        public int MOVE_STRAIGHT_COST;
 
 
 
@@ -75,17 +78,18 @@ public partial class PathFindSystem
         {
             NativeList<GridNode> tempPathNodeArray = new NativeList<GridNode>(Allocator.Temp);
             NativeList<PathPosition> currentPathArray = new NativeList<PathPosition>(Allocator.Temp);
+            
 
             NativeArray<GridNode> pathNodeArr = new NativeArray<GridNode>(pathNodeArray, Allocator.Temp);
 
             BuildPathGridCost(tempPathNodeArray, pathNodeArr);
-            // TestGiz(tempPathNodeArray);
+            TestGiz(tempPathNodeArray);
 
             // // Profiler.BeginSample("BuildTest");
             CalculatePath(tempPathNodeArray, currentPathArray, pathNodeArr);
             // Profiler.EndSample();
-            DeleteCollinear(currentPathArray);
-            RemoveCorner(currentPathArray);
+            // DeleteCollinear(currentPathArray);
+            // RemoveCorner(currentPathArray);
 
             if (currentPathArray.Length > 0)
             {
@@ -103,10 +107,10 @@ public partial class PathFindSystem
         }
         private void TestGiz(NativeList<GridNode> tempPathNodeArray)
         {
-            Debug.Log(string.Format("{0}", tempPathNodeArray.Length));
+            // Debug.Log(string.Format("{0}", tempPathNodeArray.Length));
             for (int i = 0; i < tempPathNodeArray.Length; i++)
             {
-                GridSystem.SetGrid(tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512);
+                // GridSystem.SetGrid(tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512);
                 // Debug.Log(string.Format("{0} {1}",tempPathNodeArray[i].index / 512, tempPathNodeArray[i].index % 512));
             }
 

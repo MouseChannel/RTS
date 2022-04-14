@@ -7,8 +7,17 @@ using Unity.Collections;
 using UnityEngine.Profiling;
 using Unity.Jobs;
 
-public partial class KDTreeSystem
+//  [UpdateInGroup(typeof(CommandGroup))]
+//  [UpdateAfter(typeof(KeepWalkingSystem))]
+ 
+public partial class KDTreeSystem :WorkSystem
 {
+ 
+
+
+
+ 
+
     /// <summary>
     /// 每个逻辑帧运行， Agent的位置需要即时更新
     /// </summary>
@@ -17,9 +26,10 @@ public partial class KDTreeSystem
 
 
         #region Build Agent Tree
-
+            Profiler.BeginSample("AgentStart");
         agents_.Clear();
         agentTree_.Clear();
+        
 
   
 
@@ -30,14 +40,33 @@ public partial class KDTreeSystem
             agentTree_.Add(new AgentTreeNode { });
 
         }).WithoutBurst().Run();
+        Profiler.EndSample();
 
-       
+
         // BuildAgentTree(0, agents_.Length, 0);
         new BuildAgentTreeJob
         {
             agents_ = agents_,
             agentTree_ = agentTree_
         }.Run();
+
+        new UpdateAgentJobParallel
+        {
+            // newVelocity = newVelocity,
+            // rangeNeighbors = rangeNeighbors,
+            // enemyUnit = enemyUnit,
+            // entity = entity,
+            // entities = ,
+
+            agents = agents_,
+            agentTree = agentTree_,
+            obstacleVertices_ = obstacleVertices_,
+            obstacleVerticesTree_ = obstacleVerticesTree_,
+            obstacleVerticesTreeRoot = obstacleVerticesTreeRoot,
+            // indexInEntityQuery = entityInQueryIndex,
+            ecbPara = ecbPara
+
+        }.Schedule(agents_.Length,4).Complete();
 
  
 
