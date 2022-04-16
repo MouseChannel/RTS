@@ -6,6 +6,8 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
 
+
+
 public struct BlobExposedFramePositionData
 {
     public BlobArray<SingleFrameData> singleFrameData;
@@ -13,7 +15,7 @@ public struct BlobExposedFramePositionData
 public class BlobAssetUtil
 {
     public static Dictionary<FixedString512Bytes, BlobAssetReference<AnimationBlobElement>> animationBlobDic = new Dictionary<FixedString512Bytes, BlobAssetReference<AnimationBlobElement>>();
-
+    public static int e = 22;
     public static void AddAnimationElement(string name, AnimationScriptableObject anim)
     {
         if (animationBlobDic.ContainsKey(name)) return;
@@ -40,6 +42,8 @@ public class BlobAssetUtil
         animElement.animScale = new float3(
             anim.animScalar
         );
+        animElement.length = anim.length;
+        animElement.totalFrames = anim.totalFrames;
         var frameLength = anim.exposedFramePositionData.Length;
         BlobBuilderArray<BlobExposedFramePositionData> exposedFramePositionData = blobBuilder.Allocate(ref animElement.exposedFramePositionData, frameLength);
         var exposedTransformObjectLength = anim.exposedFramePositionData[0].singleFrameData.Length;

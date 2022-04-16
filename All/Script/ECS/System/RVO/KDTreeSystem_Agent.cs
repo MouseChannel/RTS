@@ -145,9 +145,9 @@ public partial class KDTreeSystem
             treeNode.maxY_ = FixedCalculate.Max(agentTree_[node].maxY_, agents_[i].position_.Y);
             treeNode.minY_ = FixedCalculate.Min(agentTree_[node].minY_, agents_[i].position_.Y);
 
-            // agentTree_[node] = treeNode;
+            agentTree_[node] = treeNode;
         }
-        agentTree_[node] = treeNode;
+        // agentTree_[node] = treeNode;
         if (end - begin > MAX_LEAF_SIZE)
         {
             /* No leaf node. */

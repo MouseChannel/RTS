@@ -9,14 +9,15 @@ using Unity.Jobs;
 
 //  [UpdateInGroup(typeof(CommandGroup))]
 //  [UpdateAfter(typeof(KeepWalkingSystem))]
- 
-public partial class KDTreeSystem :WorkSystem
+[DisableAutoCreation]
+
+public partial class KDTreeSystem : WorkSystem
 {
- 
 
 
 
- 
+
+
 
     /// <summary>
     /// 每个逻辑帧运行， Agent的位置需要即时更新
@@ -25,13 +26,14 @@ public partial class KDTreeSystem :WorkSystem
     {
 
 
-        #region Build Agent Tree
-            Profiler.BeginSample("AgentStart");
+    
+ 
         agents_.Clear();
         agentTree_.Clear();
-        
 
-  
+ 
+         
+        
 
         Entities.ForEach((Entity entity, in Agent agent) =>
         {
@@ -40,10 +42,16 @@ public partial class KDTreeSystem :WorkSystem
             agentTree_.Add(new AgentTreeNode { });
 
         }).WithoutBurst().Run();
-        Profiler.EndSample();
+     
 
+   
+       
+        // Job.WithCode(() =>
+        // {
+        //     BuildAgentTree(0, agents_.Length, 0);
+        // }).Run();
 
-        // BuildAgentTree(0, agents_.Length, 0);
+   
         new BuildAgentTreeJob
         {
             agents_ = agents_,
@@ -66,20 +74,19 @@ public partial class KDTreeSystem :WorkSystem
             // indexInEntityQuery = entityInQueryIndex,
             ecbPara = ecbPara
 
-        }.Schedule(agents_.Length,4).Complete();
+        }.Schedule(agents_.Length, 4).Complete();
+
+
+
+
+
+
 
  
 
-
-
-
-
-        #endregion
-
-
     }
-   
-   
+
+
     /// <summary>
     /// <para> 更新Obstacle_KDTree</para> 
     /// <para> 一般在 <see cref = "AddNewObstacle"/> 内调用   </para> 
@@ -105,9 +112,9 @@ public partial class KDTreeSystem :WorkSystem
         BuildObstacleTree(0, obstacles_.Length, 0);
 
     }
-   
-   
-   
+
+
+
     /// <summary>
     /// <para> 更新ObstacleVertice_KDTree</para> 
     /// <para> 一般在 <see cref = "AddNewObstacle"/> 内调用   </para> 
@@ -264,7 +271,7 @@ public partial class KDTreeSystem :WorkSystem
 
     }
 
- 
+
     private void InsertAreaAgents(Agent agent, Vector4 areaRect, List<int> areaAgents)
     {
 

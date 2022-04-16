@@ -7,7 +7,7 @@ using FixedMath;
 
 using System;
 using UnityEngine.Profiling;
-[DisableAutoCreation]
+ 
 public class InputSystem : ServiceSystem
 {
     private Camera mainCamera;

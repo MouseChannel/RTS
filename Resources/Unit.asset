@@ -17,4 +17,5 @@ MonoBehaviour:
   unitType: 0
   animations:
   - {fileID: 11400000, guid: 780dd85dca93a6b4e806e5b1276cf1a1, type: 2}
+  - {fileID: 11400000, guid: 29051f48c0b7b0a4082cf2bc73547f36, type: 2}
   Items: []

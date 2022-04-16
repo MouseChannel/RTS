@@ -12,7 +12,7 @@ using System;
 using UnityEngine.Profiling;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-[DisableAutoCreation]
+ 
 
 public partial class FOWSystem : SystemBase
 {

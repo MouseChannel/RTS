@@ -22,6 +22,7 @@ public abstract partial class WorkSystem : SystemBase
 
         }
     }
+    
 
 
     protected override void OnCreate()

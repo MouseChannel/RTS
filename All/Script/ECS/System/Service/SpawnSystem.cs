@@ -9,7 +9,7 @@ using Unity.Rendering;
 using System.Collections.Generic;
 using System;
 
-public partial class SpawnSystem : ServiceSystem
+public partial class SpawnSystem1 : ServiceSystem
 {
     private Dictionary<Mesh, bool> existMesh = new Dictionary<Mesh, bool>();
 

@@ -28,17 +28,9 @@ public struct Agent : IComponentData
     public bool needDelete_;
 
     public int faction_;
-    #region  auto attack
-    public bool needCheckClosestEnemy_;
-    public int closestEnemy_;
-    public FixedInt attackRange_;
-    #endregion
+ 
 
-    #region  auto heal
-    public bool needCheckRangeNeighbor;
-    // public int closestEnemy_;
-
-    #endregion
+ 
 
 
 

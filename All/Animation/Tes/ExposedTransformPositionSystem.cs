@@ -5,44 +5,55 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine.Jobs;
+using Unity.Mathematics;
+using Unity.Burst;
 
-struct TransformCrossfadeJobParallel : IJobParallelFor
+
+[BurstCompile]
+public partial struct UpdateFrameJob : IJobEntity
 {
-    public void Execute(int index)
+    public float deltaTime;
+
+    void Execute(ref AnimationData animationData)
     {
+        var currentTime = animationData.currentTime + deltaTime;
+        var animationLength = animationData.currentAnimation.Value.length;
+        var totalFrames = animationData.currentAnimation.Value.totalFrames;
+
+        animationData.currentTime =
+        currentTime < animationLength ?
+        currentTime : currentTime - animationLength;
+
+        float normalizedTime = currentTime / animationLength;
+
+        animationData.currentFrame = math.min((int)math.round(normalizedTime * totalFrames), totalFrames - 1);
+
+
+
+
+
+
 
     }
 }
-
-public partial class ExposedTransformPositionSystem : SystemBase
+public partial class ExposedTransformPositionSystem : ServiceSystem
 {
+    private Entity worldTimeEntity;
     protected override void OnStartRunning()
     {
-        // BlobAssetUtil.AddAnimationElement();
+        // worldTimeEntity = GetSingleton<>
     }
+
+
     protected override void OnUpdate()
     {
-
-        new MyJoo
-        {
-
-        }.Schedule().Complete();
-
+        var deltaTime = UnityEngine.Time.deltaTime;
+        new UpdateFrameJob { deltaTime = deltaTime }.ScheduleParallel(Dependency).Complete();
+        
     }
 
 
-    private struct MyJoo : IJob
-    {
-        public int i;
-        public void Execute()
-        {
-            if (BlobAssetUtil.animationBlobDic.ContainsKey("IdleManBored"))
-            {
-                Debug.Log(string.Format("{0}", BlobAssetUtil.animationBlobDic["IdleManBored"].Value.exposedFramePositionData[0].singleFrameData[0].translation));
 
-            }
-        }
-    }
 }
 
 
