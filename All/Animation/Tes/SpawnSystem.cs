@@ -23,8 +23,9 @@ public partial class SpawnSystem : SystemBase
     {
         endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
-    protected unsafe override void OnUpdate()
+    protected   override void OnUpdate()
     {
+        AllocateNativeArrayPool<Entity>.LOOOO();
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -37,10 +38,13 @@ public partial class SpawnSystem : SystemBase
                     for (int i = 0; i < exposedTransformSystemState.count; i++)
                     {
 
-                        EntityManager.DestroyEntity(*(exposedTransformSystemState.exposedEntities + i));
-                        EntityManager.RemoveComponent<ExposedTransformSystemState>(e);
-                    }
+                        var entity = exposedTransformSystemState.GetEntity(i);
+                        EntityManager.DestroyEntity(entity);
 
+                    }
+                    Debug.Log(exposedTransformSystemState.exposedEntities.ToUInt64());
+                    AllocateNativeArrayPool.GiveBackToPool(exposedTransformSystemState.pointerType, exposedTransformSystemState.exposedEntities);
+                    EntityManager.RemoveComponent<ExposedTransformSystemState>(e);
                 }).WithStructuralChanges().WithoutBurst().Run();
 
 
@@ -53,7 +57,7 @@ public partial class SpawnSystem : SystemBase
             Entities.ForEach((Entity e, in ExposedTransformSystemState exposedTransformSystemState) =>
                 {
                     EntityManager.DestroyEntity(e);
-                    Debug.Log((*(exposedTransformSystemState.exposedEntities)).ToString());
+                    // Debug.Log((UInt64)(exposedTransformSystemState.exposedEntities));
 
 
 
@@ -85,44 +89,40 @@ public partial class SpawnSystem : SystemBase
         var entity = beSpawnedEntity;
         var anim = beSpawnedUnitSpriptableObject.animations[0];
         var exposedTransforms = anim.exposedObjects;
-        unsafe
-        {
-            // NativeArray<Entity> transformsEntitys = new NativeArray<Entity>(exposedTransforms.Length, Allocator.Persistent);
-            var transformsEntitys = AllocateNativeArrayPool.PullArray<Entity>(exposedTransforms.Length);
-            // AllocateArrayPool<Entity> transformsEntitys(exposedTransforms.Length);
-            // Entity[] transformsEntitys = new Entity[exposedTransforms.Length];
-            // Entity* pointer = (Entity*)transformsEntitys.GetNativeArrayPrt<Entity>();
-            Entity* pointer = (Entity*)transformsEntitys.GetUnsafePtr();
-            // Entity* pointer = (Entity*)NativeArrayUnsafeUtility.GetUnsafePtr(transformsEntitys);
-            // fixed (Entity* pointer = transformsEntitys)
-            // {
+        // unsafe
+        // {
+            AllocateNativeArrayPool.PullArray<Entity>(exposedTransforms.Length, out var transformsEntitys, out var pointer);
+
+
+
+
 
 
             //为什么倒着写，是因为自动的childBuffer是反的
             for (int i = exposedTransforms.Length - 1; i >= 0; i--)
-                {
-                    var child = EntityManager.CreateEntity(SpawnUtil.ExposedTransformArchetype);
-                    transformsEntitys[i] = child;
+            {
+                var child = EntityManager.CreateEntity(SpawnUtil.ExposedTransformArchetype);
+                transformsEntitys[i] = child;
 #if UNITY_EDITOR
-                    EntityManager.SetName(child, exposedTransforms[i]);
+                EntityManager.SetName(child, exposedTransforms[i]);
 
 #endif
 
-                    EntityManager.SetComponentData<Translation>(child, new Translation { Value = new float3(anim.exposedPosition[i]) });
-                    // EntityManager.SetComponentData<Rotation>(child, new Rotation{Value = new quaternion})
-                }
+                EntityManager.SetComponentData<Translation>(child, new Translation { Value = new float3(anim.exposedPosition[i]) });
+                // EntityManager.SetComponentData<Rotation>(child, new Rotation{Value = new quaternion})
+            }
 
 
-                EntityManager.AddComponentData<ExposedTransformSystemState>(entity, new ExposedTransformSystemState
-                {
-                    exposedEntities = pointer,
-                    count = exposedTransforms.Length
-                });
-                EntityManager.AddComponent<Agent>(entity);
+            EntityManager.AddComponentData<ExposedTransformSystemState>(entity, new ExposedTransformSystemState
+            {
+                exposedEntities = pointer,
+                count = exposedTransforms.Length
+            });
+            EntityManager.AddComponent<Agent>(entity);
 
             // }
             // transformsEntitys.
-        }
+        // }
 
 
     }
