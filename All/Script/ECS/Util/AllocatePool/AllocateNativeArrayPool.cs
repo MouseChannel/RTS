@@ -30,9 +30,9 @@ unsafe public static class AllocateNativeArrayPool
 
         AllocateNativeArrayPool<T>.GiveBackToPool(pointer);
     }
-    public static void Release<T>(T type, UIntPtr pointer) where T : struct
+    public static void ReleaseMemory<T>(T type, UIntPtr pointer) where T : struct
     {
-        AllocateNativeArrayPool<T>.Release(pointer);
+        AllocateNativeArrayPool<T>.ReleaseMemory(pointer);
     }
 }
 
@@ -121,13 +121,13 @@ unsafe public static class AllocateNativeArrayPool<T> where T : struct
 
     }
 
-    public static void Release(void* pointer)
+    public static void ReleaseMemory(void* pointer)
     {
  
-        Release((UIntPtr)pointer);
+        ReleaseMemory((UIntPtr)pointer);
     }
 
-    public static void Release(UIntPtr uintPtr)
+    public static void ReleaseMemory(UIntPtr uintPtr)
     {
         arrayInUse.TryRemove(uintPtr, out var arr);
         if(arr != null){

@@ -6,17 +6,9 @@ using UnityEngine;
 public struct ExposedFramePositionData
 {
 
-    public Matrix4x4[] exposedFramePosition;
+ 
     public SingleFrameData[] singleFrameData;
-    public float3[] translation;
-    public quaternion[] rotation;
-    public Quaternion[] rotation1;
-
-
-    // [System.NonSerialized]
-    // public Vector3 rootMotionPosition;
-    // [System.NonSerialized]
-    // public Quaternion rootMotionRotation;
+ 
 
 }
 [System.Serializable]
@@ -24,7 +16,13 @@ public struct SingleFrameData
 {
     public float3 translation;
     public quaternion rotation;
-    public Quaternion rotation1;
+    // public Quaternion rotation1;
+}
+
+[System.Serializable]
+public struct ExposedData{
+    public string exposedName;
+    // public List<Mesh> hookedItem;
 }
 
 
@@ -36,8 +34,8 @@ public struct SingleFrameData
 public class AnimationScriptableObject : ScriptableObject
 {
     public string animationName;
-    public string[] exposedObjects;
-    public List<Vector3> exposedPosition;
+    // public string[] exposedObjects;
+    public List<int> needuseItemsIndex;
     /// <summary>
     /// 一维是frame，二维是exposedTransform
     /// </summary>
@@ -51,6 +49,7 @@ public class AnimationScriptableObject : ScriptableObject
     public int2 textureSize;
     public int textureCount;
     public List<Texture2D> textures;
+
 
 
 }

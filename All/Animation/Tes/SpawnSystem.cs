@@ -23,7 +23,7 @@ public partial class SpawnSystem : SystemBase
     {
         endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
-    protected   override void OnUpdate()
+    protected override void OnUpdate()
     {
         AllocateNativeArrayPool<Entity>.LOOOO();
 
@@ -43,9 +43,17 @@ public partial class SpawnSystem : SystemBase
 
                     }
                     Debug.Log(exposedTransformSystemState.exposedEntities.ToUInt64());
-                    AllocateNativeArrayPool.GiveBackToPool(exposedTransformSystemState.pointerType, exposedTransformSystemState.exposedEntities);
+                    exposedTransformSystemState.Release();
+
                     EntityManager.RemoveComponent<ExposedTransformSystemState>(e);
                 }).WithStructuralChanges().WithoutBurst().Run();
+
+
+        // Entities.
+        // ForEach((in ExposedTransformSystemState exposedTransformSystemState, in AnimationData animationData) => {
+
+
+        //  }).ScheduleParallel();
 
 
         if (Input.GetKeyDown(KeyCode.F1))
@@ -79,49 +87,89 @@ public partial class SpawnSystem : SystemBase
         SetupTextureData();
         SetAnimationData();
         SpawnExposedTransform();
+        // SpawnItems();
 
 
+
+    }
+
+    private Entity SpawnItems()
+    {
+        var item = EntityManager.CreateEntity(SpawnUtil.ItemArchetype);
+        var itemData = beSpawnedUnitSpriptableObject.items[0];
+        EntityManager.AddSharedComponentData<RenderMesh>(item,
+        new RenderMesh
+        {
+            mesh = itemData.mesh,
+            material = beSpawnedUnitSpriptableObject.subMaterial,
+
+            layerMask = 1
+        });
+        EntityManager.SetComponentData<NonUniformScale>(item,
+           new NonUniformScale { Value = new float3(1, 1, 1) }
+       );
+        EntityManager.SetComponentData<Rotation>(item,
+           new Rotation { Value = new float4(0, 0, 0, 1) }
+       );
+        EntityManager.SetComponentData<BuiltinMaterialPropertyUnity_WorldTransformParams>(item,
+            new BuiltinMaterialPropertyUnity_WorldTransformParams { Value = new float4(0, 0, 0, 1) }
+        );
+        EntityManager.SetComponentData<BuiltinMaterialPropertyUnity_LightData>(item,
+        new BuiltinMaterialPropertyUnity_LightData { Value = new float4(0, 0, 1, 0) }
+        );
+        EntityManager.SetComponentData<BuiltinMaterialPropertyUnity_RenderingLayer>(item,
+        new BuiltinMaterialPropertyUnity_RenderingLayer { Value = new uint4(1, 0, 0, 0) });
+
+
+
+        // EntityManager.AddComponentData<Parent>(item, new Parent { Value = father });
+        EntityManager.SetComponentData<Translation>(item, new Translation { Value = itemData.GetPosition() });
+        EntityManager.SetComponentData<Rotation>(item, new Rotation { Value = itemData.GetRotation() });
+        EntityManager.SetComponentData<NonUniformScale>(item, new NonUniformScale { Value = itemData.GetScale() });
+        return item;
 
     }
 
     private void SpawnExposedTransform()
     {
         var entity = beSpawnedEntity;
-        var anim = beSpawnedUnitSpriptableObject.animations[0];
-        var exposedTransforms = anim.exposedObjects;
+        // var anim = beSpawnedUnitSpriptableObject.ex;
+        var exposedTransforms = beSpawnedUnitSpriptableObject.exposedTransforms;
         // unsafe
         // {
-            AllocateNativeArrayPool.PullArray<Entity>(exposedTransforms.Length, out var transformsEntitys, out var pointer);
+        AllocateNativeArrayPool.PullArray<Entity>(exposedTransforms.Count + 1, out var transformsEntitys, out var pointer);
 
 
 
 
 
 
-            //为什么倒着写，是因为自动的childBuffer是反的
-            for (int i = exposedTransforms.Length - 1; i >= 0; i--)
-            {
-                var child = EntityManager.CreateEntity(SpawnUtil.ExposedTransformArchetype);
-                transformsEntitys[i] = child;
+        //为什么倒着写，是因为自动的childBuffer是反的
+        for (int i = exposedTransforms.Count -1 ; i >= 0; i--)
+        {
+            var child = EntityManager.CreateEntity(SpawnUtil.ExposedTransformArchetype);
+            
+            transformsEntitys[i] = child;
 #if UNITY_EDITOR
-                EntityManager.SetName(child, exposedTransforms[i]);
+            EntityManager.SetName(child, exposedTransforms[i]);
 
 #endif
 
-                EntityManager.SetComponentData<Translation>(child, new Translation { Value = new float3(anim.exposedPosition[i]) });
-                // EntityManager.SetComponentData<Rotation>(child, new Rotation{Value = new quaternion})
-            }
+            // EntityManager.SetComponentData<Translation>(child, new Translation { Value = new float3(anim.exposedPosition[i]) });
+            // EntityManager.SetComponentData<Rotation>(child, new Rotation{Value = new quaternion})
+        }
+        transformsEntitys[1] = SpawnItems();
 
 
-            EntityManager.AddComponentData<ExposedTransformSystemState>(entity, new ExposedTransformSystemState
-            {
-                exposedEntities = pointer,
-                count = exposedTransforms.Length
-            });
-            EntityManager.AddComponent<Agent>(entity);
+        EntityManager.AddComponentData<ExposedTransformSystemState>(entity, new ExposedTransformSystemState
+        {
+            exposedEntities = pointer,
+            count = transformsEntitys.Length
+        });
+        EntityManager.AddComponent<Agent>(entity);
 
-            // }
-            // transformsEntitys.
+        // }
+        // transformsEntitys.
         // }
 
 

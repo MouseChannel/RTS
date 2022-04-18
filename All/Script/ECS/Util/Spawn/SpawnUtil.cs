@@ -65,8 +65,8 @@ public static class SpawnUtil
 
                 typeof(Translation),
                 typeof(Rotation),
-                     typeof(LocalToWorld),
-                typeof(LocalToParent)
+                     typeof(LocalToWorld)
+            // typeof(LocalToParent)
 
             );
             return exposedTransformArchetype;
@@ -77,5 +77,32 @@ public static class SpawnUtil
         }
     }
     private static EntityArchetype exposedTransformArchetype;
+
+    public static ComponentType[] ItemArchetype
+    {
+        get
+        {
+            if (itemArchetype == null)
+            {
+                itemArchetype = new ComponentType[]{
+                    typeof(RenderMesh),
+                    typeof(LocalToWorld),
+                    typeof(NonUniformScale),
+                    typeof(Translation),
+                    typeof(Rotation),
+                    typeof(RenderBounds),
+                    typeof(BuiltinMaterialPropertyUnity_WorldTransformParams),
+                    typeof(BlendProbeTag),
+                    typeof(PerInstanceCullingTag),
+                    typeof(WorldToLocal_Tag),
+                    typeof(BuiltinMaterialPropertyUnity_RenderingLayer),
+                    typeof(BuiltinMaterialPropertyUnity_LightData),
+                };
+            }
+            return itemArchetype;
+        }
+    }
+    private static ComponentType[] itemArchetype;
+
 
 }

@@ -19,6 +19,7 @@ public class ExposedTransformWindow : EditorWindow
         window.Show();
     }
     private GameObject prefab;
+    private Mesh mesh;
     private ShaderMeshAnimation shaderMeshAnimation;
     private string fileName = Application.streamingAssetsPath + "/UnitData.csv";
     private List<string> exposedTransform = new List<string>();
@@ -32,14 +33,24 @@ public class ExposedTransformWindow : EditorWindow
         using (new EditorGUILayout.HorizontalScope())
         {
             prefab = EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), true) as GameObject;
+
         }
         using (new EditorGUILayout.HorizontalScope())
         {
 
-            shaderMeshAnimation = EditorGUILayout.ObjectField("Animation", shaderMeshAnimation, typeof(ShaderMeshAnimation), true) as ShaderMeshAnimation;
+            mesh = EditorGUILayout.ObjectField("mesh", mesh, typeof(Mesh), true) as Mesh;
         }
-        if (GUILayout.Button("转化", GUILayout.Height(30)))
+
+        if (GUILayout.Button("转化模型", GUILayout.Height(30)))
         {
+            var originPath = AssetDatabase.GetAssetPath(mesh);
+            // Debug.Log(originPath);
+            var originFolderPath = originPath.Substring(0, originPath.Length - prefab.name.Length - 3);
+            // var mesh = prefab.GetComponent<MeshFilter>().sharedMesh;
+            var newMesh = new Mesh();
+            TransferMesh(mesh, newMesh);
+
+            AssetDatabase.CreateAsset(newMesh, string.Format("{0}My{1}.asset", originFolderPath, mesh.name));
             // fileName 
 
             // WriteHeader();
@@ -96,9 +107,19 @@ public class ExposedTransformWindow : EditorWindow
             // }
 
 
+
+
+
+        }
+
+        using (new EditorGUILayout.HorizontalScope())
+        {
+
+            shaderMeshAnimation = EditorGUILayout.ObjectField("Animation", shaderMeshAnimation, typeof(ShaderMeshAnimation), true) as ShaderMeshAnimation;
+        }
+        if (GUILayout.Button("转化动画", GUILayout.Height(30)))
+        {
             ConvertShaderAnimation();
-
-
         }
 
     }
@@ -119,8 +140,9 @@ public class ExposedTransformWindow : EditorWindow
 
         newAnim.name = oldAnim.name;
         newAnim.animationName = oldAnim.animationName;
-        newAnim.exposedObjects = oldAnim.exposedTransforms;
-        newAnim.exposedPosition = oldAnim.exposedPosition;
+
+        // newAnim.exposedObjects = oldAnim.exposedTransforms;
+        // newAnim.exposedPosition = oldAnim.exposedPosition;
         newAnim.exposedFramePositionData = new ExposedFramePositionData[oldAnim.frameData.Length];
         for (int i = 0; i < oldAnim.frameData.Length; i++)
         {
@@ -144,13 +166,13 @@ public class ExposedTransformWindow : EditorWindow
                 {
                     translation = position,
                     rotation = r,
-                    rotation1 = r,
+
                 };
                 newAnim.exposedFramePositionData[i].singleFrameData[j] = curFrameData;
 
             }
 
- 
+
         }
         newAnim.vertexCount = oldAnim.vertexCount;
         newAnim.textureCount = oldAnim.textureCount;
@@ -181,6 +203,30 @@ public class ExposedTransformWindow : EditorWindow
 
 
 
+    }
+   
+   
+   
+    private void TransferMesh(Mesh from, Mesh to)
+    {
+        to.vertices = from.vertices;
+        // to.subMeshCount = from.subMeshCount;
+        to.subMeshCount = 1;
+        var triangles = new List<int>();
+        for (int i = 0; i < from.subMeshCount; i++)
+        {
+            triangles.AddRange(from.GetTriangles(i));
+            to.SetTriangles(from.GetTriangles(i), i);
+        }
+        to.SetTriangles(triangles, 0);
+
+        to.normals = from.normals;
+        to.tangents = from.tangents;
+        to.colors = from.colors;
+        to.uv = from.uv;
+        to.uv2 = from.uv2;
+        to.uv3 = from.uv3;
+        to.uv4 = from.uv4;
     }
 
     private void AddItem(ref string writeData, Transform i)

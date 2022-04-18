@@ -11,6 +11,33 @@ public enum UnitType
 {
 
 };
+[System.Serializable]
+public struct exposedItemsData
+{
+    public Mesh mesh;
+    /// <summary>
+    /// 第一列position， 第二列rotation， 第三列scale
+    /// </summary>
+    public float3x3 position;
+    public float3 initialPosition;
+    public string fatherName;
+    
+    public int fatherIndex;
+    public float3 GetPosition()
+    {
+        return position.c0 + initialPosition;
+    }
+    public quaternion GetRotation()
+    {
+        return quaternion.Euler(position.c1);
+    }
+    public float3 GetScale()
+    {
+        return position.c2;
+    }
+
+
+}
 [CreateAssetMenu(menuName = "ScriptableObject/Create MyScriptableObject ")]
 public class UnitScriptableObject : ScriptableObject
 {
@@ -59,8 +86,9 @@ public class UnitScriptableObject : ScriptableObject
     }
     public Mesh mainMesh;
     public Material mainMaterial;
+    public Material subMaterial;
     public UnitType unitType;
-    public List<AnimationScriptableObject> animations;
+
     public EntityArchetype ExposedTransformArchetype
     {
         get
@@ -87,8 +115,10 @@ public class UnitScriptableObject : ScriptableObject
         }
     }
     private EntityArchetype exposedTransformArchetype;
-    public List<Mesh> Items;
+    public List<string> exposedTransforms;
+    public List<exposedItemsData> items;
 
+    public List<AnimationScriptableObject> animations;
 
 
 
@@ -117,6 +147,9 @@ public class UnitScriptableObject : ScriptableObject
         });
         entityManager.SetComponentData<NonUniformScale>(entity,
            new NonUniformScale { Value = new float3(1, 1, 1) }
+       );
+        entityManager.SetComponentData<Rotation>(entity,
+           new Rotation { Value = new float4(0, 0, 0, 1) }
        );
         entityManager.SetComponentData<BuiltinMaterialPropertyUnity_WorldTransformParams>(entity,
             new BuiltinMaterialPropertyUnity_WorldTransformParams { Value = new float4(0, 0, 0, 1) }

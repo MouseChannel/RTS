@@ -20,6 +20,9 @@ public struct AnimationBlobElement
     public float3 animScale;
 
     // public ExposedFramePositionData[] exposedFramePositionData;
+    /// <summary>
+    /// 第一维是frame，第二维是exposedTransforms
+    /// </summary>
     public BlobArray<BlobExposedFramePositionData> exposedFramePositionData;
 
     public int totalFrames;
