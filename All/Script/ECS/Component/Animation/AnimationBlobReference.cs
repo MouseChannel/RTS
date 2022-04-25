@@ -7,9 +7,11 @@ public struct AnimationData : IComponentData
     public BlobAssetReference<AnimationBlobElement> currentAnimation;
     public int currentFrame;
     public float currentTime;
+    // public float length;
+    // public int totalFrames;
+    // public int currentAnimationIndex;
 }
 
-public struct ExposedAnimation : IComponentData{
-    public BlobAssetReference<AnimationBlobElement> currentAnimation;
-    public int exposedIndex;
+public struct CurrentAnimation{
+
 }

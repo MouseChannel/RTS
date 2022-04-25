@@ -11,7 +11,7 @@ public class FOWMono : MonoBehaviour
     {
         fOWSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
         material = GetComponent<Renderer>().material;
-        GetComponent<Transform>().localScale = new Vector3(ConfigData.gridWidth / 10, 1, ConfigData.gridWidth / 10);
+        GetComponent<Transform>().localScale = new Vector3(StaticData.gridWidth / 10, 1, StaticData.gridWidth / 10);
     }
 
     // Update is called once per frame

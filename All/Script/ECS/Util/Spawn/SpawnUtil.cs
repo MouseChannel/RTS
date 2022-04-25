@@ -7,18 +7,13 @@ using Unity.Transforms;
 
 public static class SpawnUtil
 {
-    public static EntityArchetype UnitArchetype
+    public static ComponentType[] UnitArchetype
     {
         get
         {
-            if (World.DefaultGameObjectInjectionWorld == null)
+            if (unitArchetype == null)
             {
-                unitArchetype = default(EntityArchetype);
-                return unitArchetype;
-            }
-            if (unitArchetype != default(EntityArchetype)) return unitArchetype;
-
-            unitArchetype = World.DefaultGameObjectInjectionWorld.EntityManager.CreateArchetype(
+                unitArchetype = new ComponentType[]{
                 typeof(RenderMesh),
                 typeof(LocalToWorld),
                 typeof(NonUniformScale),
@@ -31,52 +26,57 @@ public static class SpawnUtil
                 typeof(WorldToLocal_Tag),
                 typeof(BuiltinMaterialPropertyUnity_RenderingLayer),
                 typeof(BuiltinMaterialPropertyUnity_LightData),
+                
+                // typeof(_AnimInfo),
+                // typeof(_AnimTimeInfo),
+                // typeof(_AnimTextureIndex),
+                // typeof(_AnimScalar),
+                // typeof(_CrossfadeAnimInfo),
+                // typeof(_CrossfadeAnimScalar),
+                // typeof(_CrossfadeAnimTextureIndex),
+                // typeof(_CrossfadeStartTime),
+                // typeof(_CrossfadeEndTime),
+                typeof(_AnimData),
+                typeof(_CrossfadeData),
+                typeof(_RenderRange),
+                
+                };
 
-                typeof(_AnimInfo),
-                typeof(_AnimTimeInfo),
-                typeof(_AnimTextureIndex),
-                typeof(_CrossfadeAnimInfo),
-                typeof(_CrossfadeAnimTextureIndex),
-                typeof(_CrossfadeStartTime),
-                typeof(_CrossfadeEndTime)
-            );
+            }
             return unitArchetype;
         }
-        set
-        {
-            unitArchetype = value;
-        }
     }
-    private static EntityArchetype unitArchetype;
+    private static ComponentType[] unitArchetype;
+    /*
 
-
-    public static EntityArchetype ExposedTransformArchetype
-    {
-        get
+        public static EntityArchetype ExposedTransformArchetype
         {
-            if (World.DefaultGameObjectInjectionWorld == null)
+            get
             {
-                exposedTransformArchetype = default(EntityArchetype);
+                if (World.DefaultGameObjectInjectionWorld == null)
+                {
+                    exposedTransformArchetype = default(EntityArchetype);
+                    return exposedTransformArchetype;
+                }
+                if (exposedTransformArchetype != default(EntityArchetype)) return exposedTransformArchetype;
+
+                exposedTransformArchetype = World.DefaultGameObjectInjectionWorld.EntityManager.CreateArchetype(
+
+                    typeof(Translation),
+                    typeof(Rotation),
+                         typeof(LocalToWorld)
+                // typeof(LocalToParent)
+
+                );
                 return exposedTransformArchetype;
             }
-            if (exposedTransformArchetype != default(EntityArchetype)) return exposedTransformArchetype;
-
-            exposedTransformArchetype = World.DefaultGameObjectInjectionWorld.EntityManager.CreateArchetype(
-
-                typeof(Translation),
-                typeof(Rotation),
-                     typeof(LocalToWorld)
-            // typeof(LocalToParent)
-
-            );
-            return exposedTransformArchetype;
+            set
+            {
+                exposedTransformArchetype = value;
+            }
         }
-        set
-        {
-            exposedTransformArchetype = value;
-        }
-    }
-    private static EntityArchetype exposedTransformArchetype;
+        private static EntityArchetype exposedTransformArchetype;
+        
 
     public static ComponentType[] ItemArchetype
     {
@@ -103,6 +103,13 @@ public static class SpawnUtil
         }
     }
     private static ComponentType[] itemArchetype;
+*/
+
+ 
+
+ 
+
+
 
 
 }

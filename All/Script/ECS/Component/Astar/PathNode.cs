@@ -39,8 +39,8 @@ public struct GridNode: IComparable<GridNode>, IEquatable<GridNode>
     {
 
         this.index = index;
-        this.x = index % ConfigData.gridWidth;
-        this.y = index / ConfigData.gridWidth;
+        this.x = index % StaticData.gridWidth;
+        this.y = index / StaticData.gridWidth;
         isWalkable = true;
         gCost = int.MaxValue;
         cameFromNodeIndex = -1;

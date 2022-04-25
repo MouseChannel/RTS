@@ -6,9 +6,10 @@ using Unity.Mathematics;
 
 public struct InCrossfade : IComponentData
 {
+
      
-    public float3 lastFramePosition;
-    public quaternion lastFrameQuaternion;
-    public int crossfadeFrame;
+    public float sumDeltaTime;
+    public float3 beginScale;
+    public float3 endScale;
 
 }

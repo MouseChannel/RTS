@@ -21,8 +21,8 @@ public partial  class GridSystem : SystemBase
     {
         Instance = this;
 
-        width = ConfigData.gridWidth;
-        length = ConfigData.gridLength;
+        width = StaticData.gridWidth;
+        length = StaticData.gridLength;
         gridArray = new NativeArray<GridNode>(width * width, Allocator.Persistent);
         for (int i = 0; i < length; i++)
         {
@@ -84,7 +84,7 @@ public partial  class GridSystem : SystemBase
         var x = (worldPosition.X.round).RawInt;
         var y = (worldPosition.Y.round).RawInt;
         ValidateGridPosition(ref x, ref y);
-        return y * ConfigData.gridWidth + x;
+        return y * StaticData.gridWidth + x;
     }
     public static void SetGrid(int y, int x)
     {
@@ -93,10 +93,10 @@ public partial  class GridSystem : SystemBase
     }
     public static int GetGridIndexInFOW(FixedVector2 worldPosition)
     {
-        var x = (worldPosition.X.round).RawInt + ConfigData.gridWidth / 2;
-        var y = (worldPosition.Y.round).RawInt + ConfigData.gridWidth / 2;
+        var x = (worldPosition.X.round).RawInt + StaticData.gridWidth / 2;
+        var y = (worldPosition.Y.round).RawInt + StaticData.gridWidth / 2;
         ValidateGridPosition(ref x, ref y);
-        return y * ConfigData.gridWidth + x;
+        return y * StaticData.gridWidth + x;
     }
 
 
@@ -137,8 +137,8 @@ public partial  class GridSystem : SystemBase
 
     private static void ValidateGridPosition(ref int x, ref int y)
     {
-        x = math.clamp(x, 0, ConfigData.gridWidth - 1);
-        y = math.clamp(y, 0, ConfigData.gridWidth - 1);
+        x = math.clamp(x, 0, StaticData.gridWidth - 1);
+        y = math.clamp(y, 0, StaticData.gridWidth - 1);
     }
 
     protected override void OnUpdate()

@@ -13,8 +13,8 @@ using UnityEngine.Profiling;
 
 public partial class PathFindSystem
 {
-    private static readonly int gridWidth = ConfigData.gridWidth;
-    private static readonly int gridLength = ConfigData.gridLength;
+    private static readonly int gridWidth = StaticData.gridWidth;
+    private static readonly int gridLength = StaticData.gridLength;
 
     public struct pair : IComparable<pair>, IEquatable<pair>
     {

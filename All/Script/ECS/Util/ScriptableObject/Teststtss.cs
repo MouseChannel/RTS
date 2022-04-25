@@ -17,7 +17,7 @@ public class Teststtss : MonoBehaviour
     void Start()
     {
         Debug.Log(anim.animationName);
-        Debug.Log(anim.exposedFramePositionData.Length);
+        // Debug.Log(anim.exposedFramePositionData.Length);
         // Debug.Log(u.Archetype);
 
         // var handle = Addressables.LoadAssetAsync<UnitScriptableObject>("Unit");

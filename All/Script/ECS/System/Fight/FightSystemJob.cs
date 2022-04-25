@@ -106,8 +106,8 @@ public partial class FightSystem
             int b = enemyPositionIndex;
             if (a == b + 1
                 || a == b - 1
-                || a == b + ConfigData.gridWidth
-                || a == b - ConfigData.gridWidth)
+                || a == b + StaticData.gridWidth
+                || a == b - StaticData.gridWidth)
             {
                 return true;
             }

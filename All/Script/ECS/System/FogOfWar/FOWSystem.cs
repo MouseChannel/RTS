@@ -13,7 +13,7 @@ using UnityEngine.Profiling;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
  
-
+[DisableAutoCreation]
 public partial class FOWSystem : SystemBase
 {
     // public NativeArray<UInt32> colorBuffer = new NativeArray<UInt32>(GridSystem.Instance.GetLength() / 32, Allocator.Persistent);
