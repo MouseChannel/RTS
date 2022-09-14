@@ -26,10 +26,10 @@ public class ObstacleConvert : MonoSystem, IConvertGameObjectToEntity
 
         var vertices = dstManager.AddBuffer<PreObstacleVertice>(entity);
         // var obstacleCount = GameData.obstacleCount;
-        // vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)maxX, (FixedInt)maxZ)  });
-        // vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)maxZ)  });
-        // vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)minZ)  });
-        // vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)maxX, (FixedInt)minZ) });
+        vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)maxX, (FixedInt)maxZ)  });
+        vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)maxZ)  });
+        vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)minX, (FixedInt)minZ)  });
+        vertices.Add(new PreObstacleVertice { vertice = new FixedVector2((FixedInt)maxX, (FixedInt)minZ) });
         dstManager.AddComponentData<Obstacle>(entity, new Obstacle { position_ = new FixedVector2((FixedInt)x, (FixedInt)y), id_ = GetSystem<ResponseNetSystem>().allObstacle.Count });
         GetSystem<ResponseNetSystem>().allObstacle.Add(entity);
         World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>().AddNewObstacle();

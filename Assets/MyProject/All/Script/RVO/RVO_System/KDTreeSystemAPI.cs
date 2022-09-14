@@ -54,19 +54,34 @@ public partial class KDTreeSystem : WorkSystem
             agentTree_ = agentTree_
         }.Run();
 
-        new UpdateAgentJobParallel
+
+        // new UpdateAgentJobParallel
+        // {
+
+
+        //     agents = agents_,
+        //     agentTree = agentTree_,
+        //     obstacleVertices_ = obstacleVertices_,
+        //     obstacleVerticesTree_ = obstacleVerticesTree_,
+        //     obstacleVerticesTreeRoot = obstacleVerticesTreeRoot,
+
+        //     ecbPara = ecbPara
+
+        // }.Schedule(agents_.Length, 4).Complete();
+
+
+        new UpdateAgent
         {
-
-
             agents = agents_,
             agentTree = agentTree_,
             obstacleVertices_ = obstacleVertices_,
             obstacleVerticesTree_ = obstacleVerticesTree_,
             obstacleVerticesTreeRoot = obstacleVerticesTreeRoot,
-          
-            ecbPara = ecbPara
+            ecbPara = ecbPara,
 
-        }.Schedule(agents_.Length, 4).Complete();
+
+        }.ScheduleParallel().Complete();
+
 
 
 
@@ -100,8 +115,13 @@ public partial class KDTreeSystem : WorkSystem
         }).WithoutBurst().Run();
 
 
+        new BuildObstacleTreeJob
+        {
+            obstacles_ = obstacles_,
+            obstacleTree_ =obstacleTree_
 
-        BuildObstacleTree(0, obstacles_.Length, 0);
+        }.Run();
+        // BuildObstacleTree(0, obstacles_.Length, 0);
 
     }
 
@@ -128,6 +148,17 @@ public partial class KDTreeSystem : WorkSystem
         InitObstacleVerticeTree(obstacleVertices_.Length);
         NativeList<ObstacleVertice> currentObstacleVertices = new NativeList<ObstacleVertice>(Allocator.Temp);
         currentObstacleVertices.AddRange(obstacleVertices_);
+
+        // BuildObstacleVerticeTreeJob buildObstacleVerticeTreeJob =
+        // new BuildObstacleVerticeTreeJob
+        // {
+        //     obstacleVertices = obstacleVertices_,
+        //     obstacleVerticesTree = obstacleVerticesTree_,
+        //     obstacleVerticesTreeRoot = obstacleVerticesTreeRoot
+
+        // };
+        // buildObstacleVerticeTreeJob.Run();
+        // obstacleVerticesTreeRoot = buildObstacleVerticeTreeJob.obstacleVerticesTreeRoot;
         obstacleVerticesTreeRoot = BuildObstacleVerticeTreeRecursive(currentObstacleVertices);
 
 
@@ -165,7 +196,7 @@ public partial class KDTreeSystem : WorkSystem
             for (int i = agentTree_[node].begin_; i < agentTree_[node].end_; ++i)
             {
 
-                FixedInt distSq = FixedCalculate.absSq(position - agents_[i].position_);
+                FixedInt distSq = FixedCalculate.Square(position - agents_[i].position_);
                 //Find EnemyUnit
                 if (distSq < rangeSq)
                 {
@@ -176,8 +207,8 @@ public partial class KDTreeSystem : WorkSystem
         }
         else
         {
-            FixedInt distSqLeft = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
-            FixedInt distSqRight = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
+            FixedInt distSqLeft = FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.Square(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.Square(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
+            FixedInt distSqRight = FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.Square(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.Square(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
 
             if (distSqLeft < distSqRight)
             {
@@ -231,8 +262,8 @@ public partial class KDTreeSystem : WorkSystem
         }
         else
         {
-            FixedInt distSqLeft = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
-            FixedInt distSqRight = FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.sqr(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.sqr(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
+            FixedInt distSqLeft = FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minX_ - position.X)) + FixedCalculate.Square(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].left_].maxX_)) + FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].left_].minY_ - position.Y)) + FixedCalculate.Square(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].left_].maxY_));
+            FixedInt distSqRight = FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minX_ - position.X)) + FixedCalculate.Square(FixedCalculate.Max(0, position.X - agentTree_[agentTree_[node].right_].maxX_)) + FixedCalculate.Square(FixedCalculate.Max(0, agentTree_[agentTree_[node].right_].minY_ - position.Y)) + FixedCalculate.Square(FixedCalculate.Max(0, position.Y - agentTree_[agentTree_[node].right_].maxY_));
 
             if (distSqLeft < distSqRight)
             {
@@ -293,7 +324,7 @@ public partial class KDTreeSystem : WorkSystem
         ObstacleVertice obstacle1 = obstacleVertices_[node.obstacleVertice_Index];
         ObstacleVertice obstacle2 = obstacleVertices_[obstacle1.next_];
 
-        FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, agent.position_);
+        FixedInt agentLeftOfLine = FixedCalculate.LeftOf(obstacle1.point_, obstacle2.point_, agent.position_);
 
         if (agentLeftOfLine >= 0)
         {
@@ -305,7 +336,7 @@ public partial class KDTreeSystem : WorkSystem
         }
         // ComputeObstacleNeighbor(obstacles,obstacleTree, agentLeftOfLine >= 0 ? obstacleTree[node.left_index] : obstacleTree[node.right_index]  , agent, ref rangeSq, obstacleNeighbors);
 
-        FixedInt distSqLine = FixedCalculate.sqr(agentLeftOfLine) / FixedCalculate.absSq(obstacle2.point_ - obstacle1.point_);
+        FixedInt distSqLine = FixedCalculate.Square(agentLeftOfLine) / FixedCalculate.Square(obstacle2.point_ - obstacle1.point_);
 
         if (distSqLine < rangeSq)
         {
@@ -337,7 +368,7 @@ public partial class KDTreeSystem : WorkSystem
     {
         ObstacleVertice nextObstacle = obstacleVertices_[obstacle.next_];
 
-        FixedInt distSq = FixedCalculate.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, agent.position_);
+        FixedInt distSq = FixedCalculate.DistSqPointLineSegment(obstacle.point_, nextObstacle.point_, agent.position_);
 
         if (distSq < rangeSq)
         {

@@ -220,7 +220,7 @@ public class InputSystem : ServiceSystem
         Vector4 areaRect = ModifyRect();
 
         FixedVector2 centerPoint = new FixedVector2((FixedInt)(areaRect[0] + areaRect[1]) / 2, (FixedInt)(areaRect[2] + areaRect[3]) / 2);
-        FixedInt radius = FixedCalculate.distance(new FixedVector2((FixedInt)areaRect[0], (FixedInt)areaRect[2]), centerPoint);
+        FixedInt radius = FixedCalculate.Distance(new FixedVector2((FixedInt)areaRect[0], (FixedInt)areaRect[2]), centerPoint);
 
 
         List<int> tem = new List<int>();

@@ -25,7 +25,7 @@ public class ViewUnit : MonoSystem
         var dir = agent.velocity_;
         // Debug.Log(dir);
         transform.position = Vector3.Lerp(transform.position, new Vector3(pos.X.RawFloat, 0, pos.Y.RawFloat), Time.deltaTime * 4);
-        if ( FixedCalculate.absSq(dir) > (FixedInt)0.001)
+        if ( FixedCalculate.Square(dir) > (FixedInt)0.001)
             transform.forward = Vector3.Lerp(transform.forward, new Vector3(dir.X.RawFloat, 0, dir.Y.RawFloat), Time.deltaTime * 20);
 
         

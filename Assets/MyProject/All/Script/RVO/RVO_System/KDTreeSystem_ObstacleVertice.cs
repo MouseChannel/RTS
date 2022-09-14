@@ -4,6 +4,8 @@ using FixedMath;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using Unity.Jobs;
+using Unity.Burst;
 
 public partial class KDTreeSystem
 {
@@ -61,7 +63,7 @@ public partial class KDTreeSystem
                 // obstacle.next_.previous_ = obstacle;
             }
 
-            obstacleVertice.direction_ = FixedCalculate.normalize(preObstacleVertices[(i == preObstacleVertices.Length - 1 ? 0 : i + 1)].vertice - preObstacleVertices[i].vertice);
+            obstacleVertice.direction_ = FixedCalculate.Normalize(preObstacleVertices[(i == preObstacleVertices.Length - 1 ? 0 : i + 1)].vertice - preObstacleVertices[i].vertice);
 
             if (preObstacleVertices.Length == 2)
             {
@@ -69,7 +71,7 @@ public partial class KDTreeSystem
             }
             else
             {
-                obstacleVertice.convex_ = (FixedCalculate.leftOf(preObstacleVertices[(i == 0 ? preObstacleVertices.Length - 1 : i - 1)].vertice, preObstacleVertices[i].vertice, preObstacleVertices[(i == preObstacleVertices.Length - 1 ? 0 : i + 1)].vertice) >= 0);
+                obstacleVertice.convex_ = (FixedCalculate.LeftOf(preObstacleVertices[(i == 0 ? preObstacleVertices.Length - 1 : i - 1)].vertice, preObstacleVertices[i].vertice, preObstacleVertices[(i == preObstacleVertices.Length - 1 ? 0 : i + 1)].vertice) >= 0);
             }
             obstacleVertices_[obstacleVertice.verticeId_] = obstacleVertice;
 
@@ -92,6 +94,190 @@ public partial class KDTreeSystem
         }
     }
 
+    [BurstCompile]
+    private struct BuildObstacleVerticeTreeJob : IJob
+    {
+        public NativeList<ObstacleVertice> obstacleVertices;
+        public NativeList<ObstacleVerticeTreeNode> obstacleVerticesTree;
+
+        public ObstacleVerticeTreeNode obstacleVerticesTreeRoot;
+        public void Execute()
+        {
+            NativeList<ObstacleVertice> currentObstacleVertices = new NativeList<ObstacleVertice>(Allocator.Temp);
+            currentObstacleVertices.AddRange(obstacleVertices);
+            obstacleVerticesTreeRoot = BuildObstacleVerticeTreeRecursive(currentObstacleVertices);
+
+        }
+
+        private ObstacleVerticeTreeNode BuildObstacleVerticeTreeRecursive(NativeList<ObstacleVertice> current)
+        {
+            if (current.Length == 0) return new ObstacleVerticeTreeNode { obstacleVertice_Index = -1 };
+
+            ObstacleVerticeTreeNode node = new ObstacleVerticeTreeNode();
+            int length = current.Length;
+
+            int optimalSplit = 0;
+            int minLeft = current.Length; ;
+            int minRight = current.Length;
+
+            for (int i = 0; i < current.Length; ++i)
+            {
+                int leftSize = 0;
+                int rightSize = 0;
+
+                ObstacleVertice obstacleI1 = current[i];
+                ObstacleVertice obstacleI2 = obstacleVertices[obstacleI1.next_];
+
+                /* Compute optimal split node. */
+                for (int j = 0; j < current.Length; ++j)
+                {
+                    if (i == j)
+                    {
+                        continue;
+                    }
+
+                    ObstacleVertice obstacleJ1 = current[j];
+
+
+
+                    ObstacleVertice obstacleJ2 = obstacleVertices[obstacleJ1.next_];
+
+                    FixedInt j1LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
+                    FixedInt j2LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
+
+
+                    if (j1LeftOfI >= -FixedCalculate.superSmallValue && j2LeftOfI >= -FixedCalculate.superSmallValue)
+                    {
+                        ++leftSize;
+                    }
+                    else if (j1LeftOfI <= FixedCalculate.superSmallValue && j2LeftOfI <= FixedCalculate.superSmallValue)
+                    {
+                        ++rightSize;
+                    }
+                    else
+                    {
+                        ++leftSize;
+                        ++rightSize;
+                    }
+
+                    if (new FixedIntPair(FixedCalculate.Max(leftSize, rightSize), FixedCalculate.Min(leftSize, rightSize)) >= new FixedIntPair(FixedCalculate.Max(minLeft, minRight), FixedCalculate.Min(minLeft, minRight)))
+                    {
+                        break;
+                    }
+                }
+
+
+                if (new FixedIntPair(FixedCalculate.Max(leftSize, rightSize), FixedCalculate.Min(leftSize, rightSize)) < new FixedIntPair(FixedCalculate.Max(minLeft, minRight), FixedCalculate.Min(minLeft, minRight)))
+                {
+                    minLeft = leftSize;
+                    minRight = rightSize;
+
+                    optimalSplit = i;
+                }
+            }
+
+            {
+                /* Build split node. */
+                NativeList<ObstacleVertice> leftObstacles = new NativeList<ObstacleVertice>(Allocator.Temp);
+                // IList<Obstacle> leftObstacles = new List<Obstacle>(minLeft);
+
+                for (int n = 0; n < minLeft; ++n)
+                {
+                    leftObstacles.Add(new ObstacleVertice { verticeId_ = -1 });
+                }
+
+                NativeList<ObstacleVertice> rightObstacles = new NativeList<ObstacleVertice>(Allocator.Temp);
+                // IList<Obstacle> rightObstacles = new List<Obstacle>(minRight);
+
+                for (int n = 0; n < minRight; ++n)
+                {
+                    rightObstacles.Add(new ObstacleVertice { verticeId_ = -1 });
+                }
+
+                int leftCounter = 0;
+                int rightCounter = 0;
+                int i = optimalSplit;
+
+                ObstacleVertice obstacleI1 = current[i];
+                ObstacleVertice obstacleI2 = obstacleVertices[obstacleI1.next_];
+
+                for (int j = 0; j < current.Length; ++j)
+                {
+                    if (i == j)
+                    {
+                        continue;
+                    }
+
+                    ObstacleVertice obstacleJ1 = current[j];
+                    ObstacleVertice obstacleJ2 = obstacleVertices[obstacleJ1.next_];
+
+                    FixedInt j1LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
+                    FixedInt j2LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
+
+
+                    if (j1LeftOfI >= -FixedCalculate.superSmallValue && j2LeftOfI >= -FixedCalculate.superSmallValue)
+                    {
+                        leftObstacles[leftCounter++] = current[j];
+                    }
+                    else if (j1LeftOfI <= FixedCalculate.superSmallValue && j2LeftOfI <= FixedCalculate.superSmallValue)
+                    {
+                        rightObstacles[rightCounter++] = current[j];
+                    }
+                    else
+                    {
+                        /* Split obstacle j. */
+                        FixedInt t = FixedCalculate.Det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / FixedCalculate.Det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
+
+                        FixedVector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
+
+                        ObstacleVertice newObstacle = new ObstacleVertice();
+                        newObstacle.point_ = splitPoint;
+                        newObstacle.previous_ = obstacleJ1.verticeId_;
+                        newObstacle.next_ = obstacleJ2.verticeId_;
+                        newObstacle.convex_ = true;
+                        newObstacle.direction_ = obstacleJ1.direction_;
+
+                        newObstacle.verticeId_ = obstacleVertices.Length;
+
+
+                        // Simulator.Instance.obstacles_.Add(newObstacle);
+                        obstacleVertices.Add(newObstacle);
+                        obstacleVerticesTree.Add(new ObstacleVerticeTreeNode());
+
+                        obstacleJ1.next_ = newObstacle.verticeId_;
+                        obstacleJ2.previous_ = newObstacle.verticeId_;
+
+                        if (j1LeftOfI > 0)
+                        {
+                            leftObstacles[leftCounter++] = obstacleJ1;
+                            rightObstacles[rightCounter++] = newObstacle;
+                        }
+                        else
+                        {
+                            rightObstacles[rightCounter++] = obstacleJ1;
+                            leftObstacles[leftCounter++] = newObstacle;
+                        }
+
+                    }
+
+
+                }
+
+                node.obstacleVertice_Index = obstacleI1.verticeId_;
+
+                node.left_index = BuildObstacleVerticeTreeRecursive(leftObstacles).obstacleVertice_Index;
+                node.right_index = BuildObstacleVerticeTreeRecursive(rightObstacles).obstacleVertice_Index;
+                obstacleVerticesTree[node.obstacleVertice_Index] = node;
+                leftObstacles.Dispose();
+                rightObstacles.Dispose();
+
+                return node;
+            }
+        }
+
+
+
+    }
 
     private ObstacleVerticeTreeNode BuildObstacleVerticeTreeRecursive(NativeList<ObstacleVertice> current)
     {
@@ -126,8 +312,8 @@ public partial class KDTreeSystem
 
                 ObstacleVertice obstacleJ2 = obstacleVertices_[obstacleJ1.next_];
 
-                FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
-                FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
+                FixedInt j1LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
+                FixedInt j2LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
 
 
                 if (j1LeftOfI >= -FixedCalculate.superSmallValue && j2LeftOfI >= -FixedCalculate.superSmallValue)
@@ -195,8 +381,8 @@ public partial class KDTreeSystem
                 ObstacleVertice obstacleJ1 = current[j];
                 ObstacleVertice obstacleJ2 = obstacleVertices_[obstacleJ1.next_];
 
-                FixedInt j1LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
-                FixedInt j2LeftOfI = FixedCalculate.leftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
+                FixedInt j1LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
+                FixedInt j2LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
 
 
                 if (j1LeftOfI >= -FixedCalculate.superSmallValue && j2LeftOfI >= -FixedCalculate.superSmallValue)
@@ -210,7 +396,7 @@ public partial class KDTreeSystem
                 else
                 {
                     /* Split obstacle j. */
-                    FixedInt t = FixedCalculate.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / FixedCalculate.det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
+                    FixedInt t = FixedCalculate.Det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleI1.point_) / FixedCalculate.Det(obstacleI2.point_ - obstacleI1.point_, obstacleJ1.point_ - obstacleJ2.point_);
 
                     FixedVector2 splitPoint = obstacleJ1.point_ + t * (obstacleJ2.point_ - obstacleJ1.point_);
 

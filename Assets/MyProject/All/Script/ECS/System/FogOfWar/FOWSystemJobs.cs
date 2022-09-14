@@ -134,7 +134,7 @@ public partial class FOWSystem
         {
             for (int i = 0; i < obstacleNeighbors.Length; i++)
             {
-                unitDirsSign[i] = FixedCalculate.det(obstacleNeighbors[i].direction_, fowUnit.position - obstacleNeighbors[i].point_).sign;
+                unitDirsSign[i] = FixedCalculate.Det(obstacleNeighbors[i].direction_, fowUnit.position - obstacleNeighbors[i].point_).sign;
        
 
             }
@@ -145,7 +145,7 @@ public partial class FOWSystem
             var currentGridDir = gridPos - obstacleVerticePoint;
     
 
-            return FixedCalculate.det(obstacleVerticeDir, currentGridDir).sign == sign;
+            return FixedCalculate.Det(obstacleVerticeDir, currentGridDir).sign == sign;
  
         }
 
@@ -188,7 +188,7 @@ public partial class FOWSystem
             ObstacleVertice obstacle1 = obstacles_[node.obstacleVertice_Index];
             ObstacleVertice obstacle2 = obstacles_[obstacle1.next_];
 
-            FixedInt agentLeftOfLine = FixedCalculate.leftOf(obstacle1.point_, obstacle2.point_, fOWUnitPosition);
+            FixedInt agentLeftOfLine = FixedCalculate.LeftOf(obstacle1.point_, obstacle2.point_, fOWUnitPosition);
 
             if (agentLeftOfLine >= 0)
             {
@@ -200,7 +200,7 @@ public partial class FOWSystem
             }
             // ComputeObstacleNeighbor(obstacles,obstacleTree, agentLeftOfLine >= 0 ? obstacleTree[node.left_index] : obstacleTree[node.right_index]  , agent, ref rangeSq, obstacleNeighbors);
 
-            FixedInt distSqLine = FixedCalculate.sqr(agentLeftOfLine) / FixedCalculate.absSq(obstacle2.point_ - obstacle1.point_);
+            FixedInt distSqLine = FixedCalculate.Square(agentLeftOfLine) / FixedCalculate.Square(obstacle2.point_ - obstacle1.point_);
 
             if (distSqLine < rangeSq)
             {
@@ -232,7 +232,7 @@ public partial class FOWSystem
         {
             ObstacleVertice nextObstacle = obstacles_[obstacle.next_];
 
-            FixedInt distSq = FixedCalculate.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, fOWUnitPosition);
+            FixedInt distSq = FixedCalculate.DistSqPointLineSegment(obstacle.point_, nextObstacle.point_, fOWUnitPosition);
 
 
             if (distSq < rangeSq)

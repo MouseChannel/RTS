@@ -40,14 +40,14 @@ public partial class KeepWalkingSystem : WorkSystem
 
                 FixedVector2 targetPosition = new FixedVector2(pathPosition.position.x, pathPosition.position.y);
                 FixedVector2 moveDir = targetPosition - agent.position_;
-                if (FixedCalculate.absSq(moveDir) != 0)
-                    moveDir = FixedCalculate.normalize(moveDir);
+                if (FixedCalculate.Square(moveDir) != 0)
+                    moveDir = FixedCalculate.Normalize(moveDir);
                 agent.prefVelocity_ = moveDir;
 
 
 
 
-                if (FixedCalculate.absSq(agent.position_ - targetPosition) >= 0 && FixedCalculate.abs(agent.position_ - targetPosition) < FixedInt.half)
+                if (FixedCalculate.Square(agent.position_ - targetPosition) >= 0 && FixedCalculate.Abs(agent.position_ - targetPosition) < FixedInt.half)
                 {
                     // Next waypoint
                     currentPathIndex.pathIndex--;
