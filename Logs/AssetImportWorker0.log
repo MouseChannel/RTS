@@ -18321,3 +18321,9 @@ Received Import Request.
   path: Assets/MyProject/All/dll/KCPNET.pdb
   artifactKey: Guid(588fa4744e353bf40b1342b425b2e07b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
 Start importing Assets/MyProject/All/dll/KCPNET.pdb using Guid(588fa4744e353bf40b1342b425b2e07b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '602ec1bd7c76e5ff16c1903d1288410c') in 0.043176 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 8.544932 seconds.
+  path: Assets/MyProject/All/Scenes/TestScene.unity
+  artifactKey: Guid(438851675e06082439891c3d91bd278c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/MyProject/All/Scenes/TestScene.unity using Guid(438851675e06082439891c3d91bd278c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'd9a58a3bc72e74577c5ca5de49a2b48f') in 0.012696 seconds 

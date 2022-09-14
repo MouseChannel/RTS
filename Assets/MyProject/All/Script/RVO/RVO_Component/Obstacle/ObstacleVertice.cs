@@ -41,6 +41,13 @@ public struct ObstacleVerticeTreeNode
     public int obstacleVertice_Index;
     public int left_index;
     public int right_index;
+    public bool IsDefault()
+    {
+        var tt = default(ObstacleVerticeTreeNode);
+        return obstacleVertice_Index == tt.obstacleVertice_Index
+        && left_index == tt.left_index
+        && right_index == tt.right_index;
+    }
 
 }
 
@@ -89,7 +96,7 @@ public struct FixedIntPair
 public struct PreObstacleVertice : IBufferElementData
 {
     public FixedVector2 vertice;
-  
+
     // public int verticeCount;
 }
 

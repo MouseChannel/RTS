@@ -12,7 +12,7 @@ public partial class KDTreeSystem
     public NativeList<ObstacleVertice> obstacleVertices_ = new NativeList<ObstacleVertice>(Allocator.Persistent);
     public NativeList<ObstacleVerticeTreeNode> obstacleVerticesTree_ = new NativeList<ObstacleVerticeTreeNode>(Allocator.Persistent);
 
-    public ObstacleVerticeTreeNode obstacleVerticesTreeRoot;
+    public static ObstacleVerticeTreeNode obstacleVerticesTreeRoot;
 
 
 
@@ -97,15 +97,21 @@ public partial class KDTreeSystem
     [BurstCompile]
     private struct BuildObstacleVerticeTreeJob : IJob
     {
-        public NativeList<ObstacleVertice> obstacleVertices;
-        public NativeList<ObstacleVerticeTreeNode> obstacleVerticesTree;
+        public NativeList<ObstacleVertice> obstacleVertices_;
+        public NativeList<ObstacleVerticeTreeNode> obstacleVerticesTree_;
 
-        public ObstacleVerticeTreeNode obstacleVerticesTreeRoot;
+        // public ObstacleVerticeTreeNode obstacleVerticesTreeRoot;
         public void Execute()
         {
+            
+
+
             NativeList<ObstacleVertice> currentObstacleVertices = new NativeList<ObstacleVertice>(Allocator.Temp);
-            currentObstacleVertices.AddRange(obstacleVertices);
+            currentObstacleVertices.AddRange(obstacleVertices_);
             obstacleVerticesTreeRoot = BuildObstacleVerticeTreeRecursive(currentObstacleVertices);
+
+            
+            currentObstacleVertices.Dispose();
 
         }
 
@@ -126,7 +132,7 @@ public partial class KDTreeSystem
                 int rightSize = 0;
 
                 ObstacleVertice obstacleI1 = current[i];
-                ObstacleVertice obstacleI2 = obstacleVertices[obstacleI1.next_];
+                ObstacleVertice obstacleI2 = obstacleVertices_[obstacleI1.next_];
 
                 /* Compute optimal split node. */
                 for (int j = 0; j < current.Length; ++j)
@@ -140,7 +146,7 @@ public partial class KDTreeSystem
 
 
 
-                    ObstacleVertice obstacleJ2 = obstacleVertices[obstacleJ1.next_];
+                    ObstacleVertice obstacleJ2 = obstacleVertices_[obstacleJ1.next_];
 
                     FixedInt j1LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
                     FixedInt j2LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
@@ -199,7 +205,7 @@ public partial class KDTreeSystem
                 int i = optimalSplit;
 
                 ObstacleVertice obstacleI1 = current[i];
-                ObstacleVertice obstacleI2 = obstacleVertices[obstacleI1.next_];
+                ObstacleVertice obstacleI2 = obstacleVertices_[obstacleI1.next_];
 
                 for (int j = 0; j < current.Length; ++j)
                 {
@@ -209,7 +215,7 @@ public partial class KDTreeSystem
                     }
 
                     ObstacleVertice obstacleJ1 = current[j];
-                    ObstacleVertice obstacleJ2 = obstacleVertices[obstacleJ1.next_];
+                    ObstacleVertice obstacleJ2 = obstacleVertices_[obstacleJ1.next_];
 
                     FixedInt j1LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ1.point_);
                     FixedInt j2LeftOfI = FixedCalculate.LeftOf(obstacleI1.point_, obstacleI2.point_, obstacleJ2.point_);
@@ -237,12 +243,12 @@ public partial class KDTreeSystem
                         newObstacle.convex_ = true;
                         newObstacle.direction_ = obstacleJ1.direction_;
 
-                        newObstacle.verticeId_ = obstacleVertices.Length;
+                        newObstacle.verticeId_ = obstacleVertices_.Length;
 
 
                         // Simulator.Instance.obstacles_.Add(newObstacle);
-                        obstacleVertices.Add(newObstacle);
-                        obstacleVerticesTree.Add(new ObstacleVerticeTreeNode());
+                        obstacleVertices_.Add(newObstacle);
+                        obstacleVerticesTree_.Add(new ObstacleVerticeTreeNode());
 
                         obstacleJ1.next_ = newObstacle.verticeId_;
                         obstacleJ2.previous_ = newObstacle.verticeId_;
@@ -267,7 +273,7 @@ public partial class KDTreeSystem
 
                 node.left_index = BuildObstacleVerticeTreeRecursive(leftObstacles).obstacleVertice_Index;
                 node.right_index = BuildObstacleVerticeTreeRecursive(rightObstacles).obstacleVertice_Index;
-                obstacleVerticesTree[node.obstacleVertice_Index] = node;
+                obstacleVerticesTree_[node.obstacleVertice_Index] = node;
                 leftObstacles.Dispose();
                 rightObstacles.Dispose();
 

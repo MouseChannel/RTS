@@ -118,7 +118,7 @@ public partial class KDTreeSystem : WorkSystem
         new BuildObstacleTreeJob
         {
             obstacles_ = obstacles_,
-            obstacleTree_ =obstacleTree_
+            obstacleTree_ = obstacleTree_
 
         }.Run();
         // BuildObstacleTree(0, obstacles_.Length, 0);
@@ -146,23 +146,18 @@ public partial class KDTreeSystem : WorkSystem
 
 
         InitObstacleVerticeTree(obstacleVertices_.Length);
-        NativeList<ObstacleVertice> currentObstacleVertices = new NativeList<ObstacleVertice>(Allocator.Temp);
-        currentObstacleVertices.AddRange(obstacleVertices_);
-
-        // BuildObstacleVerticeTreeJob buildObstacleVerticeTreeJob =
-        // new BuildObstacleVerticeTreeJob
-        // {
-        //     obstacleVertices = obstacleVertices_,
-        //     obstacleVerticesTree = obstacleVerticesTree_,
-        //     obstacleVerticesTreeRoot = obstacleVerticesTreeRoot
-
-        // };
-        // buildObstacleVerticeTreeJob.Run();
-        // obstacleVerticesTreeRoot = buildObstacleVerticeTreeJob.obstacleVerticesTreeRoot;
-        obstacleVerticesTreeRoot = BuildObstacleVerticeTreeRecursive(currentObstacleVertices);
 
 
-        currentObstacleVertices.Dispose();
+
+        new BuildObstacleVerticeTreeJob
+        {
+            obstacleVertices_ = obstacleVertices_,
+            obstacleVerticesTree_ = obstacleVerticesTree_,
+
+
+        }.Run();
+
+
 
 
     }
