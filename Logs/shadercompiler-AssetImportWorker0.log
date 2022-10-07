@@ -1,3 +1,6 @@
-Base path: 'D:/my/unityveision/2021.3.9f1c1/Editor/Data', plugins path 'D:/my/unityveision/2021.3.9f1c1/Editor/Data/PlaybackEngines'
+Base path: 'D:/my/unityveision/2022.2.0b9/Editor/Data', plugins path 'D:/my/unityveision/2022.2.0b9/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 
+Cmd: initializeCompiler
+
+ze=1687 file=Assets/DefaultResourcesExtra/Standard pass=FORWARD ppOnly=0 stripLineD=0 buildPlatform=19 rsLen=0 pK

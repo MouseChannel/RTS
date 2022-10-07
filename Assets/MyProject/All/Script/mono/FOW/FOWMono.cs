@@ -9,7 +9,7 @@ public class FOWMono : MonoBehaviour
     Material material;
     void Start()
     {
-        fOWSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<FOWSystem>();
+        fOWSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<FOWSystem>();
         material = GetComponent<Renderer>().material;
         GetComponent<Transform>().localScale = new Vector3(StaticData.gridWidth / 10, 1, StaticData.gridWidth / 10);
     }

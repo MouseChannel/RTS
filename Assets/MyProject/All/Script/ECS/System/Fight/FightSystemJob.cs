@@ -165,17 +165,17 @@ public partial class FightSystem
 
 
 
-        public void EcbSetComponent<T>(T component) where T : struct, IComponentData
+        public void EcbSetComponent<T>(T component) where T : unmanaged, IComponentData
         {
             ecbPara.SetComponent<T>(entityInQueryIndex, entity, component);
         }
 
-        public void EcbAddComponent<T>(T component) where T : struct, IComponentData
+        public void EcbAddComponent<T>(T component) where T : unmanaged, IComponentData
         {
             ecbPara.AddComponent<T>(entityInQueryIndex, entity, component);
         }
 
-        public void EcbRemoveComponent<T>(T component) where T : struct, IComponentData
+        public void EcbRemoveComponent<T>(T component) where T : unmanaged, IComponentData
         {
             ecbPara.RemoveComponent<T>(entityInQueryIndex, entity);
         }

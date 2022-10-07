@@ -22,7 +22,7 @@ public abstract class Singleton<T>
     }
 
     protected Q GetSystem<Q>() where Q: SystemBase{
-        return World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Q>();
+        return World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<Q>();
     }
 
     public abstract void InitInstance();

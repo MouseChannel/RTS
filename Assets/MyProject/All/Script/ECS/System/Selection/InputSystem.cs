@@ -9,7 +9,7 @@ using System;
 using UnityEngine.Profiling;
 // [DisableAutoCreation]
  
-public class InputSystem : ServiceSystem
+public partial class InputSystem : ServiceSystem
 {
     private Camera mainCamera;
     public bool IsDragging = false;
@@ -21,8 +21,8 @@ public class InputSystem : ServiceSystem
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
     protected override void OnCreate()
     {
-        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-        kDTreeSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<KDTreeSystem>();
+        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
+        kDTreeSystem = GetSystem <KDTreeSystem>();
     }
     // private void OnDestroy()
     // {

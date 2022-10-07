@@ -10,7 +10,7 @@ public abstract partial class ServiceSystem : SystemBase
         get
         {
             if (e == null)
-                e = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+                e = World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
             return e;
         }
     }
@@ -31,7 +31,7 @@ public abstract partial class ServiceSystem : SystemBase
 
     protected T GetSystem<T>() where T : SystemBase
     {
-        return World.GetOrCreateSystem<T>();
+        return World.GetOrCreateSystemManaged<T>();
     }
 
 

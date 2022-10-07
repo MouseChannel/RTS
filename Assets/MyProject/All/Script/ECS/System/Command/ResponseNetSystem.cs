@@ -10,7 +10,7 @@ using FixedMath;
 using Unity.Collections;
 
 [UpdateInGroup(typeof(InitializationSystemGroup))]
-public class ResponseNetSystem : ServiceSystem
+public partial class ResponseNetSystem : ServiceSystem
 {
     
 
@@ -36,9 +36,9 @@ public class ResponseNetSystem : ServiceSystem
 
 
 
-        var fow = World.GetOrCreateSystem<FOWSystem>();
+        var fow = World.GetOrCreateSystemManaged<FOWSystem>();
         fow.InitFOW();
-        var kDTreeSystem = World.GetOrCreateSystem<KDTreeSystem>();
+        var kDTreeSystem = World.GetOrCreateSystemManaged<KDTreeSystem>();
 
     }
 
@@ -49,13 +49,13 @@ public class ResponseNetSystem : ServiceSystem
 
 
 
-        workList.Add(World.GetOrCreateSystem<CommandSystem>());
-        workList.Add(World.GetOrCreateSystem<CollectorSystem>());
-        workList.Add(World.GetOrCreateSystem<FightSystem>());
-        workList.Add(World.GetOrCreateSystem<PathFindSystem>());
-        workList.Add(World.GetOrCreateSystem<KeepWalkingSystem>());
-        workList.Add(World.GetOrCreateSystem<KDTreeSystem>());
-        // workList.Add(World.GetOrCreateSystem<AgentSystem>());
+        workList.Add(World.GetOrCreateSystemManaged<CommandSystem>());
+        workList.Add(World.GetOrCreateSystemManaged<CollectorSystem>());
+        workList.Add(World.GetOrCreateSystemManaged<FightSystem>());
+        workList.Add(World.GetOrCreateSystemManaged<PathFindSystem>());
+        workList.Add(World.GetOrCreateSystemManaged<KeepWalkingSystem>());
+        workList.Add(World.GetOrCreateSystemManaged<KDTreeSystem>());
+        // workList.Add(World.GetOrCreateSystemManaged<AgentSystem>());
 
 
     }

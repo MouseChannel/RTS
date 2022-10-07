@@ -12,11 +12,11 @@ public interface IStateBaseJob : IJob
     void ExitState(DoingTaskState currentState);
 
     void ChangeState(DoingTaskState newState);
- 
 
-    void EcbSetComponent<T>(T component) where T : struct, IComponentData;
-    void EcbAddComponent<T>(T component) where T : struct, IComponentData;
-    void EcbRemoveComponent<T>(T component) where T : struct, IComponentData;
+
+    void EcbSetComponent<T>(T component) where T : unmanaged, IComponentData;
+    void EcbAddComponent<T>(T component) where T : unmanaged, IComponentData;
+    void EcbRemoveComponent<T>(T component) where T : unmanaged, IComponentData;
 
 }
  

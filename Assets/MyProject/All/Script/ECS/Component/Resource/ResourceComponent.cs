@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Entities;
 using FixedMath;
 
-[GenerateAuthoringComponent]
+ 
 public struct ResourceComponent : IComponentData
 {
     

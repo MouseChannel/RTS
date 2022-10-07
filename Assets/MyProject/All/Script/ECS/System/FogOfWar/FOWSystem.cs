@@ -46,8 +46,8 @@ public partial class FOWSystem : SystemBase
     {
         blurBuffer = new NativeArray<Color32>(GridSystem.Instance.GetLength(), Allocator.Persistent);
         lastVisiableArea = new UnsafeList<int>(GridSystem.Instance.GetLength(), Allocator.Persistent);
-        World.GetOrCreateSystem<FixedStepSimulationSystemGroup>().Timestep = 0.5f;
-        kDTreeSystem = World.GetOrCreateSystem<KDTreeSystem>();
+        World.GetOrCreateSystemManaged<FixedStepSimulationSystemGroup>().Timestep = 0.5f;
+        kDTreeSystem = World.GetOrCreateSystemManaged<KDTreeSystem>();
     }
     protected override void OnDestroy()
     {
