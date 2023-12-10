@@ -1,11 +1,10 @@
 # Its A RTS Demo
-it is a rts demo by Unity
-
+it is a rts demo by **Unity**
 ## 🌞Overview🌞
-### 🫱 **PURE** DOTS ECS framework
+### 🫱 Client **PURE** Unity ECS framework
 - using Dots0.5,Pathfinding, Collision Avoidance and all logic about are written by Unity_ECS
-### 🫱 multi-player Frame synchronization
-- A simple frame synchronization server written by Golang
+### 🫱 Server multi-player Frame synchronization
+- A simple frame synchronization server written by **Golang**
 - Rooms and Matching  
 - Use **protobuf** and **kcp** to communicate
 
