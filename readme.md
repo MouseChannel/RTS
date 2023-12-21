@@ -11,7 +11,7 @@ it is a rts demo by **Unity**
 # 🎉Show case🎉
  
 <div align=center>
-    <img src="./readme/RTS_showcase.gif" width="70%">
+    <img src="./readme/RTS_showcase.gif" alt="RTS_showcase.gif" width="70%">
 <br>
 ☝️RVO Frame synchronization☝️
 </div>
